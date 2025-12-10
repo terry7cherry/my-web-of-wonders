@@ -1,0 +1,111 @@
+{
+  "version": 8,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 20,
+    "patch": 0
+  },
+
+  "configurePresets": [
+    {
+      "name": "windows-sim-debug",
+      "displayName": "Windows Sim Debug",
+      "description": "Debug sim build using Visual Studio toolchain.",
+      "generator": "Visual Studio 17 2022",
+      "binaryDir": "${sourceDir}/build/windows-sim-debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+        "VCPKG_TARGET_TRIPLET": "x64-windows"
+      }
+    },
+    {
+      "name": "windows-sim",
+      "displayName": "Windows Sim",
+      "generator": "Visual Studio 17 2022",
+      "binaryDir": "${sourceDir}/build/windows-sim",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+        "VCPKG_TARGET_TRIPLET": "x64-windows"
+      }
+    },
+    {
+      "name": "windows-frontend-debug",
+      "displayName": "Windows Frontend Debug",
+      "description": "Debug frontend build using Visual Studio toolchain.",
+      "generator": "Visual Studio 17 2022",
+      "binaryDir": "${sourceDir}/build/windows-frontend-debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+        "VCPKG_TARGET_TRIPLET": "x64-windows",
+        "FRONTEND": "ON",
+        "FRONTEND_DEV": "ON"
+      }
+    },
+    {
+      "name": "windows-frontend",
+      "displayName": "Windows Frontend",
+      "generator": "Visual Studio 17 2022",
+      "binaryDir": "${sourceDir}/build/windows-frontend",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+        "VCPKG_TARGET_TRIPLET": "x64-windows",
+        "FRONTEND": "ON",
+        "FRONTEND_DEV": "ON"
+      }
+    },
+    {
+      "name": "macos-sim-debug",
+      "displayName": "macOS Sim Debug",
+      "description": "Debug sim build using Apple Clang and vcpkg manifest",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/macos-sim-debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+        "VCPKG_TARGET_TRIPLET": "arm64-osx"
+      }
+    },
+    {
+      "name": "macos-sim",
+      "displayName": "macOS Sim",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/macos-sim",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+        "VCPKG_TARGET_TRIPLET": "arm64-osx"
+      }
+    },
+    {
+      "name": "macos-frontend-debug",
+      "displayName": "macOS Frontend Debug",
+      "description": "Debug frontend build using Apple Clang and vcpkg manifest",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/macos-frontend-debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+        "VCPKG_TARGET_TRIPLET": "arm64-osx",
+        "FRONTEND": "ON",
+        "FRONTEND_DEV": "ON"
+      }
+    },
+    {
+      "name": "macos-frontend",
+      "displayName": "macOS Frontend",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/macos-frontend",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+        "VCPKG_TARGET_TRIPLET": "arm64-osx",
+        "FRONTEND": "ON",
+        "FRONTEND_DEV": "ON"
+      }
+    }
+  ]
+}

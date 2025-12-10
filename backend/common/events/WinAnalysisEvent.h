@@ -1,0 +1,87 @@
+#pragma once
+
+#include "BasicEvent.h"
+
+#include <vector>
+
+#include "../grids/LineGrid.h"
+
+static constexpr int WinAnalysisEventBufferSize = 4;
+
+class WinAnalysisEvent : public BasicEvent {
+public:
+
+	explicit WinAnalysisEvent(const LineGrid& grid, std::string analysisStage)
+		: analysisStage(analysisStage)
+	{
+		const std::vector<Win>& sourceWins = grid.winVector;
+		numWins = sourceWins.size();
+
+		for (const auto& win : sourceWins) {
+			totalWin += win.totalWin;
+		}
+
+#ifdef FRONTEND
+		// Storing all wins slows things down and is only needed for frontend. 
+		for (size_t i = 0; i < numWins && i < WinAnalysisEventBufferSize; ++i) {
+			bufferedWins[i] = sourceWins[i];
+		}
+
+		if (numWins > WinAnalysisEventBufferSize) {
+			excessWins.reserve(numWins - WinAnalysisEventBufferSize);
+			excessWins.assign(sourceWins.begin() + WinAnalysisEventBufferSize, sourceWins.end());
+		}
+#endif
+	}
+
+protected:
+	static constexpr std::string_view EventType =  "winAnalysis";
+
+	std::string_view getEventType() const {
+		return EventType;
+	}
+
+#ifdef FRONTEND
+	Json::Value getDetailsAsJson() const {
+		Json::Value eventDetails;
+		eventDetails["totalWin"] = totalWin;
+		eventDetails["analysisStage"] = std::string(analysisStage);
+		Json::Value winsAsJson(Json::arrayValue);
+		for (size_t i = 0; i < numWins && i < WinAnalysisEventBufferSize; ++i) {
+			winsAsJson.append(convertWinToJson(bufferedWins[i]));
+		}
+
+		if (numWins > WinAnalysisEventBufferSize) {
+			for (const Win& win : excessWins) {
+				winsAsJson.append(convertWinToJson(win));
+			}
+		}
+		eventDetails["wins"] = winsAsJson;
+		return eventDetails;
+	}
+#endif
+
+private:
+	Json::Value convertWinToJson(const Win& win) const {
+		Json::Value winAsJson;
+		winAsJson["symbol"] = win.symbol;
+		winAsJson["oak"] = win.oak;
+		winAsJson["wildCount"] = win.wildCount;
+		winAsJson["multiplier"] = win.multiplier;
+		winAsJson["win"] = win.win;
+		winAsJson["totalWin"] = win.totalWin;
+		winAsJson["direction"] = (int)win.direction;
+		winAsJson["winType"] = win.winType;
+		if (win.winType == "line") winAsJson["payLine"] = toJsonArray(*win.payLine);
+		return winAsJson;
+	}
+
+	int totalWin = 0;
+	int gridMultiplier = 1;
+#ifdef FRONTEND
+	std::array<Win, WinAnalysisEventBufferSize> bufferedWins;
+	std::vector<Win> excessWins;
+#endif
+	std::string analysisStage;
+	int numWins;
+};

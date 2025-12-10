@@ -1,0 +1,430 @@
+import * as PIXI from "pixi.js";
+import MaskedContainer from "./MaskedContainer.js";
+import Mask from "./Mask.js";
+import moveElement from "./animation/moveElement.js"
+
+export default class Grid {
+    constructor({
+        app,
+        parent,
+        width,
+        height,
+        x,
+        y,
+        numReels,
+        numRows,
+        symbolColorMapper,
+        symbolFontSize = 32,
+        displayReelSet,
+        weightedDisplayReelSet,
+        symbolMap,
+        imageMap,
+        sound,
+        reelSpinGridTransformer,
+        suspenseSymbolCode,
+        simultaneousWinLineAnimations,
+        winLineColor,
+        winLines,
+    }) {
+        this.reelWidth = Math.round(width / numReels);
+        this.symbolHeight = Math.round(height / numRows);
+        this.numReels = numReels;
+        this.numRows = numRows;
+        this.x = x ?? 0;
+        this.y = y ?? 0;
+        this.width = width;
+        this.height = height;
+        this.sound = sound;
+        this.symbolFontSize = symbolFontSize;
+        this.symbolColorMapper = symbolColorMapper;
+        this.suspenseSymbolCode = suspenseSymbolCode;
+        this.displayReelSet = displayReelSet?.bands;
+        this.weightedDisplayReelSet = displayReelSet?.weights;
+        this.symbolMap = symbolMap;
+        this.imageMap = imageMap;
+        this.container = new MaskedContainer({ app, parent, x: this.x, y: this.y, width: this.width, height: this.height });
+        this.reels = this.createReels();
+        this.getReelStartingPositions();
+        this.reelSpinGridTransformer = reelSpinGridTransformer;
+        this.simultaneousWinLineAnimations = simultaneousWinLineAnimations;
+        this.winLineColor = winLineColor;
+        this.winLines = winLines;
+    }
+
+    hide() {
+        this.container.visible = false;
+    }
+
+    show() {
+        this.container.visible = true;
+    }
+
+    createReels() {
+        const reels = [];
+        for (let i = 0; i < this.numReels; i++) {
+            const container = new PIXI.Container();
+            container.sortableChildren = true;
+            container.x = i * this.reelWidth;
+            this.container.addChild(container);
+            const apertures = [];
+            const reel = { container, apertures };
+            reels.push(reel);
+        }
+        return reels;
+    }
+
+    getReelStartingPositions() {
+        this.reels.forEach((reel, r) => {
+            const symbols = this.getRandomSymbols(r, this.numRows);
+            symbols.forEach(symbol => this.addSymbolToBottomOfReel(r, symbol));
+        });
+    }
+
+    getRandomSymbols(reelNum, numSymbols) {
+        const symbols = [];
+        if (this.displayReelSet) {
+            const displayReel = this.displayReelSet[reelNum];
+            const reel = this.reels[reelNum];
+            reel.landingPosition = Math.floor(Math.random() * displayReel.length);
+
+            for (let i = 0; i < numSymbols; i++) {
+                const symbol = displayReel[(reel.landingPosition + i) % displayReel.length];
+                symbols.push(symbol);
+            }
+        } else if (this.weightedDisplayReelSet) {
+            const singleReel = typeof this.weightedDisplayReelSet[0].symbol !== "undefined";
+            const reel = singleReel ? this.weightedDisplayReelSet : this.weightedDisplayReelSet[reelNum];
+            const totalWeight = reel.map(({ weight }) => weight).reduce((a, b) => a + b, 0);
+            const symbols = [];
+            for (let i = 0; i < numSymbols; i++) {
+                const random = Math.floor(Math.random() * totalWeight);
+                let runningTotal = 0;
+                const outcome = reel.find(({ weight }) => {
+                    runningTotal += weight;
+                    return random < runningTotal;
+                });
+                symbols.push(outcome.symbol);
+            }
+        } else throw new Error("No display reel set found. displayReelSet or weightedDisplayReelSet must be set in game constructor.")
+        return symbols;
+    }
+
+    spinReels(symbols, stickyReels, stickyApertures) {
+        return new Promise(async (resolve, reject) => {
+            if (this.reelSpinGridTransformer) symbols = this.reelSpinGridTransformer(symbols)
+            const spinSound = await this.sound.playAsync("spin");
+            this.setAddedTimePerReel(this.reels, symbols);
+            const reelSpinAnimations = this.getReelSpinAnimations(this.reels, symbols, stickyReels, stickyApertures);
+            await Promise.all(reelSpinAnimations)
+            await spinSound.stop();
+            resolve();
+        });
+    }
+
+    getReelSpinAnimations(reels, symbols, stickyReels, stickyApertures) {
+        return reels.map((reel, r) => new Promise((resolve, reject) => {
+            if (stickyReels && stickyReels.includes(r)) {
+                return resolve();
+            }
+            const numRandomSymbolsToAdd = Math.floor((r + reel.addedTime + 1) * (2 + Math.random() * 2));
+            this.addRandomSymbolsToReel(reel, r, numRandomSymbolsToAdd);
+            [...symbols[r]].reverse().forEach((symbol) => {
+                this.addSymbolToTopOfReel(r, symbol);
+            });
+            const totalFrames = (r + reel.addedTime + 1) * 20;
+            const apertureAnimations = reel.apertures.map((aperture, a) => {
+                const { container } = aperture;
+                if (stickyApertures?.[r]?.includes(a)) {
+                    container.zIndex = Infinity;
+                    return;
+                }
+                const newY = container.y + this.symbolHeight * (this.numRows + numRandomSymbolsToAdd);
+                return moveElement({ element: container, newX: container.x, newY, totalFrames })
+            })
+            Promise.all(apertureAnimations).then(() => {
+                const oldApertures = reel.apertures.splice(this.numRows);
+
+                for (const aperture of oldApertures) {
+                    // detach from display tree
+                    reel.container.removeChild(aperture.container);
+
+                    // destroy full container hierarchy
+                    aperture.container.destroy({
+                        children: true,       // destroy symbol, overlayContainer, backgroundContainer, etc.
+                    });
+                }
+
+                resolve();
+            })
+        }))
+    }
+
+    setAddedTimePerReel(reels, symbols) {
+        let addedTime = 0;
+        reels.forEach((reel, r) => {
+            const numScatters = symbols
+                .slice(0, r)
+                .map((reel) => reel.filter((s) =>
+                    s == this.suspenseSymbolCode
+                    || this.symbolMap?.[s] == this.suspenseSymbolCode
+                    || ["BN", "SC", ...(Array.isArray(this.suspenseSymbolCode) ? this.suspenseSymbolCode : [])].includes(s)
+                    || ["BN", "SC", ...(Array.isArray(this.suspenseSymbolCode) ? this.suspenseSymbolCode : [])].includes(this.symbolMap?.[s])
+                    || ["BN", "SC"].includes()).length
+                )
+                .reduce((a, b) => a + b, 0);
+            if (numScatters >= 2) addedTime += 4;
+            reel.addedTime = addedTime;
+        })
+    }
+
+    addRandomSymbolsToReel(reel, reelIndex, numRandomSymbolsToAdd) {
+        const symbols = this.getRandomSymbols(reelIndex, numRandomSymbolsToAdd);
+        symbols.forEach(symbol => this.addSymbolToTopOfReel(reelIndex, symbol))
+    }
+
+    addSymbolToBottomOfReel(reelNum, symbolCode) {
+        const reel = this.reels[reelNum];
+        const symbol = this.getSymbol(symbolCode);
+        symbol.container.y = reel.apertures.length * this.symbolHeight;
+        reel.apertures.push(symbol);
+        reel.container.addChild(symbol.container);
+    }
+
+    addSymbolToTopOfReel(reelNum, symbolCode) {
+        const reel = this.reels[reelNum];
+        const symbol = this.getSymbol(symbolCode);
+        symbol.container.y = reel.apertures[0].container.y - this.symbolHeight;
+        reel.apertures.unshift(symbol);
+        reel.container.addChild(symbol.container);
+    }
+
+    getSymbol(symbolCode) {
+        const container = new PIXI.Container();
+        const backgroundContainer = new PIXI.Container();
+        container.addChild(backgroundContainer);
+        const symbol = this.imageMap?.[symbolCode] ? this.getSymbolImage(symbolCode) : this.getSymbolText(symbolCode);
+        symbol.x = (this.reelWidth - symbol.width) / 2;
+        symbol.y = (this.symbolHeight - symbol.height) / 2;
+        container.addChild(symbol);
+        const overlayContainer = new PIXI.Container();
+        container.addChild(overlayContainer);
+        return { container, backgroundContainer, overlayContainer, symbol, symbolCode };
+    }
+
+    getSymbolText(symbolCode, textStyle) {
+        const text = this.symbolMap ? this.symbolMap[symbolCode] ?? symbolCode : symbolCode;
+        const symbol = new PIXI.Text(text, textStyle ?? this.getSymbolTextStyle(text));
+        return symbol;
+    }
+
+    getSymbolImage(symbolCode) {
+        const texture = this.imageMap[symbolCode];
+        const symbol = new PIXI.Sprite(texture);
+        symbol.scale.set(
+            this.reelWidth / symbol.width,
+            this.symbolHeight / symbol.height,
+        );
+        symbol.isImage = true;
+        return symbol;
+    }
+
+    async updateGrid(newGrid) {
+        await Promise.all(this.reels
+            .map((reel, r) => reel.apertures.map(({ symbolCode }, a) => {
+                if (symbolCode == newGrid[r][a]) return;
+                return this.transformSymbol(r, a, newGrid[r][a]);
+            }))
+            .flat()
+            .filter((p) => p));
+    }
+
+    addBackgroundToSymbol(reelNum, symbolNum, color) {
+        const aperture = this.reels[reelNum].apertures[symbolNum];
+        const background = new PIXI.Graphics();
+        background.beginFill(color);
+        background.drawRect(0, 0, this.reelWidth, this.symbolHeight);
+        background.endFill();
+        aperture.backgroundContainer.addChild(background);
+        aperture.background = background;
+    }
+
+    removeBackgroundFromSymbol(reelNum, symbolNum) {
+        const aperture = this.reels[reelNum].apertures[symbolNum];
+        aperture.backgroundContainer.removeChild(aperture.background);
+        aperture.background.destroy({ children: true });
+    }
+
+    addFrameToSymbol(reelNum, symbolNum, color = "0xFFFFFF", width = 8) {
+        const aperture = this.reels[reelNum].apertures[symbolNum];
+        const frame = new PIXI.Graphics();
+        frame.moveTo(width / 2, width / 2);
+        frame.lineStyle(width, color, 1, 0.5);
+        frame.lineTo(width / 2, this.symbolHeight - width / 2);
+        frame.lineTo(this.reelWidth - width / 2, this.symbolHeight - width / 2);
+        frame.lineTo(this.reelWidth - width / 2, width / 2);
+        frame.lineTo(0, width / 2);
+        aperture.overlayContainer.addChild(frame);
+        aperture.frame = frame;
+    }
+
+    removeFrameFromSymbol(reelNum, symbolNum) {
+        const aperture = this.reels[reelNum].apertures[symbolNum];
+        aperture.overlayContainer.removeChild(aperture.frame);
+        aperture.frame.destroy({ children: true });
+    }
+
+    addTextToSymbol(reelNum, symbolNum, text, textStyle) {
+        const aperture = this.reels[reelNum].apertures[symbolNum];
+        textStyle = {
+            fontFamily: "Arial",
+            fontSize: this.symbolFontSize,
+            fontWeight: "bold",
+            fill: "#FFFFFF",
+            stroke: "#000000",
+            strokeThickness: 5,
+            dropShadow: true,
+            dropShadowColor: "#000000",
+            dropShadowBlur: 4,
+            dropShadowAngle: Math.PI / 6,
+            dropShadowDistance: 6,
+            align: "center",
+            ...textStyle
+        }
+        const textObject = this.getSymbolText(text, textStyle);
+        textObject.x = textStyle.x ?? (this.reelWidth - textObject.width) / 2;
+        textObject.y = textStyle.y ?? (this.symbolHeight - textObject.height);
+        aperture.overlayContainer.addChild(textObject)
+        aperture.overlayText = textObject;
+    }
+
+    removeTextFromSymbol(reelNum, symbolNum) {
+        const aperture = this.reels[reelNum].apertures[symbolNum];
+        aperture.overlayContainer.removeChild(aperture.overlayText);
+        aperture.overlayText.destroy({ children: true });
+    }
+
+    transformSymbol(reelNum, symbolNum, newSymbolCode, speed) {
+        return new Promise((resolve, reject) => {
+            const reel = this.reels[reelNum];
+            const oldAperture = reel.apertures[symbolNum];
+            const newAperture = this.getSymbol(newSymbolCode);
+            const newSymbol = newAperture.symbol;
+            newAperture.container.x = oldAperture.container.x;
+            newAperture.container.y = oldAperture.container.y;
+            newSymbol.y = newSymbol.y + this.symbolHeight;
+            const mask = new Mask({
+                parent: this.container,
+                x: reelNum * this.reelWidth,
+                y: oldAperture.container.y,
+                width: this.reelWidth,
+                height: this.symbolHeight
+            });
+            oldAperture.container.mask = mask;
+            newAperture.container.mask = mask;
+            reel.container.addChild(newAperture.container);
+            const oldSymbol = oldAperture.symbol;
+            const animateOldSymbol = moveElement({
+                element: oldSymbol,
+                newX: oldSymbol.x,
+                newY: oldSymbol.y - this.symbolHeight,
+                pixelsPerFrame: speed ?? 4
+            })
+            const animateNewSymbol = moveElement({
+                element: newSymbol,
+                newX: newSymbol.x,
+                newY: newSymbol.y - this.symbolHeight,
+                pixelsPerFrame: speed ?? 4
+            })
+            Promise.all([animateOldSymbol, animateNewSymbol]).then(() => {
+                oldAperture.container.destroy({
+                    children: true, texture: !oldSymbol.isImage, baseTexture: !oldSymbol.isImage
+                });
+                reel.apertures[symbolNum] = newAperture;
+                newAperture.container.mask = null;
+                mask.destroy();
+                resolve();
+            })
+        });
+    }
+
+    getSymbolTextStyle(symbolCode) {
+        const color = (this.symbolColorMapper && this.symbolColorMapper(symbolCode)) ?? {
+            L: "#9cd141", M: "#1b8c44", H: "#07ba04", B: "#d1672e", S: "#d1672e", W: "#2e5cd1"
+        }[symbolCode[0]] ?? "#ffffff";
+        return {
+            fontFamily: "Arial",
+            fontSize: this.symbolFontSize,
+            fontWeight: "bold",
+            fill: color,
+            stroke: "#000000",
+            strokeThickness: 5,
+            dropShadow: true,
+            dropShadowColor: "#000000",
+            dropShadowBlur: 4,
+            dropShadowAngle: Math.PI / 6,
+            dropShadowDistance: 6,
+            align: "center",
+        };
+    }
+
+    animateWinLine(win) {
+        return new Promise((resolve, reject) => {
+            let flashing = true;
+            let elapsedTime = 0;
+            const flashTime = 40;
+            const offTime = 20;
+            const totalTime = flashTime + offTime;
+            const lineGraphic = new PIXI.Graphics();
+            const OAK = win.oak;
+            const centrePositions = win.payLine.map((y, x) => ({
+                x: (x + 0.5) * this.reelWidth,
+                y: (y + 0.5) * this.symbolHeight,
+            }));
+            lineGraphic.lineStyle(4, this.winLineColor);
+            lineGraphic.moveTo(centrePositions[0].x, centrePositions[0].y);
+            centrePositions.slice(1).forEach(({ x, y }) => {
+                lineGraphic.lineTo(x, y);
+            });
+            this.container.addChild(lineGraphic);
+            const symbolGraphics = [];
+            win.payLine.slice(0, OAK).forEach((y, x) => {
+                const container = this.reels[x].apertures[y].overlayContainer;
+                const symbolGraphic = new PIXI.Graphics();
+                symbolGraphic.lineStyle(4, this.winLineColor);
+                symbolGraphic.drawCircle(this.reelWidth / 2, this.symbolHeight / 2, 50);
+                container.addChild(symbolGraphic);
+                symbolGraphics.push({ container, symbolGraphic });
+            });
+            const animate = (delta) => {
+                elapsedTime += delta;
+                const shouldBeFlashing = elapsedTime < flashTime;
+                if (elapsedTime > flashTime && flashing) {
+                    this.container.removeChild(lineGraphic);
+                    lineGraphic.destroy();
+                    while (symbolGraphics.length) {
+                        const { container, symbolGraphic } = symbolGraphics.pop();
+                        container.removeChild(symbolGraphic);
+                        symbolGraphic.destroy();
+                    }
+                    flashing = false;
+                }
+                if (elapsedTime > totalTime) {
+                    PIXI.Ticker.shared.remove(animate);
+                    return resolve();
+                }
+            };
+            PIXI.Ticker.shared.add(animate);
+        })
+    }
+
+    async animateWinLines(wins) {
+        const lineWins = wins.filter(({ winType }) => winType == "line");
+        if (this.simultaneousWinLineAnimations) {
+            await Promise.all(lineWins.map((win) => this.animateWinLine(win)))
+        } else {
+            for (let win of lineWins) {
+                await this.animateWinLine(win);
+            }
+        }
+    }
+}

@@ -1,0 +1,14 @@
+build/
+out/
+.vs/
+.vscode/
+.idea/
+.git/
+.gitignore
+frontend/node_modules/
+frontend/dist/
+Dockerfile
+docker-compose.yml
+vcpkg_installed
+.DS_Store
+Thumbs.db

@@ -1,0 +1,28 @@
+{
+  "name": "frontend",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "cross-env-shell NO_COLOR=true vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "sleep": "node ../.idea/runConfigurations/sleep.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "type": "module",
+  "dependencies": {
+    "@pixi/sound": "^5.0.0",
+    "cross-env": "^10.1.0",
+    "events": "^3.3.0",
+    "lodash": "^4.17.21",
+    "pixi.js": "^7.1.3",
+    "vite": "^6.3.5"
+  },
+  "devDependencies": {
+    "eslint": "^9.39.1"
+  }
+}

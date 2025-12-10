@@ -1,0 +1,49 @@
+# Build stuff
+/build/
+/out/
+/x64/
+/uploads/
+# Frontend
+/frontend/node_modules
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake-build-*/
+cmake_install.cmake
+Makefile
+install_manifest.txt
+compile_commands.json
+# Object / binary files
+*.o
+*.obj
+*.lo
+*.a
+*.lib
+*.so
+*.dll
+*.dylib
+*.exe
+# Visual Studio
+.vs/
+*.vcxproj*
+*.sln
+*.user
+*.filters
+# VS Code
+.vscode/
+# JetBrains (CLion etc)
+.idea/workspace.xml
+.idea/editor.xml
+.idea/shelf/
+.idea/usage.statistics.xml
+.idea/**/dataSources/
+.idea/**/httpRequests/
+.idea/**/dynamic.xml
+# vcpkg
+vcpkg_installed/
+# OS
+.DS_Store
+Thumbs.db
+# Misc
+framework notes.txt
+Sim and frontend work plan.xlsx
