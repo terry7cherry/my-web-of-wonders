@@ -1,0 +1,28 @@
+#pragma once
+
+#include "BasicEvent.h"
+
+class GameCycleCompleteEvent : public BasicEvent
+{
+public:
+    explicit GameCycleCompleteEvent(const int totalWin) : totalWin(totalWin)
+    {
+        eventTotalWin += totalWin;
+    }
+
+    inline static int eventTotalWin = 0;
+
+protected:
+    static constexpr std::string_view EventType = "gameCycleComplete";
+    std::string_view getEventType() const override { return EventType; }
+
+    Json::Value getDetailsAsJson() const override
+    {
+        Json::Value eventDetails;
+        eventDetails["totalWin"] = totalWin;
+        return eventDetails;
+    }
+
+private:
+    const int totalWin;
+};

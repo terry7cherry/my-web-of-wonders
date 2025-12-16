@@ -28,7 +28,7 @@ MeterFile::MeterFile(std::string szFileName, bool isText, std::string szFolderNa
 void MeterFile::setOutputFolder(std::string szFolderName)
 {
 	szFolder = szFolderName;
-	if (MathLibrary::makeSubFolder(szFolder))
+	if (makeSubFolder(szFolder))
 		exit(1);
 }
 

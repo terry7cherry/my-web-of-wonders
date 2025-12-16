@@ -1,4 +1,4 @@
-#include "GameMaths.h"
+#include "__GameMaths.h"
 #include "../common/events/FreeSpinsTriggerEvent.h"
 #include "../common/events/FreeSpinsRetriggerEvent.h"
 #include "../common/events/NewFreeSpinEvent.h"
@@ -7,22 +7,21 @@
 #include "../common/events/WinAnalysisEvent.h"
 #include "../common/events/FreeSpinsEndEvent.h"
 
+/*
 ;
 
 static MeterMap fsMultiplierMap("fsFinalMultiplier");
 static MeterMap fsAnyEventMap("fsAnyEvent");
 
-int GameMaths::doFreeSpins(void)
-{
-	Event& fsEvent = eventVect[EventIDFreeSpins];
+int __GameMaths::doFreeSpins(void) {
+	Event &fsEvent = eventVect[EventIDFreeSpins];
 
 	fsEvent.addHit();
 	int initialSpins = this->fsStartSpins[this->scatterCount];
 	fsEvent.setInitialSpins(initialSpins);
 	events.push_back(std::make_unique<FreeSpinsTriggerEvent>(initialSpins));
 #if PLAY_MODE
-	if (playableMode == PlayableOptions::allGames)
-	{
+	if (playableMode == PlayableOptions::allGames) {
 		fsEvent.showName(LineOut::phaseName0, FEATURE_FLASH_COUNT);
 		gameConsole.waitAnyKeyText("TO PLAY FREE SPINS", LINE_WINS_COLUMN, LINE_OUT::press);
 	}
@@ -31,13 +30,12 @@ int GameMaths::doFreeSpins(void)
 	this->fsActive = true;
 	this->fsTotalWin = 0;
 	this->fsTotalSpins = initialSpins;
-	for (this->fsSpin = 0; this->fsSpin < this->fsTotalSpins; this->fsSpin++)
-	{
+	for (this->fsSpin = 0; this->fsSpin < this->fsTotalSpins; this->fsSpin++) {
 		int fsMultiplier = this->fsMultiplierWeights.pick();
 		events.push_back(std::make_unique<NewFreeSpinEvent>(fsMultiplier));
 		getFsReelsetId(rtpIndex);
-		this->lpActiveReelSet->spin();				// random spin
-		gameGrid.reset();							// clear grid and apply reel spin 
+		this->lpActiveReelSet->spin(); // random spin
+		gameGrid.reset(); // clear grid and apply reel spin
 		gameGrid.setSymbolsFromReels(this->lpActiveReelSet);
 		events.push_back(std::make_unique<ReelSpinEvent>(gameGrid));
 
@@ -58,15 +56,14 @@ int GameMaths::doFreeSpins(void)
 		if (this->fsSpin)
 			gameConsole.waitAnyKeyText("FOR NEXT FREE SPIN", LINE_WINS_COLUMN, LINE_OUT::press);
 		fsEvent.showNameSpins(LineOut::phaseName0, "Spin", this->fsSpin + 1, this->fsTotalSpins,
-			"Multiplier = x" + to_string(gameGrid.gridMultiplier));
-#endif	
+		                      "Multiplier = x" + to_string(gameGrid.gridMultiplier));
+#endif
 
 		int spinWin = 0, finalWin = 0;
 
 		gameGrid.gridMultiplier = fsMultiplier;
-		spinWin = gameGrid.evaluateWins(betMultiplier, PAYTABLE_METERS, true); //CHANGEBACK
-		if (spinWin)
-		{
+		spinWin = gameGrid.evaluateWins(betMultiplier, PAYTABLE_METERS);
+		if (spinWin) {
 			if (gameGrid.gridMultiplier > 1)
 				finalWin = gameGrid.applyGridMultiplier(MultipliersCombineType::add);
 			else
@@ -99,9 +96,9 @@ int GameMaths::doFreeSpins(void)
 	return this->fsTotalWin;
 }
 
-void GameMaths::fsStatsReport(void)
-{
+void __GameMaths::fsStatsReport(void) {
 	std::cout << "\n\nFree Spins Report\n";
 	fsMultiplierMap.consoleOutH(true);
 	fsAnyEventMap.consoleOutH(true);
 }
+*/

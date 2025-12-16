@@ -1,13 +1,13 @@
-#include "GameMaths.h"
+#include "__GameMaths.h"
 #include "../common/events/ReelSpinEvent.h"
 #include "../common/events/WinAnalysisEvent.h"
-
+/*
 ;
 
 static MeterMap fsMultiplierMap("fsFinalMultiplier");
 static MeterMap fsWildEventsMap("fsWildEvents");
 
-int GameMaths::doBaseGame(int force)
+int __GameMaths::doBaseGame(int force)
 {
 	int totalWin = 0, spinWin = 0;
 
@@ -53,3 +53,4 @@ int GameMaths::doBaseGame(int force)
 }
 
 
+*/

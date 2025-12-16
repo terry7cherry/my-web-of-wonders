@@ -7,20 +7,18 @@
 
 #include <cstdio>   // for std::snprintf
 
-class PayTable
-{
+class PayTable {
 public:
     // Data
-    std::vector<std::vector<int>> payData;  // copy of passed pay data
+    std::vector<std::vector<int> > payData; // copy of passed pay data
     std::vector<int> minPaySymbolsVect;
     int minWinSymbols = -1;
     int maxWinSymbols = 0;
 
-    std::vector<MeterMap*> symbolWinMeterVect;
-    std::vector<MeterMap*> symbolHitMeterVect;
+    std::vector<MeterMap *> symbolWinMeterVect;
+    std::vector<MeterMap *> symbolHitMeterVect;
 
-    PayTable(std::vector<std::vector<int>> data)
-    {
+    PayTable(std::vector<std::vector<int> > data) {
         payData = std::move(data);
         minPaySymbolsVect.resize(payData.size(), -1);
 
@@ -28,20 +26,18 @@ public:
         minWinSymbols = -1;
         int iSym = 0;
 
-        for (const auto& symbolPayData : payData)
-        {
-            for (int i = 0; i < static_cast<int>(symbolPayData.size()); i++)
-            {   // find min pay count for this symbol
-                if (symbolPayData[i] > 0)
-                {
+        for (const auto &symbolPayData: payData) {
+            for (int i = 0; i < static_cast<int>(symbolPayData.size()); i++) {
+                // find min pay count for this symbol
+                if (symbolPayData[i] > 0) {
                     minPaySymbolsVect[iSym] = i;
                     break;
                 }
             }
 
             if (minPaySymbolsVect[iSym] != -1 &&
-                (minWinSymbols == -1 || minPaySymbolsVect[iSym] < minWinSymbols))
-            {   // got winning symbols and they are the lowest seen so far
+                (minWinSymbols == -1 || minPaySymbolsVect[iSym] < minWinSymbols)) {
+                // got winning symbols and they are the lowest seen so far
                 minWinSymbols = minPaySymbolsVect[iSym];
             }
             iSym++;
@@ -50,10 +46,8 @@ public:
 
     ~PayTable() = default;
 
-    int getWin(int symbolIndex, int symbolCount, bool checkLimits = false)
-    {
-        if (checkLimits)
-        {
+    int getWin(const int symbolIndex, const int symbolCount, const bool checkLimits = false) const {
+        if (checkLimits) {
             if (symbolIndex < 0 || symbolIndex >= static_cast<int>(payData.size()))
                 std::printf("\r\nError: PayTable::getWin() - symbolIndex (%d) out of bounds", symbolIndex);
 
@@ -61,7 +55,7 @@ public:
                 std::printf("\r\nError: PayTable::getWin() - symbolCount (%d) has no payout", symbolCount);
             else if (symbolCount > maxWinSymbols)
                 std::printf("\r\nError: PayTable::getWin() - symbolCount (%d) > maxWinSymbols (%d)",
-                    symbolCount, maxWinSymbols);
+                            symbolCount, maxWinSymbols);
         }
         return payData[symbolIndex][symbolCount];
     }

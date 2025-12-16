@@ -12,19 +12,18 @@ static constexpr int GridUpdateMaxRows = 10;
 
 class GridUpdateEvent : public BasicEvent {
 public:
-    explicit GridUpdateEvent(const MathLibrary::Grid &grid, std::string message = "Grid updated!")
+    explicit GridUpdateEvent(const Grid &grid, std::string message = "Grid updated!")
 #ifdef FRONTEND
-        : numReels(grid.maxReels),
-          numRows(grid.maxRows),
-          message(std::move(message)) {
-
+    : numReels (grid.maxReels),
+    numRows (grid.maxRows),
+    message (std::move(message)) {
         for (size_t reelNum = 0; reelNum < numReels; ++reelNum) {
             for (size_t rowNum = 0; rowNum < numRows; ++rowNum) {
                 symbols[reelNum * numRows + rowNum] = grid.getReelSymbol(reelNum, rowNum);
             }
         }
 #else
-		:message(message) {
+        : message(message) {
 #endif
     }
 

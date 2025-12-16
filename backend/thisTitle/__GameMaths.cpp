@@ -1,8 +1,8 @@
-#include "GameMaths.h"
+/*#include "__GameMaths.h"
 
 ;
 
-void GameMaths::initialise(void)
+void __GameMaths::initialise(void)
 {
 	eventVect.resize(EventIDCount);
 	eventVect[EventIDGame] = Event(0, "FullGame", "TOT", true, "KitchenChaos");
@@ -35,7 +35,7 @@ void GameMaths::initialise(void)
 
 // set new distribution titles
 // reset any stats variables1
-void GameMaths::reset(int gameBet, std::string szMode)
+void __GameMaths::reset(int gameBet, std::string szMode)
 {
 	bet = gameBet;
 	betMultiplier = bet / minBet;
@@ -48,7 +48,7 @@ void GameMaths::reset(int gameBet, std::string szMode)
 
 // if passed index is valid then sets gameMaths.rtpIndex and returns the associated RTP value e.g. 96
 // returns 0 if index is not valid
-int GameMaths::rtpSetOption(int index)
+int __GameMaths::rtpSetOption(int index)
 {
 	std::string szErrDetail = "";
 	if (index >= rtpOptionVect.size())
@@ -65,7 +65,7 @@ int GameMaths::rtpSetOption(int index)
 	return rtpIntVect[rtpIndex];
 }
 
-void GameMaths::distributionsReset(int rtp, int bet, std::string szMode)
+void __GameMaths::distributionsReset(int rtp, int bet, std::string szMode)
 {
 	for (auto& event : eventVect) {
 		if (event.lpWinDist)
@@ -76,7 +76,7 @@ void GameMaths::distributionsReset(int rtp, int bet, std::string szMode)
 	winSpinDist.reset(rtp, bet, szMode);
 }
 
-void GameMaths::distributionsSave(void)
+void __GameMaths::distributionsSave(void)
 {
 	for (auto& event : eventVect) {
 		if (event.lpWinDist)
@@ -86,7 +86,7 @@ void GameMaths::distributionsSave(void)
 	winSpinDist.fileOutput(true);
 }
 
-int GameMaths::playGame(int force)
+int __GameMaths::playGame(int force)
 {
 	events.clear();
 	bool doSpin = true;
@@ -100,7 +100,7 @@ int GameMaths::playGame(int force)
 	return win;
 }
 
-int GameMaths::reelTest(int reelset) {
+int __GameMaths::reelTest(int reelset) {
 	Event& gameEvent = eventVect[EventIDGame];
 	gameEvent.addHit();
 
@@ -123,3 +123,4 @@ int GameMaths::reelTest(int reelset) {
 
 
 
+*/

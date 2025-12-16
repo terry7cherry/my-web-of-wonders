@@ -11,15 +11,14 @@
 #include <Windows.h>
 #else
 // Minimal stand-ins so the class layout compiles on non-Windows.
-using HWND = void*;
-using HANDLE = void*;
-struct CONSOLE_SCREEN_BUFFER_INFO {};
+using HWND = void *;
+using HANDLE = void *;
+struct CONSOLE_SCREEN_BUFFER_INFO {
+};
 #endif
 
-namespace MathLibrary
-{
-	// owner == NULL ? Windows 10 : Windows 11
-	// Only really meaningful on Windows, but we keep it defined everywhere.
+// owner == NULL ? Windows 10 : Windows 11
+// Only really meaningful on Windows, but we keep it defined everywhere.
 #ifdef _WIN32
 #define CONSOLE_HWND (owner == NULL ? hwnd : owner)
 #else
@@ -55,7 +54,7 @@ namespace MathLibrary
 #define CONSOLE_INPUT  (BG_WHITE | TEXT_BLUE)
 #define CONSOLE_FLASH  0
 #else
-	// On non-Windows, these are just placeholders; setStyle() can ignore them.
+// On non-Windows, these are just placeholders; setStyle() can ignore them.
 #define TEXT_WHITE   0
 #define TEXT_CYAN    0
 #define TEXT_MAGENTA 0
@@ -83,114 +82,116 @@ namespace MathLibrary
 #endif
 
 
-	class Console
-	{
-	public:
-		bool   blnWaitPress = false;
-		std::string szHeader;
-		int    maxLines = 0;
-		int    maxWidth = 0;
+class Console {
+public:
+	bool blnWaitPress = false;
+	std::string szHeader;
+	int maxLines = 0;
+	int maxWidth = 0;
 
-		// deprecated - does not allow full screen to be set on Windows 11
-		// use initialise instead
-		void init(bool fullScreen);
+	// deprecated - does not allow full screen to be set on Windows 11
+	// use initialise instead
+	void init(bool fullScreen);
 
-		// sets up console for use on Windows 11 and earlier
-		void initialise(bool fullScreen);
+	// sets up console for use on Windows 11 and earlier
+	void initialise(bool fullScreen);
 
-		// remember the new string and show it
-		// default action is to clear screen then show header
-		void setHeader(std::string text, bool show = true, bool cls = true)
-		{
-			szHeader = std::move(text);
-			if (show)
-				showHeader(cls);
-		}
+	// remember the new string and show it
+	// default action is to clear screen then show header
+	void setHeader(std::string text, bool show = true, bool cls = true) {
+		szHeader = std::move(text);
+		if (show)
+			showHeader(cls);
+	}
 
-		// show the saved header at the top of the console
-		// default is to clear screen and show in highlight text, CONSOLE_INVERT
-		void showHeader(bool cls = true, bool invert = true)
-		{
-			if (cls)
-				clearScreen();
-			setCursorPos(0);
-			if (invert)
-				coutStyle(szHeader, CONSOLE_INVERT);
-			else
-				std::cout << szHeader;
-		}
+	// show the saved header at the top of the console
+	// default is to clear screen and show in highlight text, CONSOLE_INVERT
+	void showHeader(bool cls = true, bool invert = true) {
+		if (cls)
+			clearScreen();
+		setCursorPos(0);
+		if (invert)
+			coutStyle(szHeader, CONSOLE_INVERT);
+		else
+			std::cout << szHeader;
+	}
 
-		void setClearLineText(int lineLength);
+	void setClearLineText(int lineLength);
 
-		// Clear the line and re-set cursor to start of line
-		// Optionally do not re-set cursor 
-		void clearLine(int line, bool setToStart = true);
+	// Clear the line and re-set cursor to start of line
+	// Optionally do not re-set cursor
+	void clearLine(int line, bool setToStart = true);
 
-		void flashText(std::string text, int line, int col, int msSpeed, int repeat, bool endInvert = false);
+	void flashText(std::string text, int line, int col, int msSpeed, int repeat, bool endInvert = false);
 
-		int coutStyle(std::string text, int style, bool revert = true);
+	int coutStyle(std::string text, int style, bool revert = true);
 
-		// Displays "PRESS [SPACE BAR] " + text 
-		void showPressText(std::string text, int stringLimit, int row = -1, int col = 0);
+	// Displays "PRESS [SPACE BAR] " + text
+	void showPressText(std::string text, int stringLimit, int row = -1, int col = 0);
 
-		// Displays "PRESS [ANY KEY] " + text 
-		// Waits for a key press
-		void waitAnyKeyText(std::string text, int stringLimit, int row = -1, int col = 0);
+	// Displays "PRESS [ANY KEY] " + text
+	// Waits for a key press
+	void waitAnyKeyText(std::string text, int stringLimit, int row = -1, int col = 0);
 
-		// sets the font size to the passed value
-		void setFontSize(int size);
+	// sets the font size to the passed value
+	void setFontSize(int size);
 
-		// Set the font size. 
-		// Optionally ensure console is minCharWidth characters wide, by reducing font size
-		void newFontSize(int size, int minCharWidth = 0);
+	// Set the font size.
+	// Optionally ensure console is minCharWidth characters wide, by reducing font size
+	void newFontSize(int size, int minCharWidth = 0);
 
-		// Set the font size. 
-		// Ensure, by reducing font size, that console has minCharWidth x minCharHeight characters 
-		void newFontSize(int size, int minCharWidth, int minCharHeight);
+	// Set the font size.
+	// Ensure, by reducing font size, that console has minCharWidth x minCharHeight characters
+	void newFontSize(int size, int minCharWidth, int minCharHeight);
 
-		/*********************************************************/
-		// Easy interfaces to std / Windows methods
-		/*********************************************************/
+	/*********************************************************/
+	// Easy interfaces to std / Windows methods
+	/*********************************************************/
 
-		inline void pause(int msTimer) {
-			// Sleep() is Windows-only; std::this_thread::sleep_for is portable.
-			std::this_thread::sleep_for(std::chrono::milliseconds(msTimer));
-		}
+	inline void pause(int msTimer) {
+		// Sleep() is Windows-only; std::this_thread::sleep_for is portable.
+		std::this_thread::sleep_for(std::chrono::milliseconds(msTimer));
+	}
 
-		static void hideCursor();
-		void setWindowPos(int fromLeft, int fromTop) const;
-		static void setWindowSize(int width, int height);
+	static void hideCursor();
 
-		void clearScreen(void);
-		void setCursorPos(int row, int col = 0);
+	void setWindowPos(int fromLeft, int fromTop) const;
 
-		// apply a text/background colour style
-		void setStyle(int style);
+	static void setWindowSize(int width, int height);
 
-		// Keyboard Input Methods
-		char waitAnyKey(void);
-		void waitKeyPress(char waitChar);
-		static bool getKeyPress(char& key);
+	void clearScreen(void);
 
-		bool confirmYesNo(std::string szText);
-		bool confirmYesNo(std::string szText, int row, int col = 0);
+	void setCursorPos(int row, int col = 0);
 
-		void clearBuffer(void);
+	// apply a text/background colour style
+	void setStyle(int style);
 
-		// Create and return a string of length, width. 
-		// Original string, szIn, is centred within the new string
-		// Optinally pass padAfter = false to create a shorter string with no white space at the end
-		std::string centreString(std::string szIn, int width, bool padAfter = true);
+	// Keyboard Input Methods
+	char waitAnyKey(void);
 
-	protected:
-		// On Windows these are real handles; on other platforms they're just placeholders.
-		HWND   hwnd = nullptr;
-		HWND   owner = nullptr;
-		HANDLE consoleHandle = nullptr;
-		HWND   consoleWindow = nullptr;
-		CONSOLE_SCREEN_BUFFER_INFO consoleInfo{};
-		int    fontSize = 0;
-		char   szClrLine[10] = "%80s";
-	};
-}
+	void waitKeyPress(char waitChar);
+
+	static bool getKeyPress(char &key);
+
+	bool confirmYesNo(std::string szText);
+
+	bool confirmYesNo(std::string szText, int row, int col = 0);
+
+	void clearBuffer(void);
+
+	// Create and return a string of length, width.
+	// Original string, szIn, is centred within the new string
+	// Optinally pass padAfter = false to create a shorter string with no white space at the end
+	std::string centreString(std::string szIn, int width, bool padAfter = true);
+
+protected:
+	// On Windows these are real handles; on other platforms they're just placeholders.
+	HWND hwnd = nullptr;
+	HWND owner = nullptr;
+	HANDLE consoleHandle = nullptr;
+	HWND consoleWindow = nullptr;
+	CONSOLE_SCREEN_BUFFER_INFO consoleInfo{};
+	int fontSize = 0;
+	char szClrLine[10] = "%80s";
+};
 

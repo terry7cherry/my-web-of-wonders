@@ -8,15 +8,19 @@
 #include <drogon/drogon.h>
 // MathLibrary includes
 #include "headers/cpp-math-library.h"
-using namespace MathLibrary;
 
 // cpp-dev-library includes
 #include "console/Console.h"
 
 // Game includes
 #include "../thisTitle/GameMaths.h"
+#include "../thisTitle/GameCycle.h"
+#include "../thisTitle/GameLogic.h"
+#include "../thisTitle/GameSession.h"
 #include "../thisTitle/simConfig.h"
+#include "DevServer.cpp"
 #include "events/BasicEvent.h"
+#include "events/GameCycleCompleteEvent.h"
 
 ;
 
@@ -27,7 +31,8 @@ std::string gameTitle;
 GameMaths gameMaths;
 bool showGame = false;
 
-enum class simFunction {
+enum class simFunction
+{
 	unknown, stdMontecarlo, bbMontecarlo, reelTest
 };
 
@@ -42,11 +47,11 @@ int64_t n_hits, n_base_hit, n_fg_hits;
 /*********************************************************/
 // Simulation Configuration
 /*********************************************************/
-int maxPayLines = 20;			// data for cycle eval
+int maxPayLines = 20; // data for cycle eval
 
 int bet = 0;
 
-int rtpOption = -1;				// the user selected rtp [90,91,92...] or 0 if all rtps wanted in the sim
+int rtpOption = -1; // the user selected rtp [90,91,92...] or 0 if all rtps wanted in the sim
 int forceOption = 0;
 
 int reportAtCount = MILLION / 10;
@@ -55,12 +60,12 @@ int reportCount = reportAtCount;
 
 void setHeader(std::string modeText = "", bool show = true)
 {
-	gameTitle = gameMaths.getGameName();
+	gameTitle = gameMaths.gameName;
 
 	if (rtpOption != -1)
 	{
 		gameTitle += " RTP";
-		gameTitle += (rtpOption ? gameMaths.getSzRtp() : "Cycle");
+		gameTitle += (rtpOption ? gameMaths.rtpOptionVect.at(rtpOption) : "Cycle");
 	}
 
 	if (RN_STREAM_TEST)
@@ -81,7 +86,6 @@ void setHeader(std::string modeText = "", bool show = true)
 
 		if (forceOption == 1)
 			gameTitle += " - FORCE FS";
-
 	}
 	if (modeText.size())
 		gameTitle += (" - " + modeText);
@@ -92,8 +96,9 @@ void setHeader(std::string modeText = "", bool show = true)
 void outputData()
 {
 	if (OUTPUT_REELS)
-	{			// output all reel in their own files
-		for (auto& reelSet : gameMaths.reelsetVect)
+	{
+		// output all reel in their own files
+		for (auto& reelSet : gameMaths.reelSetVect)
 			reelSet.fileOutput(gameMaths.symbolTextMap);
 	}
 }
@@ -108,13 +113,25 @@ void doMonteCarloSimBB(int bbMode, uint64_t simGames)
 {
 }
 
-void doMonteCarloStd(int gameBet, uint64_t simGames)
+void showRtpReport(const int64_t gamesPlayed, const int64_t totalBet, const bool showHistory)
+{
+	printf("%s%10I64d spins. RTP ", showHistory ? "\n" : "\r", gamesPlayed);
+	std::printf(", %s=%6.2f%%", "total",
+	            static_cast<float>(GameCycleCompleteEvent::eventTotalWin) * 100 / totalBet);
+}
+
+void doMonteCarloStd(const int gameBet, const uint64_t simGames)
 {
 	gameConsole.clearScreen();
 	setHeader("Std");
 	gameConsole.setCursorPos(2);
 
-	gameMaths.reset(gameBet);
+	std::vector<BasicEvent*> events;
+	events.reserve(1000);
+	EventsArena eventsArena{128 * 1024};
+
+	GameSession gameSession(gameBet, BetTypeDefault, "96", gameMaths);
+
 	reportCount = reportAtCount = MILLION / 10;
 	Timer simTimer("Monte Carlo");
 
@@ -124,7 +141,8 @@ void doMonteCarloStd(int gameBet, uint64_t simGames)
 
 	for (; gameCount < simGames; gameCount++)
 	{
-		gameMaths.playGame(-1);
+		GameCycle gameCycle(gameMaths, eventsArena, events);
+		GameLogic::playGame(gameMaths, gameSession, gameCycle);
 
 #if SESSION_LIMIT
 		if (++sessionPlays == SESSION_LIMIT)
@@ -136,7 +154,7 @@ void doMonteCarloStd(int gameBet, uint64_t simGames)
 		if (--reportCount == 0)
 		{
 			int64_t gamesPlayed = gameCount + 1;
-			gameMaths.rtpReport(gamesPlayed, bet * gamesPlayed, SHOW_RTP_REPORT_HISTORY);
+			showRtpReport(gamesPlayed, bet * gamesPlayed, SHOW_RTP_REPORT_HISTORY);
 			if ((reportAtCount != reportCountLimit) && (gamesPlayed == (10 * reportAtCount)))
 				reportAtCount *= 10;
 			reportCount = reportAtCount;
@@ -146,32 +164,34 @@ void doMonteCarloStd(int gameBet, uint64_t simGames)
 	//*****************************
 	// Montecarlo over
 	//*****************************
-	gameMaths.finalReport(gameCount, bet * gameCount);
-	gameMaths.distributionsSave();
+	//FIX
+	//gameMaths.finalReport(gameCount, bet * gameCount);
+	//gameMaths.distributionsSave();
 
 	printf("\n");
 	simTimer.outputTime();
 }
 
-void doRnStreamTest(int gameBet)
-{
-	gameConsole.clearScreen();
-	setHeader();
-	gameConsole.setCursorPos(2);
 
-	// Start the stream loop
-	for (int64_t gameCount = 0; !rnStream.rnStreamDone; gameCount++)
-	{
-		showGame = false;
-		int breakGame = RN_TEST_GAME;				// RN stream broken game
-		if (rnStream.startGameSequence(breakGame) == breakGame)
-			showGame = true;		    // show what happens this game
-		gameMaths.playGame();
-	}
-}
+//FIX
+//void doRnStreamTest(int gameBet) {
+//	gameConsole.clearScreen();
+//	setHeader();
+//	gameConsole.setCursorPos(2);
+//
+//	// Start the stream loop
+//	for (int64_t gameCount = 0; !rnStream.rnStreamDone; gameCount++) {
+//		showGame = false;
+//		int breakGame = RN_TEST_GAME; // RN stream broken game
+//		if (rnStream.startGameSequence(breakGame) == breakGame)
+//			showGame = true; // show what happens this game
+//		gameMaths.playGame();
+//	}
+//}
 
 void doReelTest(int gameBet, uint64_t simGames, int reelsetId)
 {
+	/*
 	gameConsole.clearScreen();
 	setHeader(gameMaths.reelsetVect[reelsetId].mSzName);
 	gameConsole.setCursorPos(2);
@@ -205,37 +225,38 @@ void doReelTest(int gameBet, uint64_t simGames, int reelsetId)
 	gameMaths.finalReport(gameCount, bet * gameCount);
 	printf("\n");
 	simTimer.outputTime();
+	*/
 }
 
-void doPlayMode(void)
-{
-	gameMaths.setConsole(&gameConsole);
-	setHeader();
-	gameConsole.clearBuffer();
-	int totBet = 0, totalWin = 0, balance = 0;
-	for (int game = 0; true; game++, totBet += bet)
-	{
-		gameConsole.setCursorPos(2);
-		printf("Game:%5d\t Bet: %4dc\t Balance $%8.2f\tRTP: %5.2f\n", game, bet, (float)balance / 100,
-			totBet ? ((float)totalWin * 100 / totBet) : 0);
-
-		gameConsole.waitAnyKeyText(game == 0 ? "TO PLAY" : "TO PLAY AGAIN", LINE_WINS_COLUMN, gameMaths.getPressToPlayLine());
-		balance -= bet;
-
-		gameConsole.showHeader(gameMaths.clearScreen());
-		gameConsole.setCursorPos(2);
-		printf("Game:%5d\t Bet: %4dc\t Balance $%8.2f\tRTP: %5.2f\n", game + 1, bet, (float)balance / 100,
-			totBet ? ((float)totalWin * 100 / totBet) : 0);
-
-
-		int win = gameMaths.playGame(forceOption);
-		totalWin += win;
-		balance += win;
-	}
-}
+//FIX
+//void doPlayMode(void) {
+//	gameMaths.setConsole(&gameConsole);
+//	setHeader();
+//	gameConsole.clearBuffer();
+//	int totBet = 0, totalWin = 0, balance = 0;
+//	for (int game = 0; true; game++, totBet += bet) {
+//		gameConsole.setCursorPos(2);
+//		printf("Game:%5d\t Bet: %4dc\t Balance $%8.2f\tRTP: %5.2f\n", game, bet, (float) balance / 100,
+//		       totBet ? ((float) totalWin * 100 / totBet) : 0);
+//
+//		gameConsole.waitAnyKeyText(game == 0 ? "TO PLAY" : "TO PLAY AGAIN", LINE_WINS_COLUMN,
+//		                           gameMaths.getPressToPlayLine());
+//		balance -= bet;
+//
+//		gameConsole.showHeader(gameMaths.clearScreen());
+//		gameConsole.setCursorPos(2);
+//		printf("Game:%5d\t Bet: %4dc\t Balance $%8.2f\tRTP: %5.2f\n", game + 1, bet, (float) balance / 100,
+//		       totBet ? ((float) totalWin * 100 / totBet) : 0);
+//
+//
+//		int win = gameMaths.playGame(forceOption);
+//		totalWin += win;
+//		balance += win;
+//	}
+//}
 
 // return index + 1 from gameMaths options
-// return 0 to sim all availble options 
+// return 0 to sim all availble options
 int getUsersRtpChoice(void)
 {
 	bool giveAllRtpOption = !PLAY_MODE && !RN_STREAM_TEST;
@@ -252,17 +273,20 @@ int getUsersRtpChoice(void)
 	for (int i = 0; i < (int)gameMaths.rtpOptionVect.size(); i++, pick++)
 		printf("\t\t%d) %s\n", pick, gameMaths.rtpOptionVect[i].c_str());
 
-	do {
+	do
+	{
 		std::cout << "Enter a valid Option >";
 		std::cin >> pick;
-	} while (pick < lowOption || pick > highOption);
+	}
+	while (pick < lowOption || pick > highOption);
 	return pick;
 }
 
 // return index + 1 from gameMaths options
-// return 0 to sim all availble options 
+// return 0 to sim all availble options
 simFunction getUserSimModeChoice(void)
-{				// get user configuration
+{
+	// get user configuration
 	int newMode = 0;
 
 	gameConsole.setCursorPos(2);
@@ -272,20 +296,24 @@ simFunction getUserSimModeChoice(void)
 	printf("\t\t1) Std-Game Monte-Carlo\n");
 	printf("\t\t2) Reel Test\n");
 #if 1
-	do {
+	do
+	{
 		std::cout << "\tEnter a valid Option >";
 		std::cin >> newMode;
-	} while (newMode < 1 || newMode >2);
+	}
+	while (newMode < 1 || newMode > 2);
 #else
 	printf("\t\t3) BB-R3 Monte-Carlo\n");
 	printf("\t\t4) BB-R4 Monte-Carlo\n");
 	printf("\t\t5) BB-R5 Monte-Carlo\n");
 	if (!RN_STREAM_TEST)
 		printf("\t\t6) All BB Options Monte-Carlo\n");
-	do {
+	do
+	{
 		std::cout << "\tEnter a valid Option >";
 		std::cin >> newMode;
-	} while (newMode < 1 || newMode >(RN_STREAM_TEST ? 5 : 6));
+	}
+	while (newMode < 1 || newMode > (RN_STREAM_TEST ? 5 : 6));
 #endif
 	return (newMode == 1) ? simFunction::stdMontecarlo : simFunction::reelTest;
 }
@@ -303,10 +331,12 @@ int getUserForceSelection(void)
 	std::cout << std::endl;
 	std::cout << "\t\t0   None - Random play\n";
 	std::cout << "\t\t1   Free Spins\n";
-	do {
+	do
+	{
 		std::cout << "\tEnter a valid Option >";
 		std::cin >> force;
-	} while (force < 0 || force >1);
+	}
+	while (force < 0 || force > 1);
 
 	if (force == 1 && DO_FREE_SPINS == false)
 		force = 0;
@@ -314,17 +344,20 @@ int getUserForceSelection(void)
 }
 
 int getUsersPlayModeChoice(void)
-{				// get user configuration
+{
+	// get user configuration
 	int newMode = 0;
 	gameConsole.setCursorPos(2);
 	gameConsole.coutStyle("\tSET PLAY MODE\t", CONSOLE_INVERT);
 	std::cout << std::endl;
 	printf("\t\t1) All games\n");
 	printf("\t\t2) Special Games\n");
-	do {
+	do
+	{
 		std::cout << "\tEnter a valid Option >";
 		std::cin >> newMode;
-	} while (newMode < 1 || newMode >2);
+	}
+	while (newMode < 1 || newMode > 2);
 
 	return newMode;
 }
@@ -332,85 +365,64 @@ int getUsersPlayModeChoice(void)
 #ifdef FRONTEND
 void startBackEndDevServer()
 {
-	gameMaths.initialise();
+	std::vector<std::unique_ptr<BasicEvent>> events;
+	events.reserve(1000);
+	GameSession gameSession(gameMaths.minBet, BetTypeDefault, gameMaths);
 	gameConsole.initialise(PLAY_MODE);
 	using namespace drogon;
 	// Register REST endpoint
 	app().registerHandler("/api/spin",
-	[](const HttpRequestPtr&,
-	   std::function<void(const HttpResponsePtr&)>&& callback) {
+	                      [&gameSession, &events](const HttpRequestPtr&,
+	                                              std::function<void(const HttpResponsePtr&)>&&
+	                                              callback)
+	                      {
+		                      GameCycle gameCycle(gameMaths, events);
 
-		using namespace std;
 
-		try {
+		                      GameLogic::playGame(gameMaths, gameSession, gameCycle);;
 
-			gameMaths.reset(gameMaths.minBet);
+		                      Json::Value result;
+		                      Json::Value eventsArray(Json::arrayValue);
+		                      for (Json::ArrayIndex i = 0; i < events.size(); ++i)
+		                      {
+			                      if (!events[i])
+			                      {
+				                      std::cerr << "[/api/spin] null event pointer at index "
+					                      << i << std::endl;
+				                      continue;
+			                      }
+			                      eventsArray[i] = gameCycle.events[i]->toJson();
+		                      }
+		                      result["events"] = eventsArray;
 
-			gameMaths.playGame(0);
-
-			Json::Value result;
-			Json::Value eventsArray(Json::arrayValue);
-			for (Json::ArrayIndex i = 0; i < gameMaths.events.size(); ++i) {
-				if (!gameMaths.events[i]) {
-					cerr << "[/api/spin] null event pointer at index "
-						 << i << endl;
-					continue;
-				}
-				eventsArray[i] = gameMaths.events[i]->toJson();
-			}
-			result["events"] = eventsArray;
-
-			auto resp = drogon::HttpResponse::newHttpJsonResponse(result);
-			callback(resp);
-		}
-		catch (const std::exception& e) {
-			cerr << "[/api/spin] exception: " << e.what() << endl;
-			auto resp = drogon::HttpResponse::newHttpResponse();
-			resp->setStatusCode(drogon::k500InternalServerError);
-			resp->setContentTypeCode(drogon::CT_TEXT_PLAIN);
-			resp->setBody("Internal server error");
-			callback(resp);
-		}
-		catch (...) {
-			cerr << "[/api/spin] unknown exception" << endl;
-			auto resp = drogon::HttpResponse::newHttpResponse();
-			resp->setStatusCode(drogon::k500InternalServerError);
-			resp->setContentTypeCode(drogon::CT_TEXT_PLAIN);
-			resp->setBody("Internal server error");
-			callback(resp);
-		}
-	});
-	//app().registerHandler("/api/spin", [](const HttpRequestPtr&,
-		//std::function<void(const HttpResponsePtr&)>&& callback) {
-			//gameMaths.reset(gameMaths.minBet);
-			//gameMaths.playGame(0);
-//
-			//Json::Value result;
-			//Json::Value eventsArray(Json::arrayValue);
-			//for (Json::ArrayIndex i = 0; i < gameMaths.events.size(); ++i) {
-				//eventsArray[i] = gameMaths.events[i]->toJson();
-			//}
-			//result["events"] = eventsArray;
-			//auto resp = HttpResponse::newHttpJsonResponse(result);
-			//callback(resp);
-		//});
+		                      auto resp = drogon::HttpResponse::newHttpJsonResponse(result);
+		                      callback(resp);
+	                      }
+	);
 	app().addListener("0.0.0.0", 8080);
 
 #ifndef FRONTEND_DEV
-	// Serve static files from ../frontend/dist in production
-	app()
-		.setDocumentRoot(FRONTEND_DIST_DIR)
-		.setFileTypes({ "gif","png","jpg","js","css","html","ico","swf","xap","apk","cur","xml","mp3" });
+// Serve static files from "../frontend/dist" in production
+app()
+			.setDocumentRoot (FRONTEND_DIST_DIR)
+			.setFileTypes (
+
+
+
+{
+	"gif", "png", "jpg", "js", "css", "html", "ico", "swf", "xap", "apk", "cur", "xml", "mp3"
+});
 #endif
 
-	std::cout << "Starting dev server" << std::endl;
-	app().run();
+std::cout<< "Starting dev server" << std::endl;
+app().run();
 }
 #endif
 
 
 #ifdef FRONTEND_DEV
-void startNodeDevServer() {
+void startNodeDevServer()
+{
 	std::string cmd = "npm --prefix \"" + std::string(FRONTEND_DIR) + "\" run dev";
 	std::system(cmd.c_str());
 }
@@ -420,14 +432,24 @@ int main(void)
 {
 #ifdef FRONTEND
 #ifdef FRONTEND_DEV
-	std::thread nodeThread(startNodeDevServer);
-	nodeThread.detach();
+	NodeDevServer node;
+	g_nodeServer = &node;
+
+	std::atexit(shutdownHook);
+	std::signal(SIGINT, signalHandler);
+	std::signal(SIGTERM, signalHandler);
+	std::set_terminate([]
+	{
+		shutdownHook();
+		std::_Exit(1);
+	});
+
+	node.start();
 #endif
 	startBackEndDevServer();
 	return 0;
 #else
 	uint64_t simSize = 0;
-	gameMaths.initialise();
 	gameConsole.initialise(PLAY_MODE);
 
 	if (OUTPUT_REELS)
@@ -438,7 +460,6 @@ int main(void)
 	}
 
 	bet = gameMaths.minBet;
-	gameMaths.reset(bet);
 	if (RN_STREAM_TEST)
 	{
 		mathRng.setRng(RngOptions::data);
@@ -452,16 +473,20 @@ int main(void)
 
 	if (RN_STREAM_TEST)
 	{
+		/*
 		rtpOption = gameMaths.rtpSetOption(0);
 		setHeader();
 		doRnStreamTest(bet);
+		*/
 	}
 	else if (PLAY_MODE)
 	{
+		/*
 		forceOption = getUserForceSelection();
 		setHeader();
 		gameMaths.playableMode = gameMaths.PlayableOptions::allGames;
 		doPlayMode();
+		*/
 	}
 	else
 	{
@@ -472,75 +497,89 @@ int main(void)
 		std::cin >> simSize;
 
 		if (simMode == simFunction::reelTest)
-		{				// reel test
+		{
+			// reel test
 			int reelset = -1;
-			auto& reelNameVect = gameMaths.getReelList();
+			const auto reelNameVect = gameMaths.getReelList();
 			gameConsole.setCursorPos(2);
 			gameConsole.coutStyle("\tSELECT TEST REELSET\t", CONSOLE_INVERT);
 			std::cout << std::endl;
 			for (size_t i = 0; i < reelNameVect.size(); i++)
 				printf("\t\t%2zd %s\n", i, reelNameVect[i].c_str());
-			do {
+			do
+			{
 				std::cout << "\tEnter a valid Option >";
 				std::cin >> reelset;
-			} while (reelset < 0 || reelset >= reelNameVect.size());
+			}
+			while (reelset < 0 || reelset >= reelNameVect.size());
 
 			doReelTest(bet, simSize * MILLION, reelset);
 		}
 		else
-		{				// Monte-Carlo options
+		{
+			// Monte-Carlo options
 			int rtpChoice = getUsersRtpChoice();
-			rtpOption = gameMaths.rtpSetOption(rtpChoice - 1);
+			//rtpOption = gameMaths.rtpSetOption(rtpChoice - 1);
 			setHeader();
 			forceOption = getUserForceSelection();
 			setHeader();
 			if (simMode == simFunction::stdMontecarlo)
-			{				// Std-Game Monte-Carlo
+			{
+				// Std-Game Monte-Carlo
 				if (rtpOption == 0)
-				{			// all RTP options
+				{
+					// all RTP options
 					for (int rtpIndex = 0; rtpIndex < gameMaths.rtpOptionVect.size(); rtpIndex++)
 					{
-						if (gameMaths.rtpSetOption(rtpIndex))
-							doMonteCarloStd(bet, simSize * MILLION);
+						//if (gameMaths.rtpSetOption(rtpIndex))
+						doMonteCarloStd(bet, simSize * MILLION);
 					}
 				}
 				else
-				{			// valid single RTP option
+				{
+					// valid single RTP option
 					doMonteCarloStd(bet, simSize * MILLION);
 				}
 			}
 			else if (simMode == simFunction::bbMontecarlo)
-			{				// all BB Monte-Carlo
+			{
+				// all BB Monte-Carlo
 				if (rtpOption == 0)
-				{			// all RTP options
+				{
+					// all RTP options
 					for (int bbMode = 0; bbMode < 4; bbMode++)
 					{
-						for (int rtpIndex = 0; rtpIndex < gameMaths.rtpOptionVect.size(); rtpIndex++)
+						for (int rtpIndex = 0; rtpIndex < gameMaths.rtpOptionVect.size(); rtpIndex
+						     ++)
 						{
-							if (gameMaths.rtpSetOption(rtpIndex))
-								doMonteCarloSimBB(bbMode, simSize * MILLION);
+							//if (gameMaths.rtpSetOption(rtpIndex))
+							doMonteCarloSimBB(bbMode, simSize * MILLION);
 						}
 					}
 				}
 				else
-				{			// valid single RTP option
+				{
+					// valid single RTP option
 					for (int bbMode = 0; bbMode < 4; bbMode++)
 						doMonteCarloSimBB(bbMode, simSize * MILLION);
 				}
 			}
 			else
-			{					// single BB Monte-Carlo
+			{
+				// single BB Monte-Carlo
 				int bbMode = (int)simMode - (int)simFunction::bbMontecarlo;
 				if (rtpOption == 0)
-				{				// all RTP options
+				{
+					// all RTP options
 					for (int rtpIndex = 0; rtpIndex < gameMaths.rtpOptionVect.size(); rtpIndex++)
 					{
-						if (rtpOption = gameMaths.rtpSetOption(rtpIndex))
-							doMonteCarloSimBB(bbMode, simSize * MILLION);
+						//if (rtpOption = gameMaths.rtpSetOption(rtpIndex))
+						doMonteCarloSimBB(bbMode, simSize * MILLION);
 					}
 				}
 				else
-				{				// valid single RTP option
+				{
+					// valid single RTP option
 					doMonteCarloSimBB(bbMode, simSize * MILLION);
 				}
 			}

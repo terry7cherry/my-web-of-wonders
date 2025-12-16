@@ -2,25 +2,29 @@
 
 #include "BasicEvent.h"
 
-class FreeSpinsTriggerEvent : public BasicEvent {
-public: 
-	explicit FreeSpinsTriggerEvent(int spins, int multiplier = 1) 
-		: spins(spins), multiplier(multiplier) { }
+class FreeSpinsTriggerEvent : public BasicEvent
+{
+public:
+	explicit FreeSpinsTriggerEvent(const int spins, const int multiplier = 1)
+		: spins(spins), multiplier(multiplier)
+	{
+	}
 
 protected:
-	static constexpr std::string_view EventType =  "freeSpinsTrigger";
+	static constexpr std::string_view EventType = "freeSpinsTrigger";
 
-	std::string_view getEventType() const override {
+	std::string_view getEventType() const override
+	{
 		return EventType;
 	}
 
-	Json::Value getDetailsAsJson() const override {
+	Json::Value getDetailsAsJson() const override
+	{
 		Json::Value eventDetails;
 		eventDetails["spins"] = spins;
 		eventDetails["multiplier"] = multiplier;
 		return eventDetails;
 	}
-
 
 private:
 	const int spins;
