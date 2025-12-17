@@ -23,12 +23,4 @@ struct GameSession
           betType(betType)
     {
     }
-
-    void rtpReport(const uint64 plays, uint64 totalBet, bool newLine)
-    {
-        printf("%s%10I64d spins. RTP ", newLine ? "\n" : "\r", plays);
-
-        //for (auto& event : eventVect)
-        //    event.rtpReport(totalBet);
-    }
 };

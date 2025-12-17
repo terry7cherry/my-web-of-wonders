@@ -126,9 +126,8 @@ void doMonteCarloStd(const int gameBet, const uint64_t simGames)
 	setHeader("Std");
 	gameConsole.setCursorPos(2);
 
-	std::vector<BasicEvent*> events;
-	events.reserve(1000);
-	EventsArena eventsArena{128 * 1024};
+	GameCycleReused reused(gameMaths);
+
 
 	GameSession gameSession(gameBet, BetTypeDefault, "96", gameMaths);
 
@@ -141,7 +140,7 @@ void doMonteCarloStd(const int gameBet, const uint64_t simGames)
 
 	for (; gameCount < simGames; gameCount++)
 	{
-		GameCycle gameCycle(gameMaths, eventsArena, events);
+		GameCycle gameCycle(gameMaths, reused);
 		GameLogic::playGame(gameMaths, gameSession, gameCycle);
 
 #if SESSION_LIMIT
@@ -365,27 +364,26 @@ int getUsersPlayModeChoice(void)
 #ifdef FRONTEND
 void startBackEndDevServer()
 {
-	std::vector<std::unique_ptr<BasicEvent>> events;
-	events.reserve(1000);
-	GameSession gameSession(gameMaths.minBet, BetTypeDefault, gameMaths);
+	GameSession gameSession(gameMaths.minBet, BetTypeDefault, "96", gameMaths);
 	gameConsole.initialise(PLAY_MODE);
 	using namespace drogon;
 	// Register REST endpoint
 	app().registerHandler("/api/spin",
-	                      [&gameSession, &events](const HttpRequestPtr&,
-	                                              std::function<void(const HttpResponsePtr&)>&&
-	                                              callback)
+	                      [&gameSession](const HttpRequestPtr&,
+	                                     std::function<void(const HttpResponsePtr&)>&&
+	                                     callback)
 	                      {
-		                      GameCycle gameCycle(gameMaths, events);
+		                      GameCycleReused reused(gameMaths);
+		                      GameCycle gameCycle(gameMaths, reused);
 
 
 		                      GameLogic::playGame(gameMaths, gameSession, gameCycle);;
 
 		                      Json::Value result;
 		                      Json::Value eventsArray(Json::arrayValue);
-		                      for (Json::ArrayIndex i = 0; i < events.size(); ++i)
+		                      for (Json::ArrayIndex i = 0; i < reused.events.size(); ++i)
 		                      {
-			                      if (!events[i])
+			                      if (!reused.events[i])
 			                      {
 				                      std::cerr << "[/api/spin] null event pointer at index "
 					                      << i << std::endl;
@@ -402,20 +400,20 @@ void startBackEndDevServer()
 	app().addListener("0.0.0.0", 8080);
 
 #ifndef FRONTEND_DEV
-// Serve static files from "../frontend/dist" in production
-app()
-			.setDocumentRoot (FRONTEND_DIST_DIR)
-			.setFileTypes (
+	// Serve static files from "../frontend/dist" in production
+	app()
+		.setDocumentRoot(FRONTEND_DIST_DIR)
+		.setFileTypes(
 
 
-
-{
-	"gif", "png", "jpg", "js", "css", "html", "ico", "swf", "xap", "apk", "cur", "xml", "mp3"
-});
+			{
+				"gif", "png", "jpg", "js", "css", "html", "ico", "swf", "xap", "apk", "cur", "xml",
+				"mp3"
+			});
 #endif
 
-std::cout<< "Starting dev server" << std::endl;
-app().run();
+	std::cout << "Starting dev server" << std::endl;
+	app().run();
 }
 #endif
 

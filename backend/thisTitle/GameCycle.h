@@ -10,10 +10,28 @@
 #include "../common/events/BasicEvent.h"
 #include "../common/events/EventsArena.h"
 
+struct GameCycleReused
+{
+    std::vector<BasicEvent*> events;
+    EventsArena eventsArena{128 * 1024};
+    LineGrid grid;
+
+    explicit GameCycleReused(const GameMaths& gameMaths) :
+        grid(gameMaths.numReels, gameMaths.numRows)
+    {
+        events.reserve(1000);
+        grid.setPayTable(gameMaths.payTable);
+        grid.setPayLines(gameMaths.payLines);
+        grid.paySymVect = {1, 2, 3, 4, 5, 6, 7, 8};
+        grid.scatterSymVect = {9};
+        grid.wildSymVect = {0};
+        grid.symbolsInit(11);
+    }
+};
 
 struct GameCycle
 {
-    LineGrid grid;
+    LineGrid& grid;
 
     std::vector<BasicEvent*>& events;
     EventsArena& eventsArena;
@@ -26,21 +44,14 @@ struct GameCycle
     unsigned int baseNumScatters = 0;
     bool fsTrigger = false;
 
-    explicit GameCycle(const GameMaths& gameMaths, EventsArena& eventsArena,
-                       std::vector<BasicEvent*>& events)
-        : grid(gameMaths.numReels, gameMaths.numRows),
-          events(events),
-          eventsArena(eventsArena)
+    explicit GameCycle(const GameMaths& gameMaths, GameCycleReused& reused)
+        : grid(reused.grid),
+          events(reused.events),
+          eventsArena(reused.eventsArena)
     {
         events.clear();
         eventsArena.reset();
-        grid.setPayTable(gameMaths.payTable);
-        grid.setPayLines(gameMaths.payLines);
-        //FIX
-        grid.paySymVect = {1, 2, 3, 4, 5, 6, 7, 8};
-        grid.scatterSymVect = {9};
-        grid.wildSymVect = {0};
-        grid.symbolsInit(11);
+        grid.reset();
     }
 
     template <typename T, typename... Args>
