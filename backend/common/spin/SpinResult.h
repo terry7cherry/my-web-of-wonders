@@ -8,12 +8,13 @@
 /**
  * @brief Determines reelstops for spin and stores the result.
  */
-struct SpinResult {
+struct SpinResult
+{
     /** @brief Stop index per reel. */
-    std::vector<int> stopIndexVect;
+    std::vector<size_t> stopIndexVect;
 
     /** @brief ReelSet to be used. */
-    const ReelSet &reelSet;
+    const ReelSet& reelSet;
 
     /**
      * @brief Spin all reels.
@@ -21,7 +22,7 @@ struct SpinResult {
      * @param randomSpin Set to false to prevent random stops being set if you plan to set them manually.
      * @throws std::runtime_error if @p reelSet is null.
      */
-    SpinResult(const ReelSet &reelSet, bool randomSpin = true);
+    SpinResult(const ReelSet& reelSet, bool randomSpin = true);
 
     /**
      * @brief Spin only the reels listed in @p spinVect.
@@ -32,7 +33,7 @@ struct SpinResult {
      * @param spinVect Reel indexes to spin.
      * @throws std::runtime_error if @p reelSet is null.
      */
-    SpinResult(const ReelSet &reelSet, const std::vector<size_t> &spinVect);
+    SpinResult(const ReelSet& reelSet, const std::vector<size_t>& spinVect);
 
     /**
      * @brief Spin only the reels not set to true in lockedVect.
@@ -43,15 +44,16 @@ struct SpinResult {
      * @param lockedVect Lock state per reel.
      * @throws std::runtime_error if @p reelSet is null.
      */
-    SpinResult(const ReelSet &reelSet, const std::vector<bool> &lockedVect);
+    SpinResult(const ReelSet& reelSet, const std::vector<bool>& lockedVect);
 
     /**
      * @brief Choose a reelset, then spin all reels.
      * @param weightTablePtr ReelSet weight table to use.
      * @throws std::runtime_error if @p reelSet is null.
      */
-    SpinResult(const ReelSetWeightTable &weightTablePtr)
-        : SpinResult(*weightTablePtr.pick()) {
+    SpinResult(const ReelSetWeightTable& weightTablePtr)
+        : SpinResult(*weightTablePtr.pick())
+    {
     }
 
     /**
@@ -63,8 +65,9 @@ struct SpinResult {
      * @param spinVect Reel indexes to spin.
      * @throws std::runtime_error if @p reelSet is null.
      */
-    SpinResult(const ReelSetWeightTable &weightTablePtr, const std::vector<size_t> &spinVect)
-        : SpinResult(*weightTablePtr.pick(), spinVect) {
+    SpinResult(const ReelSetWeightTable& weightTablePtr, const std::vector<size_t>& spinVect)
+        : SpinResult(*weightTablePtr.pick(), spinVect)
+    {
     }
 
     /**
@@ -76,8 +79,9 @@ struct SpinResult {
      * @param lockedVect Lock state per reel.
      * @throws std::runtime_error if @p reelSet is null.
      */
-    SpinResult(const ReelSetWeightTable &weightTablePtr, const std::vector<bool> &lockedVect)
-        : SpinResult(*weightTablePtr.pick(), lockedVect) {
+    SpinResult(const ReelSetWeightTable& weightTablePtr, const std::vector<bool>& lockedVect)
+        : SpinResult(*weightTablePtr.pick(), lockedVect)
+    {
     }
 
     /**
@@ -87,5 +91,5 @@ struct SpinResult {
      *
      * @param stopVect Vector containing the stop positions for each reel.
      */
-    void setReelStops(const std::vector<int> &stopVect);
+    void setReelStops(const std::vector<size_t>& stopVect);
 };

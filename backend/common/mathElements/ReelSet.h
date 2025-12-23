@@ -3,24 +3,26 @@
 #include "../headers/pch.h"
 
 // Create a vector of this structure to initialise all instances of class ReelSet
-class ReelSet {
+class ReelSet
+{
 private:
-	std::vector<std::vector<int> > mSourceReelsVect;
+	std::vector<std::vector<int>> mSourceReelsVect;
 	bool mDebugOutput = false;
 
 public:
 	std::string mSzName = "";
-	std::vector<int> reelSizeVect;
-	std::vector<std::vector<int> > wrappedBandVect;
+	std::vector<size_t> reelSizeVect;
+	std::vector<std::vector<int>> wrappedBandVect;
 
 	/**********************************************/
 	// constructors
 	/**********************************************/
 
 	// uses maxWindow to create wrapped bands
-	ReelSet(const std::string &szName, int maxReelWindowHeight, const std::vector<std::vector<int> > &bandsVect);
+	ReelSet(const std::string& szName, int maxReelWindowHeight,
+	        const std::vector<std::vector<int>>& bandsVect);
 
-	ReelSet(const std::string &szName, const std::vector<std::vector<int> > &bandsVect);
+	ReelSet(const std::string& szName, const std::vector<std::vector<int>>& bandsVect);
 
 
 	/**********************************************/
@@ -45,7 +47,8 @@ public:
 	void createWrappedBands(int maxHeight);
 
 	// copy source to dest and add wrap-around of "maxHeight" symbols in dest
-	static void createWrappedBand(std::vector<int> &dest, const std::vector<int> &source, int maxHeight);
+	static void createWrappedBand(std::vector<int>& dest, const std::vector<int>& source,
+	                              int maxHeight);
 
 
 	/**********************************************/
@@ -54,7 +57,7 @@ public:
 
 	// Returns the symbol at step 'index' on the passed 'reel'
 	// If 'index' < 0 or > reel length then the value is "looped" into the reel band range
-	int getSymbol(int reel, int index) const;
+	int getSymbol(size_t reel, size_t index) const;
 
 
 	/**********************************************/
@@ -68,7 +71,8 @@ public:
 	//		maxBlock - report to screen any symbol blocks greater than passed maxBlock
 	//		noCheckSymbol -  a symbol that can be ignored during checking (-1 if no symbols can be ignored
 	//		lpSymbolVect - optional pointer to a vector of string that describe the symbols ("H1","H2", "A", "K", "Q" etc.)
-	int checkSymbolBlocks(int maxBlock, int noCheckSymbol, std::vector<std::string> *lpSymbolVect = nullptr) const;
+	int checkSymbolBlocks(int maxBlock, int noCheckSymbol,
+	                      std::vector<std::string>* lpSymbolVect = nullptr) const;
 
 	/**********************************************/
 	// Game Display
@@ -76,7 +80,8 @@ public:
 
 	// if showName then "Reelset: Name\t\tStops = [0,1,2,3,4...]"
 	// else "ReelStops = [0,1,2,3,4...]"
-	void showName(const int tabCount) const {
+	void showName(const int tabCount) const
+	{
 		showTabs(tabCount > 0 ? tabCount - 1 : 0, false);
 		printf("%sReelset: %-20s\n", "\n", mSzName.c_str());
 	}

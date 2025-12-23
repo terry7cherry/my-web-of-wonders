@@ -8,26 +8,29 @@
 
 static constexpr int WinAnalysisEventBufferSize = 4;
 
-class WinAnalysisEvent : public BasicEvent {
+class WinAnalysisEvent : public BasicEvent
+{
 public:
-
 	explicit WinAnalysisEvent(const LineGrid& grid, std::string analysisStage)
 		: analysisStage(analysisStage)
 	{
-		const std::vector<Win>& sourceWins = grid.winVector;
+		const std::vector<LineWin>& sourceWins = grid.winVector;
 		numWins = sourceWins.size();
 
-		for (const auto& win : sourceWins) {
+		for (const auto& win : sourceWins)
+		{
 			totalWin += win.totalWin;
 		}
 
 #ifdef FRONTEND
 		// Storing all wins slows things down and is only needed for frontend. 
-		for (size_t i = 0; i < numWins && i < WinAnalysisEventBufferSize; ++i) {
+		for (size_t i = 0; i < numWins && i < WinAnalysisEventBufferSize; ++i)
+		{
 			bufferedWins[i] = sourceWins[i];
 		}
 
-		if (numWins > WinAnalysisEventBufferSize) {
+		if (numWins > WinAnalysisEventBufferSize)
+		{
 			excessWins.reserve(numWins - WinAnalysisEventBufferSize);
 			excessWins.assign(sourceWins.begin() + WinAnalysisEventBufferSize, sourceWins.end());
 		}
@@ -35,24 +38,29 @@ public:
 	}
 
 protected:
-	static constexpr std::string_view EventType =  "winAnalysis";
+	static constexpr std::string_view EventType = "winAnalysis";
 
-	std::string_view getEventType() const {
+	std::string_view getEventType() const
+	{
 		return EventType;
 	}
 
 #ifdef FRONTEND
-	Json::Value getDetailsAsJson() const {
+	Json::Value getDetailsAsJson() const
+	{
 		Json::Value eventDetails;
 		eventDetails["totalWin"] = totalWin;
 		eventDetails["analysisStage"] = std::string(analysisStage);
 		Json::Value winsAsJson(Json::arrayValue);
-		for (size_t i = 0; i < numWins && i < WinAnalysisEventBufferSize; ++i) {
+		for (size_t i = 0; i < numWins && i < WinAnalysisEventBufferSize; ++i)
+		{
 			winsAsJson.append(convertWinToJson(bufferedWins[i]));
 		}
 
-		if (numWins > WinAnalysisEventBufferSize) {
-			for (const Win& win : excessWins) {
+		if (numWins > WinAnalysisEventBufferSize)
+		{
+			for (const LineWin& win : excessWins)
+			{
 				winsAsJson.append(convertWinToJson(win));
 			}
 		}
@@ -62,7 +70,8 @@ protected:
 #endif
 
 private:
-	Json::Value convertWinToJson(const Win& win) const {
+	Json::Value convertWinToJson(const LineWin& win) const
+	{
 		Json::Value winAsJson;
 		winAsJson["symbol"] = win.symbol;
 		winAsJson["oak"] = win.oak;
@@ -70,7 +79,7 @@ private:
 		winAsJson["multiplier"] = win.multiplier;
 		winAsJson["win"] = win.win;
 		winAsJson["totalWin"] = win.totalWin;
-		winAsJson["direction"] = (int)win.direction;
+		winAsJson["direction"] = static_cast<int>(win.direction);
 		winAsJson["winType"] = win.winType;
 		if (win.winType == "line") winAsJson["payLine"] = toJsonArray(*win.payLine);
 		return winAsJson;
@@ -79,9 +88,9 @@ private:
 	int totalWin = 0;
 	int gridMultiplier = 1;
 #ifdef FRONTEND
-	std::array<Win, WinAnalysisEventBufferSize> bufferedWins;
-	std::vector<Win> excessWins;
+	std::array<LineWin, WinAnalysisEventBufferSize> bufferedWins;
+	std::vector<LineWin> excessWins;
 #endif
 	std::string analysisStage;
-	int numWins;
+	size_t numWins;
 };

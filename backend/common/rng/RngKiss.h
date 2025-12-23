@@ -7,14 +7,16 @@
 #include "Rng.h"
 
 
-class RngKiss : public Rng {
+class RngKiss : public Rng
+{
 public:
 	/**********************************************/
 	// Implement the virtual methods
 	/**********************************************/
 
 	// use the passed value as the seed
-	void setSeed(uint32 newSeed) override {
+	void setSeed(uint32 newSeed) override
+	{
 		seed = kiss_i = newSeed;
 		kiss_j = kiss_i * 1103515245L + 12345;
 		kiss_k = kiss_j * 1103515245L + 12345;
@@ -24,7 +26,8 @@ public:
 	}
 
 	// returns integer in [0,range-1] for range < 2^32
-	uint32 randInt(uint32 range, std::string sz = "") override {
+	uint32 randInt(uint32 range, [[maybe_unused]] std::string sz = "") override
+	{
 		uint32 value = uint32((uint64(algorithm()) * range) >> 32);
 		return value;
 	}
@@ -35,7 +38,8 @@ public:
 
 private:
 	// generate the next number
-	inline uint32 algorithm(void) {
+	inline uint32 algorithm(void)
+	{
 		kiss_j = kiss_j ^ (kiss_j << 17);
 		kiss_j = kiss_j ^ (kiss_j >> 15);
 		kiss_k = (kiss_k ^ (kiss_k << 18)) & 0x7FFFFFFFL;

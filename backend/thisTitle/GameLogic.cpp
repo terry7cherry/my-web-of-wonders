@@ -34,8 +34,6 @@ namespace GameLogic
 
     int doBaseGame(const GameMaths& gm, GameSession& gs, GameCycle& gc)
     {
-        auto& events = gc.events;
-
         gc.grid.applySpin(gm.bgReelWeights);
 
         gc.recordEvent<ReelSpinEvent>(gc.grid);
@@ -53,8 +51,6 @@ namespace GameLogic
 
     int doFreeSpins(const GameMaths& gm, GameSession& gs, GameCycle& gc)
     {
-        auto& events = gc.events;
-
         gc.fsInitialSpins = gm.fsStartSpins.at(gc.baseNumScatters);
         gc.recordEvent<FreeSpinsTriggerEvent>(gc.fsInitialSpins);
 

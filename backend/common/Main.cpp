@@ -5,6 +5,8 @@
 #include <thread>
 #include <cstdlib>
 #include <cstdint>
+#include <atomic>
+#include <csignal>
 #include <drogon/drogon.h>
 // MathLibrary includes
 #include "headers/cpp-math-library.h"
@@ -18,11 +20,30 @@
 #include "../thisTitle/GameLogic.h"
 #include "../thisTitle/GameSession.h"
 #include "../thisTitle/simConfig.h"
-#include "DevServer.cpp"
 #include "events/BasicEvent.h"
 #include "events/GameCycleCompleteEvent.h"
+#include "gameMaths/parser/excelParser.h"
+#include "NodeDevServer.h"
 
 ;
+
+#ifdef FRONTEND_DEV
+
+NodeDevServer* g_nodeServer = nullptr;
+
+void shutdownHook()
+{
+	if (g_shuttingDown.exchange(true)) return;
+	if (g_nodeServer) g_nodeServer->stop();
+}
+
+void signalHandler(int)
+{
+	shutdownHook();
+	std::_Exit(1);
+}
+
+#endif
 
 // global variables
 Console gameConsole;
@@ -105,7 +126,7 @@ void outputData()
 
 
 // parameter rtp is the value: 96, 91, 90 etc
-void apply_cycle_evaluation(int rtp, int maxPayLines)
+void apply_cycle_evaluation(int rtp)
 {
 }
 
@@ -421,13 +442,22 @@ void startBackEndDevServer()
 #ifdef FRONTEND_DEV
 void startNodeDevServer()
 {
-	std::string cmd = "npm --prefix \"" + std::string(FRONTEND_DIR) + "\" run dev";
+	const std::string cmd = "npm --prefix \"" + std::string(FRONTEND_DIR) + "\" run dev";
 	std::system(cmd.c_str());
 }
 #endif
 
-int main(void)
+int main()
 {
+	//try
+	//{
+	//	auto* sheet = new TaggedSheet();
+	//}
+	//catch (const std::exception& e)
+	//{
+	//	std::cerr << "TaggedSheet error: " << e.what() << std::endl;
+	//}
+	//return 0;
 #ifdef FRONTEND
 #ifdef FRONTEND_DEV
 	NodeDevServer node;

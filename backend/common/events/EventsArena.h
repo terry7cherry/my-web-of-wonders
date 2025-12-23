@@ -5,7 +5,6 @@
 #include <cstdlib>
 #include <cassert>
 #include <algorithm>
-#include <new>
 
 class EventsArena
 {
@@ -30,7 +29,7 @@ public:
             return p;
 
         // Allocate a new block (grow strategy: double, but at least big enough)
-        std::size_t newBlockSize =
+        const std::size_t newBlockSize =
             std::max<std::size_t>(b.capacity * 2, size + alignment);
 
         blocks_.push_back(makeBlock(newBlockSize));

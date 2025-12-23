@@ -28,5 +28,5 @@ protected:
 
 private:
 	const int spins;
-	const float multiplier;
+	const int multiplier;
 };

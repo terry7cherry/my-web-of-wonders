@@ -1,7 +1,5 @@
 #pragma once
 
-#include "../headers/pch.h"
-
 #include <thread>
 #include <chrono>
 #include <string>
@@ -11,9 +9,10 @@
 #include <Windows.h>
 #else
 // Minimal stand-ins so the class layout compiles on non-Windows.
-using HWND = void *;
-using HANDLE = void *;
-struct CONSOLE_SCREEN_BUFFER_INFO {
+using HWND = void*;
+using HANDLE = void*;
+struct CONSOLE_SCREEN_BUFFER_INFO
+{
 };
 #endif
 
@@ -82,7 +81,8 @@ struct CONSOLE_SCREEN_BUFFER_INFO {
 #endif
 
 
-class Console {
+class Console
+{
 public:
 	bool blnWaitPress = false;
 	std::string szHeader;
@@ -98,7 +98,8 @@ public:
 
 	// remember the new string and show it
 	// default action is to clear screen then show header
-	void setHeader(std::string text, bool show = true, bool cls = true) {
+	void setHeader(std::string text, bool show = true, bool cls = true)
+	{
 		szHeader = std::move(text);
 		if (show)
 			showHeader(cls);
@@ -106,7 +107,8 @@ public:
 
 	// show the saved header at the top of the console
 	// default is to clear screen and show in highlight text, CONSOLE_INVERT
-	void showHeader(bool cls = true, bool invert = true) {
+	void showHeader(bool cls = true, bool invert = true)
+	{
 		if (cls)
 			clearScreen();
 		setCursorPos(0);
@@ -122,7 +124,8 @@ public:
 	// Optionally do not re-set cursor
 	void clearLine(int line, bool setToStart = true);
 
-	void flashText(std::string text, int line, int col, int msSpeed, int repeat, bool endInvert = false);
+	void flashText(std::string text, int line, int col, int msSpeed, int repeat,
+	               bool endInvert = false);
 
 	int coutStyle(std::string text, int style, bool revert = true);
 
@@ -148,7 +151,8 @@ public:
 	// Easy interfaces to std / Windows methods
 	/*********************************************************/
 
-	inline void pause(int msTimer) {
+	static void pause(const int msTimer)
+	{
 		// Sleep() is Windows-only; std::this_thread::sleep_for is portable.
 		std::this_thread::sleep_for(std::chrono::milliseconds(msTimer));
 	}
@@ -171,7 +175,7 @@ public:
 
 	void waitKeyPress(char waitChar);
 
-	static bool getKeyPress(char &key);
+	static bool getKeyPress(char& key);
 
 	bool confirmYesNo(std::string szText);
 

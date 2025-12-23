@@ -2,23 +2,28 @@
 
 #include "BasicEvent.h"
 
-class NewFreeSpinEvent : public BasicEvent {
+class NewFreeSpinEvent : public BasicEvent
+{
 public:
-	explicit NewFreeSpinEvent(int multiplier = 1) : multiplier(multiplier) {}
+	explicit NewFreeSpinEvent(const int multiplier = 1) : multiplier(multiplier)
+	{
+	}
 
 protected:
-	static constexpr std::string_view EventType =  "newFreeSpin";
+	static constexpr std::string_view EventType = "newFreeSpin";
 
-	std::string_view getEventType() const override {
+	std::string_view getEventType() const override
+	{
 		return EventType;
 	}
 
-	Json::Value getDetailsAsJson() const override {
+	Json::Value getDetailsAsJson() const override
+	{
 		Json::Value eventDetails;
 		eventDetails["multiplier"] = multiplier;
 		return eventDetails;
 	}
 
 private:
-	const float multiplier;
+	const int multiplier;
 };
