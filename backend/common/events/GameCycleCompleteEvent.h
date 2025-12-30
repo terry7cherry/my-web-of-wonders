@@ -10,7 +10,7 @@ public:
         eventTotalWin += totalWin;
     }
 
-    inline static int eventTotalWin = 0;
+    inline static int64_t eventTotalWin = 0;
 
 protected:
     static constexpr std::string_view EventType = "gameCycleComplete";

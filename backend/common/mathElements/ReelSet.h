@@ -19,7 +19,7 @@ public:
 	/**********************************************/
 
 	// uses maxWindow to create wrapped bands
-	ReelSet(const std::string& szName, int maxReelWindowHeight,
+	ReelSet(const std::string& szName, size_t maxReelWindowHeight,
 	        const std::vector<std::vector<int>>& bandsVect);
 
 	ReelSet(const std::string& szName, const std::vector<std::vector<int>>& bandsVect);
@@ -44,11 +44,11 @@ public:
 	/**********************************************/
 	// Call for each ReelSet during initialisation
 	// Creates bands with wrap-around of "maxHeight" symbols
-	void createWrappedBands(int maxHeight);
+	void createWrappedBands(size_t maxHeight);
 
 	// copy source to dest and add wrap-around of "maxHeight" symbols in dest
 	static void createWrappedBand(std::vector<int>& dest, const std::vector<int>& source,
-	                              int maxHeight);
+	                              size_t maxHeight);
 
 
 	/**********************************************/

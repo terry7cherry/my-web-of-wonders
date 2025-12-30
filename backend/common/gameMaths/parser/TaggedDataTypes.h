@@ -4,75 +4,91 @@
 #include <algorithm>
 #include "TaggedRange.h"
 #include "../../mathElements/ReelSet.h"
-#include "../../mathElements/ReelSetWeightTable.h"
-#include "../../mathElements/DoubleWeightTable.h"
-#include "../../mathElements/WeightTable.h"
-#include "../../mathElements/StringWeightTable.h"
-#include "../../mathElements/BoolWeightTable.h"
+#include "../../mathElements/WeightTables.h"
 #include "../../mathElements/PayTable.h"
+#include "../../mathElements/PayLines.h"
 
 typedef std::shared_ptr<TaggedRange> TaggedRangePtr;
 
+template <typename T>
 struct TaggedData
 {
     const TaggedRangePtr taggedRangePtr;
     const std::string fullName;
+    const T value;
 
     virtual ~TaggedData() = default;
 
-    TaggedData(const TaggedRangePtr& taggedRangePtr, std::string fullName);
-};
-
-template <typename T>
-struct TaggedDataIndividual : public TaggedData
-{
-    const T value;
-
-    explicit TaggedDataIndividual(const TaggedRangePtr& taggedRangePtr, const T value)
-        : TaggedData(taggedRangePtr, taggedRangePtr->name),
-          value(value)
+protected:
+    TaggedData(const TaggedRangePtr& taggedRangePtr, std::string fullName, T value)
+        : taggedRangePtr(taggedRangePtr), fullName(std::move(fullName)), value(value)
     {
     }
 };
 
 template <typename T>
-struct TaggedDataMap : public TaggedData
+struct TaggedDataIndividual : TaggedData<T>
 {
-    const std::unordered_map<std::string, T> value;
+    explicit TaggedDataIndividual(const TaggedRangePtr& taggedRangePtr, const T value)
+        : TaggedData<T>(taggedRangePtr, taggedRangePtr->name, value)
+    {
+    }
+};
 
+template <typename TKey, typename TValue>
+struct TaggedDataMap : TaggedData<std::unordered_map<TKey, TValue>>
+{
     explicit TaggedDataMap(const TaggedRangePtr& taggedRangePtr,
-                           std::unordered_map<std::string, T> value)
-        : TaggedData(taggedRangePtr, taggedRangePtr->name),
-          value(value)
+                           std::unordered_map<TKey, TValue> value)
+        : TaggedData<std::unordered_map<TKey, TValue>>(taggedRangePtr, taggedRangePtr->name, value)
     {
     }
 
 protected:
-    template <typename Func>
-    static std::unordered_map<std::string, T> parseMap(const TaggedRange& range, Func converter)
+    template <typename KeyFunc, typename ValueFunc>
+    static std::unordered_map<TKey, TValue> parseMap(const TaggedRange& range, KeyFunc keyConverter,
+                                                     ValueFunc valueConverter)
     {
-        std::unordered_map<std::string, T> map;
+        std::unordered_map<TKey, TValue> map;
         for (size_t rowNum = 1; rowNum < range.data.size(); rowNum++)
         {
             const auto& row = range.data[rowNum];
-            map[row[0]] = converter(row[1], range.getCellLocationString(rowNum, 1));
+            map[
+                keyConverter(row[0], range.getCellLocationString(rowNum, 0))
+            ] = valueConverter(row[1], range.getCellLocationString(rowNum, 1));
         }
         return map;
     }
 };
 
 template <typename T>
-struct TaggedDataCombined : public TaggedData
+struct TaggedStringKeyedMap : TaggedDataMap<std::string, T>
 {
-    const T value;
+    using TaggedDataMap<std::string, T>::TaggedDataMap;
+
+protected:
+    template <typename ValueFunc>
+    static std::unordered_map<std::string, T> parseMap(const TaggedRange& range, ValueFunc valueConverter)
+    {
+        return TaggedDataMap<std::string, T>::parseMap(range, [](const std::string& key,
+                                                                 const std::string& cellLocation)
+                                                       {
+                                                           return key;
+                                                       },
+                                                       valueConverter);
+    }
+};
+
+template <typename T>
+struct TaggedDataCombined : TaggedData<T>
+{
     const std::string cellLocation;
 
     TaggedDataCombined(
         const TaggedRangePtr& taggedRangePtr,
         const size_t row,
         const T value)
-        : TaggedData(taggedRangePtr, calculateFullName(*taggedRangePtr, row)),
-          value(value),
+        : TaggedData<T>(taggedRangePtr, calculateFullName(*taggedRangePtr, row), value),
           cellLocation(taggedRangePtr->getCellLocationString(row, 1))
     {
     }
@@ -146,10 +162,10 @@ struct TaggedBool : public TaggedDataCombined<bool>
     static bool convertValue(const std::string& valueStr, const std::string& cellLocation);
 };
 
-struct TaggedIntMap : public TaggedDataMap<int>
+struct TaggedIntMap : public TaggedStringKeyedMap<int>
 {
     TaggedIntMap(const TaggedRangePtr& taggedRangePtr)
-        : TaggedDataMap(taggedRangePtr, parseMap(*taggedRangePtr, convertValue))
+        : TaggedStringKeyedMap(taggedRangePtr, parseMap(*taggedRangePtr, convertValue))
     {
     }
 
@@ -157,10 +173,10 @@ private:
     static int convertValue(const std::string& valueStr, const std::string& cellLocation);
 };
 
-struct TaggedDoubleMap : TaggedDataMap<double>
+struct TaggedDoubleMap : TaggedStringKeyedMap<double>
 {
     TaggedDoubleMap(const TaggedRangePtr& taggedRangePtr)
-        : TaggedDataMap(taggedRangePtr, parseMap(*taggedRangePtr, convertValue))
+        : TaggedStringKeyedMap(taggedRangePtr, parseMap(*taggedRangePtr, convertValue))
     {
     }
 
@@ -168,10 +184,10 @@ private:
     static double convertValue(const std::string& valueStr, const std::string& cellLocation);
 };
 
-struct TaggedStringMap : TaggedDataMap<std::string>
+struct TaggedStringMap : TaggedStringKeyedMap<std::string>
 {
     TaggedStringMap(const TaggedRangePtr& taggedRangePtr)
-        : TaggedDataMap(taggedRangePtr, parseMap(*taggedRangePtr, convertValue))
+        : TaggedStringKeyedMap(taggedRangePtr, parseMap(*taggedRangePtr, convertValue))
     {
     }
 
@@ -179,10 +195,10 @@ private:
     static std::string convertValue(const std::string& valueStr, const std::string& cellLocation);
 };
 
-struct TaggedBoolMap : TaggedDataMap<bool>
+struct TaggedBoolMap : TaggedStringKeyedMap<bool>
 {
     TaggedBoolMap(const TaggedRangePtr& taggedRangePtr)
-        : TaggedDataMap(taggedRangePtr, parseMap(*taggedRangePtr, convertValue))
+        : TaggedStringKeyedMap(taggedRangePtr, parseMap(*taggedRangePtr, convertValue))
     {
     }
 
@@ -190,9 +206,16 @@ private:
     static bool convertValue(const std::string& valueStr, const std::string& cellLocation);
 };
 
-struct TaggedRtpMap : TaggedDoubleMap
+struct TaggedRtpMap : TaggedDataMap<int, double>
 {
-    using TaggedDoubleMap::TaggedDoubleMap;
+    TaggedRtpMap(const TaggedRangePtr& taggedRangePtr)
+        : TaggedDataMap(taggedRangePtr, parseMap(*taggedRangePtr, convertKey, convertValue))
+    {
+    }
+
+private:
+    static int convertKey(const std::string& keyStr, const std::string& cellLocation);
+    static double convertValue(const std::string& valueStr, const std::string& cellLocation);
 };
 
 struct TaggedBetTypeMap : TaggedDoubleMap
@@ -270,4 +293,14 @@ struct TaggedPayTable : TaggedDataIndividual<PayTable>
     }
 
     static PayTable parsePayTable(const TaggedRange& taggedRange);
+};
+
+struct TaggedPayLines : TaggedDataIndividual<PayLines>
+{
+    TaggedPayLines(const TaggedRangePtr& taggedRangePtr)
+        : TaggedDataIndividual(taggedRangePtr, parsePayLines(*taggedRangePtr))
+    {
+    }
+
+    static PayLines parsePayLines(const TaggedRange& taggedRange);
 };

@@ -11,12 +11,14 @@ int LineGrid::evaluateWins(const int betMultiplier, [[maybe_unused]] bool doMete
     winVector.clear();
 
     if (const auto quickWinMask = quickWinCheck())
+    {
+        const std::vector<SymbolData>& symbolVect = lpPayTable->symbolVect;
         for (int line = 0; line < lpPayLines->lineCount; ++line)
         {
             bool blnCheckLine;
             int row = lpPayLines->getRow(line, 0);
             startSymbol = symbolToMatch = reelSymbolVect[0][row];
-            symbolData& startSymData = symbolVect[startSymbol];
+            const SymbolData& startSymData = symbolVect[startSymbol];
 
             if (startSymData.isScatter && !startSymData.isWild)
                 blnCheckLine = false;
@@ -35,7 +37,7 @@ int LineGrid::evaluateWins(const int betMultiplier, [[maybe_unused]] bool doMete
                 // start from beginning again to account for multipliers
                 row = lpPayLines->getRow(line, reel);
                 int nextSym = reelSymbolVect[reel][row];
-                symbolData& nextSymData = symbolVect[nextSym];
+                const SymbolData& nextSymData = symbolVect[nextSym];
 
                 if (nextSymData.isScatter && !nextSymData.isWild)
                     break;
@@ -108,8 +110,9 @@ int LineGrid::evaluateWins(const int betMultiplier, [[maybe_unused]] bool doMete
                 }
             }
         }
+    }
 
-    for (int scatterSymbol : this->scatterSymVect)
+    for (int scatterSymbol : lpPayTable->scatterSymVect)
     {
         int symbolCount = this->getSymbolCount(scatterSymbol);
         if (symbolCount < lpPayTable->minPaySymbolsVect[scatterSymbol])

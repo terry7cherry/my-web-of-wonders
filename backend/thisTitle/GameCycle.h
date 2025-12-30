@@ -5,7 +5,7 @@
 #include <memory_resource>
 
 #include "../common/grids/LineGrid.h"
-#include "GameMaths.h"
+#include "../common/gameMaths/GameMaths.h"
 #include "GameSession.h"
 #include "../common/events/BasicEvent.h"
 #include "../common/events/EventsArena.h"
@@ -16,16 +16,11 @@ struct GameCycleReused
     EventsArena eventsArena{128 * 1024};
     LineGrid grid;
 
-    explicit GameCycleReused(const GameMaths& gameMaths) :
-        grid(gameMaths.numReels, gameMaths.numRows)
+    explicit GameCycleReused(const GameMathsNew& gameMaths) :
+        grid(gameMaths.ints.at("numReels"), gameMaths.ints.at("numRows"), gameMaths.payTables.at("default"))
     {
         events.reserve(1000);
-        grid.setPayTable(gameMaths.payTable);
-        grid.setPayLines(gameMaths.payLines);
-        grid.paySymVect = {1, 2, 3, 4, 5, 6, 7, 8};
-        grid.scatterSymVect = {9};
-        grid.wildSymVect = {0};
-        grid.symbolsInit(11);
+        grid.setPayLines(gameMaths.payLines.at("default"));
     }
 };
 
@@ -44,7 +39,7 @@ struct GameCycle
     unsigned int baseNumScatters = 0;
     bool fsTrigger = false;
 
-    explicit GameCycle(const GameMaths& gameMaths, GameCycleReused& reused)
+    explicit GameCycle(const GameMathsNew& gameMaths, GameCycleReused& reused)
         : grid(reused.grid),
           events(reused.events),
           eventsArena(reused.eventsArena)

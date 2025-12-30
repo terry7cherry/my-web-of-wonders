@@ -1,6 +1,8 @@
 #pragma once
 
-#include "GameMaths.h"
+#include <utility>
+
+#include "../common/gameMaths/GameMaths.h"
 
 enum BetType
 {
@@ -15,11 +17,11 @@ struct GameSession
     const std::string rtp;
     const BetType betType;
 
-    GameSession(const int bet, const BetType betType, const std::string& rtp,
-                const GameMaths& gameMaths)
+    GameSession(const int bet, const BetType betType, std::string rtp,
+                const GameMathsNew& gameMaths)
         : bet(bet),
-          betMultiplier(bet / gameMaths.minBet),
-          rtp(rtp),
+          betMultiplier(bet / gameMaths.ints.at("minBet")),
+          rtp(std::move(rtp)),
           betType(betType)
     {
     }

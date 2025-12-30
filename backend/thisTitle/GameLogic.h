@@ -1,10 +1,11 @@
 #pragma once
 
-#include "GameMaths.h"
+#include "../common/gameMaths/GameMaths.h"
 #include "GameSession.h"
 #include "GameCycle.h"
 
-enum EventID {
+enum EventID
+{
     EventIDGame,
     EventIDBaseGame,
     EventIDFreeSpins,
@@ -13,16 +14,17 @@ enum EventID {
     EventIDCount
 };
 
-namespace GameLogic {
-    int playGame(const GameMaths &gm, GameSession &gs, GameCycle &gc, int force = 0);
+namespace GameLogic
+{
+    int playGame(const GameMathsNew& gm, GameSession& gs, GameCycle& gc, int force = 0);
 
-    int doBaseGame(const GameMaths &gm, GameSession &gs, GameCycle &gc);
+    int doBaseGame(const GameMathsNew& gm, GameSession& gs, GameCycle& gc);
 
-    int doFreeSpins(const GameMaths &gm, GameSession &gs, GameCycle &gc);
+    int doFreeSpins(const GameMathsNew& gm, GameSession& gs, GameCycle& gc);
 
-    int doOneFreeSpin(const GameMaths &gm, GameSession &gs, GameCycle &gc);
+    int doOneFreeSpin(const GameMathsNew& gm, GameSession& gs, GameCycle& gc);
 
-    void forceSpinToAwardFreeSpins(const GameMaths &gameMaths, GameCycle &gameCycle);
+    void forceSpinToAwardFreeSpins(const GameMathsNew& gameMaths, GameCycle& gameCycle);
 
-    void doExpandingWilds(const GameMaths &gm, GameCycle &gc);
+    void doExpandingWilds(const GameMathsNew& gm, GameCycle& gc);
 }

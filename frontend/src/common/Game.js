@@ -7,7 +7,7 @@ import Cheats from "./Cheats.js";
 import Button from "./Button.js";
 import NiceText from "./NiceText.js";
 import spinSound from "./spin.mp3";
-import { sound } from "@pixi/sound";
+import {sound} from "@pixi/sound";
 import * as PIXI from "pixi.js";
 
 export default class Game {
@@ -55,45 +55,45 @@ export default class Game {
      * @param {string} [config.winLineColor=0xf80000] - Color for win line animations.
      */
     constructor({
-        gridWidth,
-        gridHeight,
-        gridX,
-        gridY,
-        reelWidth,
-        symbolHeight,
-        displayReelSet,
-        weightedDisplayReelSet,
-        symbolColorMapper,
-        uiWidth,
-        uiHeight,
-        topPanelHeight,
-        bottomPanelHeight,
-        leftPanelWidth,
-        rightPanelWidth,
-        topPanelColor,
-        bottomPanelColor,
-        leftPanelColor,
-        rightPanelColor,
-        backgroundColor = 0x1099bb,
-        freeSpinsBackgroundColor = 0x11a878,
-        gameName = "Prototype",
-        titleWidth,
-        titleHeight,
-        titleX,
-        titleY,
-        titleColor = 0xb02525,
-        reelSpinGridTransformer,
-        fullSpinForBalanceSaver,
-        symbolMap,
-        imageMap,
-        defaultStake,
-        mainTickerPauseScale = 50,
-        mainTickerTextFormat,
-        tickerTextColor,
-        suspenseSymbolCode,
-        simultaneousWinLineAnimations,
-        winLineColor = 0xf80000,
-    }) {
+                    gridWidth,
+                    gridHeight,
+                    gridX,
+                    gridY,
+                    reelWidth,
+                    symbolHeight,
+                    displayReelSet,
+                    weightedDisplayReelSet,
+                    symbolColorMapper,
+                    uiWidth,
+                    uiHeight,
+                    topPanelHeight,
+                    bottomPanelHeight,
+                    leftPanelWidth,
+                    rightPanelWidth,
+                    topPanelColor,
+                    bottomPanelColor,
+                    leftPanelColor,
+                    rightPanelColor,
+                    backgroundColor = 0x1099bb,
+                    freeSpinsBackgroundColor = 0x11a878,
+                    gameName = "Prototype",
+                    titleWidth,
+                    titleHeight,
+                    titleX,
+                    titleY,
+                    titleColor = 0xb02525,
+                    reelSpinGridTransformer,
+                    fullSpinForBalanceSaver,
+                    symbolMap,
+                    imageMap,
+                    defaultStake,
+                    mainTickerPauseScale = 50,
+                    mainTickerTextFormat,
+                    tickerTextColor,
+                    suspenseSymbolCode,
+                    simultaneousWinLineAnimations,
+                    winLineColor = 0xf80000,
+                }) {
         return (async () => {
             this.running = false;
             this.autoPlayOn = false;
@@ -175,6 +175,8 @@ export default class Game {
             freeSpinsEnd: this.handleFreeSpinsEnd,
             newFreeSpin: this.handleNewFreeSpin,
             gridUpdate: this.handleGridUpdate,
+            gameCycleComplete: () => {
+            },
         };
         return eventHandlers;
     }
@@ -183,14 +185,14 @@ export default class Game {
         await this.grid.spinReels(eventDetails.reelSymbolArray);
     }
 
-    async handleGridUpdate({ reelSymbolArray, message }) {
+    async handleGridUpdate({reelSymbolArray, message}) {
         const promises = [];
         promises.push(this.ticker.updateText(message));
         promises.push(this.grid.updateGrid(reelSymbolArray));
         await Promise.all(promises);
     }
 
-    async handleWinAnalysis({ totalWin, analysisStage, wins }) {
+    async handleWinAnalysis({totalWin, analysisStage, wins}) {
         const winnings = totalWin * this.stakeMultiplier;
         if (!winnings) return;
         this.totalSpinsWinnings += winnings;
@@ -198,7 +200,7 @@ export default class Game {
         this.eventHistory.addText("Wins:")
         for (const {symbol, oak, multiplier, win, totalWin, winType} of wins) {
             this.eventHistory.addText(
-            `&#9;- ${winType[0].toUpperCase() + winType.slice(1)} win: ${this.symbolMap[symbol]}x${oak} for $${((win * this.stakeMultiplier) / 100).toFixed(2)}${multiplier != 1 ? ` x ${multiplier} = $${((totalWin * this.stakeMultiplier) / 100).toFixed(2)}` : ``}`
+                `&#9;- ${winType[0].toUpperCase() + winType.slice(1)} win: ${this.symbolMap[symbol]}x${oak} for $${((win * this.stakeMultiplier) / 100).toFixed(2)}${multiplier != 1 ? ` x ${multiplier} = $${((totalWin * this.stakeMultiplier) / 100).toFixed(2)}` : ``}`
             );
         }
         let showWinningsPromise, updateBalancePromise;
@@ -233,7 +235,7 @@ export default class Game {
         if (macroRound.PARAMETERS.freespins_collected) await this.launchFreeSpins(macroRound.PARAMETERS);
     }
 
-    async handleNewFreeSpin({ multiplier }) {
+    async handleNewFreeSpin({multiplier}) {
         await this.ticker.clearText();
         this.eventHistory.addText("~~~~New Freespin~~~~");
         if (multiplier > 1) this.ticker.updateText(`${multiplier}x multiplier for spin!`)
@@ -252,9 +254,9 @@ export default class Game {
         if (!this.freeSpins.spinsLeft) await this.endFreeSpinsSession();
     }
 
-    async handleFreeSpinsTrigger({ spins, multiplier }) {
+    async handleFreeSpinsTrigger({spins, multiplier}) {
         this.freeSpins.spinsLeft = spins;
-        const { spinsLeftTicker, balanceTicker } = this.freeSpins;
+        const {spinsLeftTicker, balanceTicker} = this.freeSpins;
         spinsLeftTicker.updateSpins();
         spinsLeftTicker.setVisible(true);
         balanceTicker.updateBalance();
@@ -264,7 +266,7 @@ export default class Game {
         this.incrementSessionStat("freespins-sessions");
     }
 
-    async handleFreeSpinsEnd({ totalWin }) {
+    async handleFreeSpinsEnd({totalWin}) {
         await this.ticker.updateText("Free spins over!")
         const winnings = totalWin * this.stakeMultiplier;
         if (winnings != this.freeSpins.balance) {
@@ -286,7 +288,7 @@ export default class Game {
         this.app.renderer.background.color = this.backgroundColor;
     }
 
-    async handleFreeSpinsRetrigger({ spins, multiplier }) {
+    async handleFreeSpinsRetrigger({spins, multiplier}) {
         const tickerPromise = this.ticker.updateText(`${spins} retrigger spins awarded${multiplier != 1 ? `with x${multiplier} multiplier` : ``}!`)
         const updateSpinsPromise = this.freeSpins.spinsLeftTicker.incrementSpins(spins);
         await Promise.all([tickerPromise, updateSpinsPromise]);
@@ -344,7 +346,9 @@ export default class Game {
         const selector = document.getElementById("bet-type");
         selector.selectedIndex = 0;
         this.currentBetType = this.betTypes[0];
-        selector.addEventListener("change", () => { this.setBetType(selector.selectedIndex); });
+        selector.addEventListener("change", () => {
+            this.setBetType(selector.selectedIndex);
+        });
     }
 
     setBetType(betTypeIndex) {
@@ -357,8 +361,7 @@ export default class Game {
             this.serverTotalBet = this.serverProvidedConfig[0].general.TotalBet;
             const newStake = this.validBets[oldStakeIndex];
             this.updateStake(newStake);
-        }
-        else {
+        } else {
             for (let choice = 0; choice < this.betTypes.length; choice++) {
                 if (this.currentBetType == this.betTypes[choice]) selector.selectedIndex = choice;
             }
@@ -696,7 +699,14 @@ export default class Game {
         this.app.stage.addChild(this.configPanel);
 
         this.payTable = new PayTable({
-            game: this, app: this.app, x: 50, y: 50, width: this.uiWidth - 100, height: this.uiHeight - 100, getSymbol: (symbolCode) => this.window.getSymbol(symbolCode), stakeMultiplier: this.stakeMultiplier
+            game: this,
+            app: this.app,
+            x: 50,
+            y: 50,
+            width: this.uiWidth - 100,
+            height: this.uiHeight - 100,
+            getSymbol: (symbolCode) => this.window.getSymbol(symbolCode),
+            stakeMultiplier: this.stakeMultiplier
         });
         this.payTable.payTableSetup(this.basePayTable, this.stakeMultiplier);
 
@@ -710,7 +720,9 @@ export default class Game {
             y: 0,
             width: 150,
             height: 30,
-            onClick: () => { this.payTable.show(); },
+            onClick: () => {
+                this.payTable.show();
+            },
             text: "Paytable",
             color: "#7eb832",
             parent: this.configPanel,
@@ -722,7 +734,9 @@ export default class Game {
             y: 0,
             width: 150,
             height: 30,
-            onClick: () => { this.cheats.show(); },
+            onClick: () => {
+                this.cheats.show();
+            },
             text: "Cheats",
             color: "#7e32b8",
             parent: this.configPanel,
@@ -760,7 +774,7 @@ export default class Game {
             x: (this.uiWidth - 200) / 2,
             y: this.uiHeight - 50,
             pauseScale: 3,
-            textFormat: { fontFamily: "Arial", fontSize: 100, fill: this.tickerTextColor ?? 0x000000 },
+            textFormat: {fontFamily: "Arial", fontSize: 100, fill: this.tickerTextColor ?? 0x000000},
         });
 
         this.freeSpins.spinsLeftTicker.setVisible(false);
@@ -778,9 +792,8 @@ export default class Game {
             x: this.uiWidth - 200,
             y: this.uiHeight - 50,
             pauseScale: 0,
-            textFormat: { fontFamily: "Arial", fontSize: 100, fill: this.tickerTextColor ?? 0x000000 },
+            textFormat: {fontFamily: "Arial", fontSize: 100, fill: this.tickerTextColor ?? 0x000000},
         });
-
 
 
         this.freeSpins.balanceTicker.setVisible(false);

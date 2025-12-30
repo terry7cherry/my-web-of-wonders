@@ -30,34 +30,34 @@ ReelSet::ReelSet(const std::string& szName, const std::vector<std::vector<int>>&
 	mSzName = szName;
 	mSourceReelsVect = bandsVect;
 
-	for (size_t i = 0; i < mSourceReelsVect.size(); i++)
-		reelSizeVect.push_back(mSourceReelsVect[i].size());
+	for (const auto& i : mSourceReelsVect)
+		reelSizeVect.push_back(i.size());
 
 	reelSizeVect.resize(mSourceReelsVect.size(), 0);
 }
 
-ReelSet::ReelSet(const std::string& szName, const int maxReelWindowHeight,
+ReelSet::ReelSet(const std::string& szName, const size_t maxReelWindowHeight,
                  const std::vector<std::vector<int>>& bandsVect)
-	: ReelSet(szName, std::move(bandsVect))
+	: ReelSet(szName, bandsVect)
 {
 	createWrappedBands(maxReelWindowHeight);
 }
 
 ReelSet::~ReelSet()
 {
-	for (int i = 0; i < mSourceReelsVect.size(); i++)
-		mSourceReelsVect[i].clear();
+	for (auto& i : mSourceReelsVect)
+		i.clear();
 	mSourceReelsVect.clear();
-	for (int i = 0; i < wrappedBandVect.size(); i++)
-		wrappedBandVect[i].clear();
+	for (auto& i : wrappedBandVect)
+		i.clear();
 	wrappedBandVect.clear();
 }
 
 // Call for each ReelSet during initialisation
 // Creates bands with wrap around of "maxHeight" symbols
-void ReelSet::createWrappedBands(const int maxHeight)
+void ReelSet::createWrappedBands(const size_t maxHeight)
 {
-	if (mSourceReelsVect.size())
+	if (!mSourceReelsVect.empty())
 	{
 		// new method - old methods should have created, "mSourceReelsVect"
 		wrappedBandVect.resize(mSourceReelsVect.size());
@@ -69,10 +69,10 @@ void ReelSet::createWrappedBands(const int maxHeight)
 }
 
 void ReelSet::createWrappedBand(std::vector<int>& dest, const std::vector<int>& source,
-                                const int maxHeight)
+                                const size_t maxHeight)
 {
 	dest = source;
-	for (int i = 0; i < maxHeight; i++)
+	for (size_t i = 0; i < maxHeight; i++)
 		dest.push_back(source[i]);
 }
 
@@ -116,16 +116,16 @@ void ReelSet::fileOutput(std::map<int, std::string> symbolMap) const
 	}
 
 	size_t maxReelLen = 0;
-	for (size_t rl = 0; rl < mSourceReelsVect.size(); rl++)
+	for (const auto & rl : mSourceReelsVect)
 	{
-		size_t rLen = mSourceReelsVect[rl].size();
+		size_t rLen = rl.size();
 		if (rLen > maxReelLen)
 			maxReelLen = rLen;
 	}
 
 	std::cout << "\t" << mSzName << std::endl;
 	std::stringstream ss;
-	if (symbolMap.size())
+	if (!symbolMap.empty())
 	{
 		for (int i = 0; i < maxReelLen; i++)
 		{
@@ -197,12 +197,12 @@ int ReelSet::checkSymbolBlocks(const int maxBlock, const int noCheckSymbol,
 		}
 	}
 
-	if (errVect.size())
+	if (!errVect.empty())
 	{
 		printf("Reelset %s FAILED\r\n", mSzName.c_str());
-		for (auto [reel, pos, blockSize, symbolId, szSymbol] : errVect)
+		for (const auto& [reel, pos, blockSize, symbolId, szSymbol] : errVect)
 		{
-			if (szSymbol.length())
+			if (!szSymbol.empty())
 				printf("\tReel %d, Pos %3d, Symbol %s, Block Size %d\r\n", reel, pos,
 				       szSymbol.c_str(),
 				       blockSize);

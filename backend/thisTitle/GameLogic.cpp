@@ -15,7 +15,7 @@
 
 namespace GameLogic
 {
-    int playGame(const GameMaths& gm, GameSession& gs, GameCycle& gc, const int force)
+    int playGame(const GameMathsNew& gm, GameSession& gs, GameCycle& gc, const int force)
     {
         if (force == 1)
         {
@@ -32,9 +32,9 @@ namespace GameLogic
         return gc.totalWin;
     }
 
-    int doBaseGame(const GameMaths& gm, GameSession& gs, GameCycle& gc)
+    int doBaseGame(const GameMathsNew& gm, GameSession& gs, GameCycle& gc)
     {
-        gc.grid.applySpin(gm.bgReelWeights);
+        gc.grid.applySpin(gm.reelSetWeights.at("baseGame"));
 
         gc.recordEvent<ReelSpinEvent>(gc.grid);
 
@@ -43,15 +43,16 @@ namespace GameLogic
 
         gc.recordEvent<WinAnalysisEvent>(gc.grid, "base game");
 
-        gc.baseNumScatters = gc.grid.getSymbolCount(gm.symbolMap.at("SC"));
+        //FIX
+        gc.baseNumScatters = gc.grid.getSymbolCount(9);
         if (gc.baseNumScatters >= 3) gc.fsTrigger = true;
 
         return gc.baseGameWin;
     }
 
-    int doFreeSpins(const GameMaths& gm, GameSession& gs, GameCycle& gc)
+    int doFreeSpins(const GameMathsNew& gm, GameSession& gs, GameCycle& gc)
     {
-        gc.fsInitialSpins = gm.fsStartSpins.at(gc.baseNumScatters);
+        gc.fsInitialSpins = gm.intMaps.at("fsStartSpins").at(std::to_string(gc.baseNumScatters));
         gc.recordEvent<FreeSpinsTriggerEvent>(gc.fsInitialSpins);
 
         for (gc.fsTotalSpinsPlayed = 0;
@@ -63,30 +64,44 @@ namespace GameLogic
         return gc.freeSpinsWin;
     }
 
-    int doOneFreeSpin(const GameMaths& gm, GameSession& gs, GameCycle& gc)
+    int doOneFreeSpin(const GameMathsNew& gm, GameSession& gs, GameCycle& gc)
     {
-        gc.grid.gridMultiplier = gm.fsMultiplierWeights.pick();
+        gc.grid.gridMultiplier = gm.intWeightTables.at("fsMultiplierWeights").pick();
         gc.recordEvent<NewFreeSpinEvent>(gc.grid.gridMultiplier);
 
-        gc.grid.applySpin(gm.fsReelWeights);
+        gc.grid.applySpin(gm.reelSetWeights.at("freeSpins"));
         gc.recordEvent<ReelSpinEvent>(gc.grid);
 
         doExpandingWilds(gm, gc);
 
-        const int spinWin = gc.grid.evaluateWins(gs.betMultiplier, true);
+        int spinWin = gc.grid.evaluateWins(gs.betMultiplier, true);
+        if (spinWin)
+        {
+            if (gc.grid.gridMultiplier > 1)
+                spinWin = gc.grid.applyGridMultiplier(MultipliersCombineType::add);
+        }
         gc.recordEvent<WinAnalysisEvent>(gc.grid, "free spin");
 
-        const int scatterCount = gc.grid.getSymbolCount(gm.symbolMap.at("SC"));
-        const int retriggerSpins = gm.fsRetriggerSpins.at(scatterCount);
-        gc.fsRetriggerSpins += retriggerSpins;
-        if (retriggerSpins) gc.recordEvent<FreeSpinsRetriggerEvent>(retriggerSpins);
+        //FIX
+        const int scatterCount = gc.grid.getSymbolCount(9);
+        //FIX
+
+        if (scatterCount >= 2)
+        {
+            const std::unordered_map<std::string, int>& retriggerSpinTable = gm.intMaps.
+                at("fsRetriggerSpins");
+            const int retriggerSpins = retriggerSpinTable.at(std::to_string(scatterCount));
+            gc.fsRetriggerSpins += retriggerSpins;
+            if (retriggerSpins) gc.recordEvent<FreeSpinsRetriggerEvent>(retriggerSpins);
+        }
 
         return spinWin;
     }
 
-    void doExpandingWilds(const GameMaths& gm, GameCycle& gc)
+    void doExpandingWilds(const GameMathsNew& gm, GameCycle& gc)
     {
-        const int wildSymbol = gm.symbolMap.at("WI");
+        //FIX
+        constexpr int wildSymbol = 0;
 
         size_t numWildReelsExpanded = 0;
         for (size_t reelNum = 0; reelNum < gc.grid.maxReels; ++reelNum)

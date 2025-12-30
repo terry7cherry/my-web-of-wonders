@@ -49,7 +49,7 @@ void signalHandler(int)
 Console gameConsole;
 std::string gameTitle;
 
-GameMaths gameMaths;
+GameMathsNew gameMaths;
 bool showGame = false;
 
 enum class simFunction
@@ -81,6 +81,8 @@ int reportCount = reportAtCount;
 
 void setHeader(std::string modeText = "", bool show = true)
 {
+	//FIX
+	/*
 	gameTitle = gameMaths.gameName;
 
 	if (rtpOption != -1)
@@ -112,16 +114,20 @@ void setHeader(std::string modeText = "", bool show = true)
 		gameTitle += (" - " + modeText);
 
 	gameConsole.setHeader(gameTitle, show);
+	*/
 }
 
 void outputData()
 {
+	//FIX
+	/*
 	if (OUTPUT_REELS)
 	{
 		// output all reel in their own files
 		for (auto& reelSet : gameMaths.reelSetVect)
 			reelSet.fileOutput(gameMaths.symbolTextMap);
 	}
+	*/
 }
 
 
@@ -279,6 +285,8 @@ void doReelTest(int gameBet, uint64_t simGames, int reelsetId)
 // return 0 to sim all availble options
 int getUsersRtpChoice(void)
 {
+	//FIX
+	/*
 	bool giveAllRtpOption = !PLAY_MODE && !RN_STREAM_TEST;
 	int lowOption = giveAllRtpOption ? 0 : 1;
 	int highOption = (int)gameMaths.rtpOptionVect.size();
@@ -300,6 +308,8 @@ int getUsersRtpChoice(void)
 	}
 	while (pick < lowOption || pick > highOption);
 	return pick;
+	*/
+	return 96;
 }
 
 // return index + 1 from gameMaths options
@@ -385,14 +395,17 @@ int getUsersPlayModeChoice(void)
 #ifdef FRONTEND
 void startBackEndDevServer()
 {
-	GameSession gameSession(gameMaths.minBet, BetTypeDefault, "96", gameMaths);
+	TaggedSheet* sheet = new TaggedSheet();
+	const GameMathsNew* gameMathsPtr = sheet->gameMathsVariants["default"][96];
+	const GameMathsNew gameMaths = *gameMathsPtr;
+	GameSession gameSession(gameMaths.ints.at("minBet"), BetTypeDefault, "96", gameMaths);
 	gameConsole.initialise(PLAY_MODE);
 	using namespace drogon;
 	// Register REST endpoint
 	app().registerHandler("/api/spin",
-	                      [&gameSession](const HttpRequestPtr&,
-	                                     std::function<void(const HttpResponsePtr&)>&&
-	                                     callback)
+	                      [&gameSession, &gameMaths](const HttpRequestPtr&,
+	                                                 std::function<void(const HttpResponsePtr&)>&&
+	                                                 callback)
 	                      {
 		                      GameCycleReused reused(gameMaths);
 		                      GameCycle gameCycle(gameMaths, reused);
@@ -421,20 +434,21 @@ void startBackEndDevServer()
 	app().addListener("0.0.0.0", 8080);
 
 #ifndef FRONTEND_DEV
-	// Serve static files from "../frontend/dist" in production
-	app()
-		.setDocumentRoot(FRONTEND_DIST_DIR)
-		.setFileTypes(
+// Serve static files from "../frontend/dist" in production
+app()
+		.setDocumentRoot (FRONTEND_DIST_DIR)
+		.setFileTypes (
 
 
-			{
-				"gif", "png", "jpg", "js", "css", "html", "ico", "swf", "xap", "apk", "cur", "xml",
-				"mp3"
-			});
+
+{
+	"gif", "png", "jpg", "js", "css", "html", "ico", "swf", "xap", "apk", "cur", "xml",
+		"mp3"
+});
 #endif
 
-	std::cout << "Starting dev server" << std::endl;
-	app().run();
+std::cout<< "Starting dev server" << std::endl;
+app().run();
 }
 #endif
 
@@ -449,15 +463,6 @@ void startNodeDevServer()
 
 int main()
 {
-	//try
-	//{
-	//	auto* sheet = new TaggedSheet();
-	//}
-	//catch (const std::exception& e)
-	//{
-	//	std::cerr << "TaggedSheet error: " << e.what() << std::endl;
-	//}
-	//return 0;
 #ifdef FRONTEND
 #ifdef FRONTEND_DEV
 	NodeDevServer node;
@@ -487,7 +492,10 @@ int main()
 		return 0;
 	}
 
-	bet = gameMaths.minBet;
+	TaggedSheet* sheet = new TaggedSheet();
+	const GameMathsNew* gameMathsPtr = sheet->gameMathsVariants["default"][96];
+	gameMaths = *gameMathsPtr;
+	bet = gameMaths.ints.at("minBet");
 	if (RN_STREAM_TEST)
 	{
 		mathRng.setRng(RngOptions::data);
@@ -526,6 +534,8 @@ int main()
 
 		if (simMode == simFunction::reelTest)
 		{
+			//FIX
+			/*
 			// reel test
 			int reelset = -1;
 			const auto reelNameVect = gameMaths.getReelList();
@@ -542,10 +552,12 @@ int main()
 			while (reelset < 0 || reelset >= reelNameVect.size());
 
 			doReelTest(bet, simSize * MILLION, reelset);
+			*/
 		}
 		else
 		{
 			// Monte-Carlo options
+			//FIX
 			int rtpChoice = getUsersRtpChoice();
 			//rtpOption = gameMaths.rtpSetOption(rtpChoice - 1);
 			setHeader();
@@ -556,12 +568,15 @@ int main()
 				// Std-Game Monte-Carlo
 				if (rtpOption == 0)
 				{
+					//FIX
+					/*
 					// all RTP options
 					for (int rtpIndex = 0; rtpIndex < gameMaths.rtpOptionVect.size(); rtpIndex++)
 					{
 						//if (gameMaths.rtpSetOption(rtpIndex))
 						doMonteCarloStd(bet, simSize * MILLION);
 					}
+					*/
 				}
 				else
 				{
@@ -574,6 +589,8 @@ int main()
 				// all BB Monte-Carlo
 				if (rtpOption == 0)
 				{
+					//FIX
+					/*
 					// all RTP options
 					for (int bbMode = 0; bbMode < 4; bbMode++)
 					{
@@ -584,6 +601,7 @@ int main()
 							doMonteCarloSimBB(bbMode, simSize * MILLION);
 						}
 					}
+					*/
 				}
 				else
 				{
@@ -598,12 +616,15 @@ int main()
 				int bbMode = (int)simMode - (int)simFunction::bbMontecarlo;
 				if (rtpOption == 0)
 				{
+					//FIX
+					/*
 					// all RTP options
 					for (int rtpIndex = 0; rtpIndex < gameMaths.rtpOptionVect.size(); rtpIndex++)
 					{
 						//if (rtpOption = gameMaths.rtpSetOption(rtpIndex))
 						doMonteCarloSimBB(bbMode, simSize * MILLION);
 					}
+					*/
 				}
 				else
 				{

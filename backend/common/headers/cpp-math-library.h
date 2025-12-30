@@ -12,7 +12,7 @@
 #include "../rng/MathsRng.h"
 #include "../mathElements/ReelSet.h"
 #include "../grids/Grid.h"
-#include "../mathElements/WeightTable.h"
+#include "../mathElements/WeightTables.h"
 #include "../statistics/Distribution.h"
 #include "../utils/Timer.h"
 #include "../console/Console.h"

@@ -1,10 +1,10 @@
 #pragma once
 
+/*
 #include <unordered_map>
 #include <string>
 #include "../common/mathElements/ReelSet.h"
-#include "../common/mathElements/WeightTable.h"
-#include "../common/mathElements/ReelSetWeightTable.h"
+#include "../common/mathElements/WeightTables.h"
 #include "../common/mathElements/PayTable.h"
 #include "../common/mathElements/PayLines.h"
 
@@ -98,18 +98,18 @@ struct GameMaths
     );
     std::unordered_map<int, int> fsStartSpins;
     std::unordered_map<int, int> fsRetriggerSpins;
-    PayTable payTable = PayTable({
-        {0, 0, 0, 25, 100, 1000, 0}, // W1
-        {0, 0, 0, 20, 75, 500, 0}, // H1
-        {0, 0, 0, 20, 50, 200, 0}, // H2
-        {0, 0, 0, 15, 30, 100, 0}, // H3
-        {0, 0, 0, 15, 30, 100, 0}, // H4
-        {0, 0, 0, 10, 25, 75, 0}, // L1
-        {0, 0, 0, 10, 25, 75, 0}, // L2
-        {0, 0, 0, 5, 20, 50, 0}, // L3
-        {0, 0, 0, 5, 20, 50, 0}, // L4
-        {0, 0, 0, 5, 20, 100}, // SC
-    });
+    //PayTable payTable = PayTable({
+    //    {0, 0, 0, 25, 100, 1000, 0}, // W1
+    //    {0, 0, 0, 20, 75, 500, 0}, // H1
+    //    {0, 0, 0, 20, 50, 200, 0}, // H2
+    //    {0, 0, 0, 15, 30, 100, 0}, // H3
+    //    {0, 0, 0, 15, 30, 100, 0}, // H4
+    //    {0, 0, 0, 10, 25, 75, 0}, // L1
+    //    {0, 0, 0, 10, 25, 75, 0}, // L2
+    //    {0, 0, 0, 5, 20, 50, 0}, // L3
+    //    {0, 0, 0, 5, 20, 50, 0}, // L4
+    //    {0, 0, 0, 5, 20, 100}, // SC
+    //});
 
     PayLines payLines = PayLines(
         {
@@ -201,3 +201,4 @@ struct GameMaths
         return reelList;
     }
 };
+*/

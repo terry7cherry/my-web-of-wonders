@@ -3,7 +3,7 @@
 #include <cstddef>
 #include <vector>
 #include "../mathElements/ReelSet.h"
-#include "../mathElements/ReelSetWeightTable.h"
+#include "../mathElements/WeightTables.h"
 
 /**
  * @brief Determines reelstops for spin and stores the result.
@@ -52,7 +52,7 @@ struct SpinResult
      * @throws std::runtime_error if @p reelSet is null.
      */
     SpinResult(const ReelSetWeightTable& weightTablePtr)
-        : SpinResult(*weightTablePtr.pick())
+        : SpinResult(weightTablePtr.pick())
     {
     }
 
@@ -66,7 +66,7 @@ struct SpinResult
      * @throws std::runtime_error if @p reelSet is null.
      */
     SpinResult(const ReelSetWeightTable& weightTablePtr, const std::vector<size_t>& spinVect)
-        : SpinResult(*weightTablePtr.pick(), spinVect)
+        : SpinResult(weightTablePtr.pick(), spinVect)
     {
     }
 
@@ -80,7 +80,7 @@ struct SpinResult
      * @throws std::runtime_error if @p reelSet is null.
      */
     SpinResult(const ReelSetWeightTable& weightTablePtr, const std::vector<bool>& lockedVect)
-        : SpinResult(*weightTablePtr.pick(), lockedVect)
+        : SpinResult(weightTablePtr.pick(), lockedVect)
     {
     }
 

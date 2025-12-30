@@ -131,15 +131,6 @@ namespace TaggedDataHelpers
     }
 }
 
-/******************************************/
-/* Base class implementations             */
-/******************************************/
-
-TaggedData::TaggedData(const std::shared_ptr<TaggedRange>& taggedRangePtr, std::string fullName)
-    : taggedRangePtr(taggedRangePtr), fullName(std::move(fullName))
-{
-}
-
 
 /******************************************/
 /* Int implementation                     */
@@ -218,6 +209,20 @@ bool TaggedBoolMap::convertValue(const std::string& valueStr,
 }
 
 /******************************************/
+/* RtpMap implementation                  */
+/******************************************/
+
+int TaggedRtpMap::convertKey(const std::string& keyStr, const std::string& cellLocation)
+{
+    return TaggedDataHelpers::stringToInt(keyStr, cellLocation);
+}
+
+double TaggedRtpMap::convertValue(const std::string& valueStr, const std::string& cellLocation)
+{
+    return TaggedDataHelpers::stringToDouble(valueStr, cellLocation);
+}
+
+/******************************************/
 /* ReelSet implementation                 */
 /******************************************/
 
@@ -247,7 +252,7 @@ ReelSet TaggedReelSet::parseReelSet(const TaggedRange& taggedRange, const size_t
             }
         }
     }
-    return ReelSet(taggedRange.name, numRows, reels);
+    return {taggedRange.name, numRows, reels};
 }
 
 /******************************************/
@@ -259,7 +264,7 @@ ReelSetWeightTable TaggedReelSetWeights::parseTable(const TaggedRange& taggedRan
                                                     reelSetMap)
 {
     std::vector<int> weightVector;
-    std::vector<const ReelSet*> reelSetVect;
+    std::vector<ReelSet> reelSetVect;
     for (size_t rowNum = 1; rowNum < taggedRange.data.size(); rowNum++)
     {
         const auto& row = taggedRange.data[rowNum];
@@ -269,7 +274,7 @@ ReelSetWeightTable TaggedReelSetWeights::parseTable(const TaggedRange& taggedRan
                 " references unknown reelSet '" + row[0] + ". Ensure a reelSet with this name exists."
             );
 
-        reelSetVect.push_back(&reelSetMap.at(row[0]));
+        reelSetVect.push_back(reelSetMap.at(row[0]));
         try
         {
             weightVector.push_back(
@@ -281,7 +286,7 @@ ReelSetWeightTable TaggedReelSetWeights::parseTable(const TaggedRange& taggedRan
                 "Error parsing weight in reelSetWeightTable '" + taggedRange.name + ". Error: " + e.what());
         }
     }
-    return ReelSetWeightTable(weightVector, reelSetVect, taggedRange.name);
+    return {weightVector, reelSetVect, taggedRange.name};
 }
 
 /******************************************/
@@ -449,19 +454,23 @@ PayTable TaggedPayTable::parsePayTable(const TaggedRange& taggedRange)
             "by an int header for each paying OAK.");
 
     std::vector<std::vector<int>> payTableVect;
+    std::vector<int> paySymVect;
+    std::vector<int> scatterSymVect;
+    std::vector<int> wildSymVect;
+    std::vector<int> wildNoSubstVect;
 
     for (size_t rowNum = 1; rowNum < data.size(); rowNum++)
     {
         const auto& row = data[rowNum];
-        std::vector symbolVect(maxOAK, 0);
+        std::vector symbolVect(maxOAK + 1, 0);
         for (size_t colNum = 0; colNum < headers.size(); colNum++)
             if (auto oak = TaggedDataHelpers::tryStringToInt(headers[colNum]))
             {
                 try
                 {
-                    int prize = TaggedDataHelpers::stringToInt(row[colNum],
-                                                               taggedRange.getCellLocationString(
-                                                                   rowNum, colNum));
+                    const int prize = TaggedDataHelpers::stringToInt(row[colNum],
+                                                                     taggedRange.getCellLocationString(
+                                                                         rowNum, colNum));
                     symbolVect[*oak] = prize;
                 }
                 catch (std::exception& e)
@@ -472,7 +481,55 @@ PayTable TaggedPayTable::parsePayTable(const TaggedRange& taggedRange)
                     );
                 }
             }
+        payTableVect.push_back(symbolVect);
+        const int symbolId = rowNum - 1;
+        const std::string& payType = row[1];
+        if (payType == "line")
+            paySymVect.push_back(symbolId);
+        else if (payType == "lineNoWild")
+        {
+            paySymVect.push_back(symbolId);
+            wildNoSubstVect.push_back(symbolId);
+        }
+        else if (payType == "wild")
+            wildSymVect.push_back(symbolId);
+        else if (payType == "scatter")
+            scatterSymVect.push_back(symbolId);
     }
-    return PayTable({});
+    return PayTable(payTableVect, paySymVect, scatterSymVect, wildSymVect, wildNoSubstVect);
 }
 
+/******************************************/
+/* PayLines implementation                */
+/******************************************/
+
+PayLines TaggedPayLines::parsePayLines(const TaggedRange& taggedRange)
+{
+    std::vector<std::vector<size_t>> payLinesVect;
+    for (size_t rowNum = 1; rowNum < taggedRange.data.size(); rowNum++)
+    {
+        const auto& row = taggedRange.data[rowNum];
+        std::vector<size_t> payLine;
+        for (size_t colNum = 0; colNum < row.size(); colNum++)
+        {
+            const std::string& apertureStr = row[colNum];
+            try
+            {
+                const size_t aperture = TaggedDataHelpers::stringToInt(apertureStr,
+                                                                       taggedRange.getCellLocationString(
+                                                                           rowNum, colNum));
+                payLine.push_back(aperture);
+            }
+            catch (std::exception& e)
+            {
+                throw std::runtime_error(
+                    std::string("Error parsing aperture in payLine. Could not convert aperture to int. ") +
+                    "Error: " + e.what()
+                );
+            }
+        }
+        payLinesVect.push_back(payLine);
+    }
+
+    return {payLinesVect};
+}

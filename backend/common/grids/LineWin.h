@@ -17,7 +17,7 @@ public:
     int win = 0;
     int totalWin = 0;
     WinDirections direction = WinDirections::none;
-    const std::vector<int>* payLine = nullptr;
+    const std::vector<size_t>* payLine = nullptr;
     int payLineNum = -1;
     std::string winType;
 

@@ -27,7 +27,7 @@ public:
 
     // default constructor
     // winDirection is left_right
-    LineGrid(int reels, int rows) : PayGrid(reels, rows)
+    LineGrid(int reels, int rows, const PayTable& payTable) : PayGrid(reels, rows, payTable)
     {
         szBlankWin = std::string(MAX_LINE_TEXT_LEN, ' ');
     }
@@ -95,7 +95,7 @@ public:
 
 
     // return pay line at index
-    const std::vector<int>* getPayLine(const int payLineNum) const
+    const std::vector<size_t>* getPayLine(const int payLineNum) const
     {
         return &lpPayLines->lineVect[payLineNum];
     }
