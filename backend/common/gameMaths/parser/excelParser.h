@@ -164,6 +164,11 @@ public:
                 taggedPayLines.push_back(
                     std::make_shared<TaggedPayLines>(taggedRange));
             }
+            else if (taggedRange->type == "intThresholdTable")
+            {
+                taggedIntThresholdTables.push_back(
+                    std::make_shared<TaggedIntThresholdTable>(taggedRange));
+            }
         }
     }
 
@@ -239,6 +244,8 @@ public:
                                                    betType);
                 addRelevantElementsToConfigForType(taggedReelSets, gameMathsPtr->reelSets, rtp, betType);
                 addRelevantElementsToConfigForType(taggedPayLines, gameMathsPtr->payLines, rtp, betType);
+                addRelevantElementsToConfigForType(taggedIntThresholdTables, gameMathsPtr->intThresholdTables,
+                                                   rtp, betType);
                 gameMathsVariants[betType][rtp] = gameMathsPtr;
             }
         }
@@ -368,4 +375,5 @@ private
     std::unordered_map<std::string, ReelSet> reelSetMap;
     std::vector<std::shared_ptr<TaggedReelSetWeights>> taggedReelSetWeights;
     std::vector<std::shared_ptr<TaggedPayLines>> taggedPayLines;
+    std::vector<std::shared_ptr<TaggedIntThresholdTable>> taggedIntThresholdTables;
 };

@@ -7,6 +7,15 @@
 #include "../../mathElements/WeightTables.h"
 #include "../../mathElements/PayTable.h"
 #include "../../mathElements/PayLines.h"
+#include "../../mathElements/ThresholdTable.h"
+
+namespace TaggedDataHelpers
+{
+    int stringToInt(std::string valueStr, const std::string& cellLocation);
+    double stringToDouble(std::string valueStr, const std::string& cellLocation);
+    bool stringToBool(const std::string& valueStr, const std::string& cellLocation);
+    std::optional<int> tryStringToInt(std::string valueStr);
+}
 
 typedef std::shared_ptr<TaggedRange> TaggedRangePtr;
 
@@ -303,4 +312,37 @@ struct TaggedPayLines : TaggedDataIndividual<PayLines>
     }
 
     static PayLines parsePayLines(const TaggedRange& taggedRange);
+};
+
+template <typename T>
+struct TaggedThresholdTable : TaggedDataIndividual<ThresholdTable<T>>
+{
+    TaggedThresholdTable(const TaggedRangePtr& taggedRangePtr, ThresholdTable<T> value)
+        : TaggedDataIndividual<ThresholdTable<T>>(taggedRangePtr, value)
+    {
+    }
+
+    template <typename Func>
+    static ThresholdTable<T> parseThresholdTable(const TaggedRange& taggedRange, Func convertValue)
+    {
+        std::unordered_map<int, T> thresholds;
+        for (size_t rowNum = 1; rowNum < taggedRange.data.size(); rowNum++)
+        {
+            const auto& row = taggedRange.data[rowNum];
+            const int key = TaggedDataHelpers::stringToInt(
+                row[0], taggedRange.getCellLocationString(rowNum, 0));
+            const T value = convertValue(row[1], taggedRange.getCellLocationString(rowNum, 1));
+            thresholds[key] = value;
+        }
+        return {thresholds};
+    };
+};
+
+struct TaggedIntThresholdTable : TaggedThresholdTable<int>
+{
+    TaggedIntThresholdTable(const TaggedRangePtr& taggedRangePtr)
+        : TaggedThresholdTable(taggedRangePtr,
+                               parseThresholdTable(*taggedRangePtr, TaggedDataHelpers::stringToInt))
+    {
+    }
 };

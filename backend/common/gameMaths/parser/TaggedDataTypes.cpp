@@ -95,20 +95,20 @@ namespace TaggedDataHelpers
         }
     }
 
-    bool stringToBool(const std::string& input, const std::string& cellLocation)
+    bool stringToBool(const std::string& valueStr, const std::string& cellLocation)
     {
         // 1. Fast path for standard Excel booleans.
-        if (input == "TRUE") return true;
-        if (input == "FALSE") return false;
+        if (valueStr == "TRUE") return true;
+        if (valueStr == "FALSE") return false;
 
         // 2. Trim whitespace
-        const auto begin = input.find_first_not_of(" \t\n\r\f\v");
+        const auto begin = valueStr.find_first_not_of(" \t\n\r\f\v");
         if (begin == std::string::npos)
             throw std::invalid_argument(
                 "Empty or whitespace-only input for bool at " + cellLocation);
 
-        const auto end = input.find_last_not_of(" \t\n\r\f\v");
-        std::string value = input.substr(begin, end - begin + 1);
+        const auto end = valueStr.find_last_not_of(" \t\n\r\f\v");
+        std::string value = valueStr.substr(begin, end - begin + 1);
 
         // 3. Fast path for numeric values
         if (value == "1") return true;
@@ -127,7 +127,7 @@ namespace TaggedDataHelpers
         if (value == "false")
             return false;
 
-        throw std::invalid_argument("Invalid boolean string: '" + input + "' at " + cellLocation);
+        throw std::invalid_argument("Invalid boolean string: '" + valueStr + "' at " + cellLocation);
     }
 }
 

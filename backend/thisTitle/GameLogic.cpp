@@ -52,7 +52,8 @@ namespace GameLogic
 
     int doFreeSpins(const GameMathsNew& gm, GameSession& gs, GameCycle& gc)
     {
-        gc.fsInitialSpins = gm.intMaps.at("fsStartSpins").at(std::to_string(gc.baseNumScatters));
+        static auto& fsStartSpins = gm.intThresholdTables.at("fsStartSpins");
+        gc.fsInitialSpins = fsStartSpins.at(gc.baseNumScatters);
         gc.recordEvent<FreeSpinsTriggerEvent>(gc.fsInitialSpins);
 
         for (gc.fsTotalSpinsPlayed = 0;
@@ -88,9 +89,8 @@ namespace GameLogic
 
         if (scatterCount >= 2)
         {
-            const std::unordered_map<std::string, int>& retriggerSpinTable = gm.intMaps.
-                at("fsRetriggerSpins");
-            const int retriggerSpins = retriggerSpinTable.at(std::to_string(scatterCount));
+            static auto& retriggerSpinTable = gm.intThresholdTables.at("fsRetriggerSpins");
+            const int retriggerSpins = retriggerSpinTable.at(scatterCount);
             gc.fsRetriggerSpins += retriggerSpins;
             if (retriggerSpins) gc.recordEvent<FreeSpinsRetriggerEvent>(retriggerSpins);
         }

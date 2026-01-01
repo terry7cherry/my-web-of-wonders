@@ -30,6 +30,7 @@ public:
     LineGrid(int reels, int rows, const PayTable& payTable) : PayGrid(reels, rows, payTable)
     {
         szBlankWin = std::string(MAX_LINE_TEXT_LEN, ' ');
+        winVector.reserve(100);
     }
 
     // Pass the required PayLines

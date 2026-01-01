@@ -4,6 +4,7 @@
 #include "../mathElements/WeightTables.h"
 #include "../mathElements/PayLines.h"
 #include "../mathElements/PayTable.h"
+#include "../mathElements/ThresholdTable.h"
 //#include "caching/TypeConfig.h"
 
 template <typename T>
@@ -28,4 +29,5 @@ public:
     TypeConfig<ReelSetWeightTable> reelSetWeights;
     TypeConfig<PayTable> payTables;
     TypeConfig<PayLines> payLines;
+    TypeConfig<ThresholdTable<int>> intThresholdTables;
 };
