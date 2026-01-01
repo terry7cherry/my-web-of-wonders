@@ -22,8 +22,6 @@ public:
 			totalWin += win.totalWin;
 		}
 
-#ifdef FRONTEND
-		// Storing all wins slows things down and is only needed for frontend. 
 		for (size_t i = 0; i < numWins && i < WinAnalysisEventBufferSize; ++i)
 		{
 			bufferedWins[i] = sourceWins[i];
@@ -34,7 +32,10 @@ public:
 			excessWins.reserve(numWins - WinAnalysisEventBufferSize);
 			excessWins.assign(sourceWins.begin() + WinAnalysisEventBufferSize, sourceWins.end());
 		}
-#endif
+	}
+
+	static void updateMeters(const LineGrid& grid, std::string analysisStage)
+	{
 	}
 
 protected:
@@ -45,7 +46,6 @@ protected:
 		return EventType;
 	}
 
-#ifdef FRONTEND
 	Json::Value getDetailsAsJson() const
 	{
 		Json::Value eventDetails;
@@ -67,7 +67,6 @@ protected:
 		eventDetails["wins"] = winsAsJson;
 		return eventDetails;
 	}
-#endif
 
 private:
 	Json::Value convertWinToJson(const LineWin& win) const
@@ -87,10 +86,8 @@ private:
 
 	int totalWin = 0;
 	int gridMultiplier = 1;
-#ifdef FRONTEND
 	std::array<LineWin, WinAnalysisEventBufferSize> bufferedWins;
 	std::vector<LineWin> excessWins;
-#endif
 	std::string analysisStage;
 	size_t numWins;
 };

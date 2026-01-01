@@ -9,6 +9,10 @@ public:
 	{
 	}
 
+	static void updateMeters(const int multiplier = 1)
+	{
+	}
+
 protected:
 	static constexpr std::string_view EventType = "newFreeSpin";
 

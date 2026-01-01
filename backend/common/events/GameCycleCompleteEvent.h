@@ -7,6 +7,10 @@ class GameCycleCompleteEvent : public BasicEvent
 public:
     explicit GameCycleCompleteEvent(const int totalWin) : totalWin(totalWin)
     {
+    }
+
+    static void updateMeters(const int totalWin)
+    {
         eventTotalWin += totalWin;
     }
 

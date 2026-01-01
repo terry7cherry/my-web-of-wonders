@@ -415,9 +415,9 @@ void startBackEndDevServer()
 
 		                      Json::Value result;
 		                      Json::Value eventsArray(Json::arrayValue);
-		                      for (Json::ArrayIndex i = 0; i < reused.events.size(); ++i)
+		                      for (Json::ArrayIndex i = 0; i < gameCycle.events.size(); ++i)
 		                      {
-			                      if (!reused.events[i])
+			                      if (!gameCycle.events[i])
 			                      {
 				                      std::cerr << "[/api/spin] null event pointer at index "
 					                      << i << std::endl;
@@ -434,21 +434,20 @@ void startBackEndDevServer()
 	app().addListener("0.0.0.0", 8080);
 
 #ifndef FRONTEND_DEV
-// Serve static files from "../frontend/dist" in production
-app()
-		.setDocumentRoot (FRONTEND_DIST_DIR)
-		.setFileTypes (
+	// Serve static files from "../frontend/dist" in production
+	app()
+		.setDocumentRoot(FRONTEND_DIST_DIR)
+		.setFileTypes(
 
 
-
-{
-	"gif", "png", "jpg", "js", "css", "html", "ico", "swf", "xap", "apk", "cur", "xml",
-		"mp3"
-});
+			{
+				"gif", "png", "jpg", "js", "css", "html", "ico", "swf", "xap", "apk", "cur", "xml",
+				"mp3"
+			});
 #endif
 
-std::cout<< "Starting dev server" << std::endl;
-app().run();
+	std::cout << "Starting dev server" << std::endl;
+	app().run();
 }
 #endif
 

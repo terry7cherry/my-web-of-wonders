@@ -13,7 +13,6 @@ class GridUpdateEvent : public BasicEvent
 {
 public:
     explicit GridUpdateEvent(const Grid& grid, std::string message = "Grid updated!")
-#ifdef FRONTEND
         : numReels(grid.maxReels),
           numRows(grid.maxRows),
           message(std::move(message))
@@ -25,12 +24,13 @@ public:
                 symbols[reelNum * numRows + rowNum] = grid.getReelSymbol(reelNum, rowNum);
             }
         }
-#else
-        : message(message) {
-#endif
     }
 
-protected:
+    static void updateMeters(const Grid& grid, std::string message = "Grid updated!")
+    {
+    }
+
+protected :
     static constexpr std::string_view EventType = "gridUpdate";
 
     std::string_view getEventType() const override
@@ -38,7 +38,6 @@ protected:
         return EventType;
     }
 
-#ifdef FRONTEND
     Json::Value getDetailsAsJson() const override
     {
         Json::Value eventDetails;
@@ -58,13 +57,10 @@ protected:
         eventDetails["message"] = std::string(message);
         return eventDetails;
     }
-#endif
 
-private:
-#ifdef FRONTEND
+private :
     std::array<int, GridUpdateMaxReels * GridUpdateMaxRows> symbols{};
     int numReels;
     int numRows;
-#endif
     std::string message;
 };

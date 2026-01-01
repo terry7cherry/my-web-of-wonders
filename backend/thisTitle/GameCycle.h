@@ -6,20 +6,16 @@
 
 #include "../common/grids/LineGrid.h"
 #include "../common/gameMaths/GameMaths.h"
-#include "GameSession.h"
 #include "../common/events/BasicEvent.h"
 #include "../common/events/EventsArena.h"
 
 struct GameCycleReused
 {
-    std::vector<BasicEvent*> events;
-    EventsArena eventsArena{128 * 1024};
     LineGrid grid;
 
     explicit GameCycleReused(const GameMathsNew& gameMaths) :
         grid(gameMaths.ints.at("numReels"), gameMaths.ints.at("numRows"), gameMaths.payTables.at("default"))
     {
-        events.reserve(1000);
         grid.setPayLines(gameMaths.payLines.at("default"));
     }
 };
@@ -28,8 +24,10 @@ struct GameCycle
 {
     LineGrid& grid;
 
-    std::vector<BasicEvent*>& events;
-    EventsArena& eventsArena;
+
+#ifdef FRONTEND
+    std::vector<BasicEvent*> events;
+#endif
     unsigned int totalWin = 0;
     unsigned int baseGameWin = 0;
     unsigned int freeSpinsWin = 0;
@@ -40,12 +38,8 @@ struct GameCycle
     bool fsTrigger = false;
 
     explicit GameCycle(const GameMathsNew& gameMaths, GameCycleReused& reused)
-        : grid(reused.grid),
-          events(reused.events),
-          eventsArena(reused.eventsArena)
+        : grid(reused.grid)
     {
-        events.clear();
-        eventsArena.reset();
         grid.reset();
     }
 
@@ -53,9 +47,12 @@ struct GameCycle
     void recordEvent(Args&&... args)
         requires std::derived_from<T, BasicEvent> && std::constructible_from<T, Args...>
     {
-        void* mem = eventsArena.allocate(sizeof(T), alignof(T));
-        T* e = new(mem) T(std::forward<Args>(args)...);
+#ifdef FRONTEND
+        T* e = new T(std::forward<Args>(args)...);
         events.push_back(e);
+#else
+        T::updateMeters(std::forward<Args>(args)...);
+#endif
     }
 };
 
