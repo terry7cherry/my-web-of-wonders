@@ -112,4 +112,4 @@ public:
 	}
 };
 
-extern MathsRng mathRng;
+extern thread_local MathsRng mathRng;

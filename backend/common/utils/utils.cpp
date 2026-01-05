@@ -10,7 +10,7 @@ VERSION_DATA gameVersion;
 
 // global Class instances need to be declared in ".c"
 // end externed in the Class definition, "*.h" files
-MathsRng mathRng;
+MathsRng thread_local mathRng;
 RngData rnStream;
 
 // Display a formatted error message to the console

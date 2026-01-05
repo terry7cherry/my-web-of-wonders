@@ -30,7 +30,7 @@ public:
 	std::vector<int> winIndexVect; // undefined size, populate with index of winning positions
 	int gridMultiplier = 1;
 
-	PayGrid(const int reels, const int rows, const PayTable& payTable)
+	PayGrid(const size_t reels, const size_t rows, const PayTable& payTable)
 		: Grid(reels, rows),
 		  lpPayTable(&payTable)
 	{

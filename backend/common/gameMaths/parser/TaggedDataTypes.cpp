@@ -453,16 +453,16 @@ PayTable TaggedPayTable::parsePayTable(const TaggedRange& taggedRange)
             ". PayTable must include headers 'symbols' and 'payType' followed "
             "by an int header for each paying OAK.");
 
-    std::vector<std::vector<int>> payTableVect;
-    std::vector<int> paySymVect;
-    std::vector<int> scatterSymVect;
-    std::vector<int> wildSymVect;
-    std::vector<int> wildNoSubstVect;
+    std::vector<std::vector<size_t>> payTableVect;
+    std::vector<size_t> paySymVect;
+    std::vector<size_t> scatterSymVect;
+    std::vector<size_t> wildSymVect;
+    std::vector<size_t> wildNoSubstVect;
 
     for (size_t rowNum = 1; rowNum < data.size(); rowNum++)
     {
         const auto& row = data[rowNum];
-        std::vector symbolVect(maxOAK + 1, 0);
+        std::vector<size_t> symbolVect(maxOAK + 1, 0);
         for (size_t colNum = 0; colNum < headers.size(); colNum++)
             if (auto oak = TaggedDataHelpers::tryStringToInt(headers[colNum]))
             {
@@ -482,7 +482,7 @@ PayTable TaggedPayTable::parsePayTable(const TaggedRange& taggedRange)
                 }
             }
         payTableVect.push_back(symbolVect);
-        const int symbolId = rowNum - 1;
+        const size_t symbolId = rowNum - 1;
         const std::string& payType = row[1];
         if (payType == "line")
             paySymVect.push_back(symbolId);

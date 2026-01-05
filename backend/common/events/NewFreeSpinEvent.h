@@ -9,7 +9,7 @@ public:
 	{
 	}
 
-	static void updateMeters(const int multiplier = 1)
+	static void updateMeters(const int multiplier [[maybe_unused]] = 1)
 	{
 	}
 

@@ -27,7 +27,7 @@ public:
 
     // default constructor
     // winDirection is left_right
-    LineGrid(int reels, int rows, const PayTable& payTable) : PayGrid(reels, rows, payTable)
+    LineGrid(const size_t reels, const size_t rows, const PayTable& payTable) : PayGrid(reels, rows, payTable)
     {
         szBlankWin = std::string(MAX_LINE_TEXT_LEN, ' ');
         winVector.reserve(100);
@@ -53,8 +53,8 @@ public:
 
     // Reset the winVector then calculate wins. Applys line multipliers in multiplierVect
     // Re-populate winVector and return total win
-    int evaluateWins(int betMultiplier, [[maybe_unused]] bool doMeters,
-                     [[maybe_unused]] bool useDebugLine = false);
+    size_t evaluateWins(size_t betMultiplier, [[maybe_unused]] bool doMeters,
+                        [[maybe_unused]] bool useDebugLine = false);
 
 
     // Identify winning symbols in the grid with the following:
@@ -72,14 +72,14 @@ public:
 
     // Applies Grid.gridMultiplier (or optional passed, specialMultiplier) to all wins
     // Applies multiplier to each win and returns total win after multiplier is applied
-    int applyGridMultiplier(MultipliersCombineType combineType, int specialMultiplier = 0);
+    size_t applyGridMultiplier(MultipliersCombineType combineType, int specialMultiplier = 0);
 
 
     // check each win to see if includes a value in 'multiplierVect'
     // if more than 1 symbol in a win contains a multiplier, then they are combined using the passed combineType
     //      MultipliersCombineType::multiply or MultipliersCombineType::add
     // Returns the total win after multipliers are applied to all wins
-    int applyWinMultipliers(MultipliersCombineType combineType);
+    size_t applyWinMultipliers(MultipliersCombineType combineType);
 
     /****************************************/
     // Display methods

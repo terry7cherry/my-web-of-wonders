@@ -1,3 +1,5 @@
+//#define SIMPLE
+//#define SINGLETHREAD
 #include <iostream>
 #include <cstdio>
 #include <algorithm>
@@ -8,6 +10,8 @@
 #include <atomic>
 #include <csignal>
 #include <drogon/drogon.h>
+#include <atomic>
+#include <thread>
 // MathLibrary includes
 #include "headers/cpp-math-library.h"
 
@@ -24,8 +28,8 @@
 #include "events/GameCycleCompleteEvent.h"
 #include "gameMaths/parser/excelParser.h"
 #include "NodeDevServer.h"
+#include "events/threadSafeMeters/MeterUpdate.h"
 
-;
 
 #ifdef FRONTEND_DEV
 
@@ -140,11 +144,101 @@ void doMonteCarloSimBB(int bbMode, uint64_t simGames)
 {
 }
 
-void showRtpReport(const int64_t gamesPlayed, const int64_t totalBet, const bool showHistory)
+void showRtpReport(const uint64_t gamesPlayed, const uint64_t totalBet, const bool showHistory)
 {
 	printf("%s%10I64d spins. RTP ", showHistory ? "\n" : "\r", gamesPlayed);
 	std::printf(", %s=%6.2f%%", "total",
-	            static_cast<float>(GameCycleCompleteEvent::eventTotalWin) * 100 / totalBet);
+#ifdef SIMPLE
+	            static_cast<double>(GameCycleCompleteEvent::eventTotalWin.load() * 100) / totalBet);
+#else
+	            static_cast<double>(GameCycleCompleteEvent::eventTotalWin.global() * 100) / totalBet);
+#endif
+}
+
+void threadWorker(const std::stop_token& st,
+                  std::atomic<int>& nextBatch,
+                  const int totalBatches,
+                  const int batchSize,
+                  const int gameBet,
+                  const uint32 globalSeed)
+{
+	GameCycleReused reused(gameMaths);
+
+	while (!st.stop_requested())
+	{
+		const int batch = nextBatch.fetch_add(1, std::memory_order_relaxed);
+
+		if (batch >= totalBatches)
+		{
+			break;
+		}
+
+		mathRng.setSeed(globalSeed + batch);
+
+		GameSession gameSession(gameBet, BetTypeDefault, "96", gameMaths);
+
+		for (int i = 0; i < batchSize; i++)
+		{
+			GameCycle gameCycle(reused);
+			GameLogic::playGame(gameMaths, gameSession, gameCycle);
+		}
+		MeterUpdate::triggerUpdate();
+	}
+}
+
+
+void doMonteCarloStdMultiThread(const int gameBet, const uint64_t simGames, const uint32 globalSeed)
+{
+	constexpr int BATCH_SIZE = 1'000'000;
+	const uint64_t totalBatches = simGames / BATCH_SIZE;
+	const unsigned int threadCount = std::thread::hardware_concurrency() - 3;
+	std::cout << "Using " << threadCount << " threads" << std::endl;
+
+	gameConsole.clearScreen();
+	setHeader("Std");
+	gameConsole.setCursorPos(2);
+
+	std::atomic<int> nextBatch{0};
+	std::vector<std::jthread> threads;
+
+	threads.reserve(threadCount);
+	Timer simTimer("Monte Carlo");
+
+	for (int i = 0; i < threadCount; i++)
+	{
+		threads.emplace_back(
+			threadWorker,
+			std::ref(nextBatch),
+			totalBatches,
+			BATCH_SIZE,
+			gameBet,
+			globalSeed
+		);
+	}
+	int last_seen = 0;
+	while (last_seen < simGames)
+	{
+#ifdef SIMPLE
+		const uint64_t current = GameCycleCompleteEvent::eventTotalCycles.load();
+#else
+		const uint64_t current = GameCycleCompleteEvent::eventTotalCycles.global();
+#endif
+		if (current != last_seen)
+		{
+			showRtpReport(current, bet * current, SHOW_RTP_REPORT_HISTORY);
+			last_seen = current;
+		}
+		std::this_thread::sleep_for(std::chrono::milliseconds(500));
+	}
+	showRtpReport(simGames, bet * simGames, SHOW_RTP_REPORT_HISTORY);
+	simTimer.outputTime();
+	GameCycleCompleteEvent::outputDistribution(false, true);
+}
+
+void doMonteCarloStdMultiThread(const int gameBet, const uint64_t simGames)
+{
+	const uint32 seed = std::rand();
+	doMonteCarloStdMultiThread(gameBet, simGames, seed);
 }
 
 void doMonteCarloStd(const int gameBet, const uint64_t simGames)
@@ -167,7 +261,7 @@ void doMonteCarloStd(const int gameBet, const uint64_t simGames)
 
 	for (; gameCount < simGames; gameCount++)
 	{
-		GameCycle gameCycle(gameMaths, reused);
+		GameCycle gameCycle(reused);
 		GameLogic::playGame(gameMaths, gameSession, gameCycle);
 
 #if SESSION_LIMIT
@@ -196,6 +290,7 @@ void doMonteCarloStd(const int gameBet, const uint64_t simGames)
 
 	printf("\n");
 	simTimer.outputTime();
+	GameCycleCompleteEvent::outputDistribution(false, true);
 }
 
 
@@ -408,7 +503,7 @@ void startBackEndDevServer()
 	                                                 callback)
 	                      {
 		                      GameCycleReused reused(gameMaths);
-		                      GameCycle gameCycle(gameMaths, reused);
+		                      GameCycle gameCycle(reused);
 
 
 		                      GameLogic::playGame(gameMaths, gameSession, gameCycle);;
@@ -434,20 +529,21 @@ void startBackEndDevServer()
 	app().addListener("0.0.0.0", 8080);
 
 #ifndef FRONTEND_DEV
-	// Serve static files from "../frontend/dist" in production
-	app()
-		.setDocumentRoot(FRONTEND_DIST_DIR)
-		.setFileTypes(
+// Serve static files from "../frontend/dist" in production
+app()
+		.setDocumentRoot (FRONTEND_DIST_DIR)
+		.setFileTypes (
 
 
-			{
-				"gif", "png", "jpg", "js", "css", "html", "ico", "swf", "xap", "apk", "cur", "xml",
-				"mp3"
-			});
+
+{
+	"gif", "png", "jpg", "js", "css", "html", "ico", "swf", "xap", "apk", "cur", "xml",
+		"mp3"
+});
 #endif
 
-	std::cout << "Starting dev server" << std::endl;
-	app().run();
+std::cout<< "Starting dev server" << std::endl;
+app().run();
 }
 #endif
 
@@ -557,7 +653,7 @@ int main()
 		{
 			// Monte-Carlo options
 			//FIX
-			int rtpChoice = getUsersRtpChoice();
+			//int rtpChoice = getUsersRtpChoice();
 			//rtpOption = gameMaths.rtpSetOption(rtpChoice - 1);
 			setHeader();
 			forceOption = getUserForceSelection();
@@ -580,7 +676,11 @@ int main()
 				else
 				{
 					// valid single RTP option
+#ifdef SINGLETHREAD
 					doMonteCarloStd(bet, simSize * MILLION);
+#else
+					doMonteCarloStdMultiThread(bet, simSize * MILLION);
+#endif
 				}
 			}
 			else if (simMode == simFunction::bbMontecarlo)

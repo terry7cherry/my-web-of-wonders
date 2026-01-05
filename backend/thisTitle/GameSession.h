@@ -12,8 +12,8 @@ enum BetType
 
 struct GameSession
 {
-    const int bet;
-    const int betMultiplier;
+    const size_t bet;
+    const size_t betMultiplier;
     const std::string rtp;
     const BetType betType;
 

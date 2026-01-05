@@ -23,7 +23,7 @@
 /**************************************************/
 // constructor
 /**************************************************/
-Grid::Grid(const int reels, const int rows)
+Grid::Grid(const size_t reels, const size_t rows)
 	: reelDataBytes(sizeof(int) * rows),
 	  maxReels(reels),
 	  maxRows(rows),
@@ -58,7 +58,7 @@ void Grid::setReelHeights()
 }
 
 // set reel heights to values in passed vector
-void Grid::setReelHeights(const std::vector<int>& heightVect)
+void Grid::setReelHeights(const std::vector<size_t>& heightVect)
 {
 	if (heightVect.size() == reelHeightVect.size())
 		reelHeightVect = heightVect;
@@ -279,7 +279,7 @@ int Grid::getReelSymbolCount(const size_t reel, const int sym,
 	return count;
 }
 
-int Grid::getSymbolCount(const int sym, const symbolMatchTypes matchType) const
+int Grid::getSymbolCount(const size_t sym, const symbolMatchTypes matchType) const
 {
 	int total = 0;
 	for (size_t reel = 0; reel < maxReels; ++reel)
@@ -371,10 +371,10 @@ int Grid::expandSymbol(int symbol)
 // Return number of reels expanded
 // The reelCheckVect parameter can be passed as { 0, 2, 4 } or as a defined variable like scatterReelsVect
 // e.g. std::vector <int> scatterReelsVect = { 0, 2, 4 };
-int Grid::expandSymbol(int symbol, std::vector<int> reelCheckVect)
+int Grid::expandSymbol(const int symbol, const std::vector<size_t>& reelCheckVect)
 {
 	int count = 0;
-	for (int reel : reelCheckVect)
+	for (const size_t reel : reelCheckVect)
 	{
 		if (expandReelSymbol(reel, symbol))
 			count++;
@@ -401,7 +401,7 @@ int Grid::expandSymbolToNew(int symbol, int newSym)
 // Return number of reels expanded
 // The reelCheckVect parameter can be passed as { 0, 2, 4 } or as a defined variable like scatterReelsVect
 // e.g. std::vector <int> scatterReelsVect = { 0, 2, 4 };
-int Grid::expandSymbolToNew(int symbol, int newSym, std::vector<int> reelCheckVect)
+int Grid::expandSymbolToNew(const int symbol, const int newSym, const std::vector<int>& reelCheckVect)
 {
 	int count = 0;
 	for (int reel : reelCheckVect)
@@ -467,8 +467,8 @@ std::vector<int> Grid::replaceRandomSymbols(int newSymbol, int count,
 		{
 			if (getSymbol(i) != newSymbol)
 			{
-				bool allow = // allow if not in blockedIndexVect
-					std::find(blockedIndexVect.begin(), blockedIndexVect.end(), i) ==
+				const bool allow = // allow if not in blockedIndexVect
+					std::ranges::find(blockedIndexVect, i) ==
 					blockedIndexVect.end();
 				if (allow)
 					gridPosOptions.push_back(i);
@@ -488,7 +488,7 @@ std::vector<int> Grid::replaceRandomSymbols(int newSymbol, int count,
 	// pick and replace symbols at count positions in grid
 	for (int i = 0; i < count; i++)
 	{
-		int index = mathRng.getInt((uint32_t)gridPosOptions.size(), "replaceRandomSymbolsIndex");
+		int index = mathRng.getInt(static_cast<uint32_t>(gridPosOptions.size()), "replaceRandomSymbolsIndex");
 		int gridPos = gridPosOptions[index];
 		gridPosOptions.erase(gridPosOptions.begin() + index);
 		gridPosVect.push_back(gridPos);
@@ -503,7 +503,7 @@ std::vector<int> Grid::replaceRandomSymbols(int newSymbol, int count,
 // return number reels where symbol was replaced
 // The reelCheckVect parameter can be passed as { 0, 2, 4 } or as a defined variable like scatterReelsVect
 // e.g. std::vector <int> scatterReelsVect = { 0, 2, 4 };
-int Grid::replaceSymbol(int symOld, int symNew, std::vector<int> reelCheckVect)
+int Grid::replaceSymbol(const int symOld, const int symNew, const std::vector<int>& reelCheckVect)
 {
 	int count = 0;
 	for (int reel : reelCheckVect)
@@ -565,7 +565,7 @@ void Grid::showReels(const int tabCount, std::vector<int>& highlightVect, const 
 		{
 			std::cout << " | ";
 			int symb = reelSymbolVect[reel][row];
-			auto it = std::find(highlightVect.begin(), highlightVect.end(), index);
+			auto it = std::ranges::find(highlightVect, index);
 
 			if (it != highlightVect.end())
 				lpConsole->coutStyle(mTextMap.at(symb), colour);

@@ -1,5 +1,6 @@
-#pragma once
 /*
+#pragma once
+
 
 
 #include "stdio.h"
@@ -183,45 +184,48 @@ public:
 // Meters
 /*****************************************/
 /*
-	uint64_t mTotalWin = 0, mBgWin = 0;
-	uint64_t mTrailHit = 0, mWinHit = 0, mWinSpinHit = 0;
+uint64_t mTotalWin = 0, mBgWin = 0;
+uint64_t mTrailHit = 0, mWinHit = 0, mWinSpinHit = 0;
 
 
-	inline void metersReset(void) {
-		for (auto &event: eventVect)
-			event.reset();
+inline void metersReset(void)
+{
+	for (auto& event : eventVect)
+		event.reset();
 
-		mTotalWin = mBgWin = 0;
-		mTrailHit = mWinHit = mWinSpinHit = 0;
-	}
+	mTotalWin = mBgWin = 0;
+	mTrailHit = mWinHit = mWinSpinHit = 0;
+}
 
-	inline void rtpReport(uint64 plays, uint64 totBet, bool newLine) {
-		printf("%s%10I64d spins. RTP ", newLine ? "\n" : "\r", plays);
+inline void rtpReport(uint64 plays, uint64 totBet, bool newLine)
+{
+	printf("%s%10I64d spins. RTP ", newLine ? "\n" : "\r", plays);
 
-		for (auto &event: eventVect)
-			event.rtpReport(totBet);
-	}
+	for (auto& event : eventVect)
+		event.rtpReport(totBet);
+}
 
-	void inline finalReport(uint64 plays, uint64 totBet) {
-		printf("\n\nEvent Stats Report\n");
-		eventVect[0].finalReportHeader();
-		for (auto &event: eventVect)
-			event.finalReport(plays, totBet);
+void inline finalReport(uint64 plays, uint64 totBet)
+{
+	printf("\n\nEvent Stats Report\n");
+	eventVect[0].finalReportHeader();
+	for (auto& event : eventVect)
+		event.finalReport(plays, totBet);
 
-		fsStatsReport();
+	fsStatsReport();
 
-		printf("\n\nMaxWin Report\n");
-		eventVect[0].maxWinReportHeader();
-		for (auto &event: eventVect)
-			event.maxWinReport(plays, totBet);
+	printf("\n\nMaxWin Report\n");
+	eventVect[0].maxWinReportHeader();
+	for (auto& event : eventVect)
+		event.maxWinReport(plays, totBet);
 
-		printf("\n\nSpins Report\n");
-		for (auto &event: eventVect)
-			event.spinReport(totBet);
-		printf("\n\n");
-	}
+	printf("\n\nSpins Report\n");
+	for (auto& event : eventVect)
+		event.spinReport(totBet);
+	printf("\n\n");
+}
 
-	/*****************************************/
+/*****************************************/
 // Distributions
 /*****************************************/
 /*
@@ -458,7 +462,21 @@ std::map<int, int> symbolColourMap = {
 };
 };
 
+
 */
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -27,9 +27,9 @@ public:
 	// generic grid details
 	/************************************/
 
-	int reelDataBytes; // how many bytes in reelSymbolVect[reel] upto maxRows
-	int maxReels, maxRows, maxCells;
-	std::vector<int> reelHeightVect;
+	size_t reelDataBytes; // how many byte in reelSymbolVect[reel] upto maxRows
+	size_t maxReels, maxRows, maxCells;
+	std::vector<size_t> reelHeightVect;
 
 	/************************************/
 	// state
@@ -40,7 +40,7 @@ public:
 	std::vector<std::vector<int>> multiplierVect; // [reel][row]
 
 	// constructor
-	Grid(int reels, int rows);
+	Grid(size_t reels, size_t rows);
 
 	/************************************/
 	// Initialise
@@ -50,7 +50,7 @@ public:
 	void setReelHeights();
 
 	// set reel heights to values in the passed vector
-	void setReelHeights(const std::vector<int>& heightVect);
+	void setReelHeights(const std::vector<size_t>& heightVect);
 
 	// if Grid dimensions match, then copies 'reelSymbolVect'
 	void copy(const Grid& sourceGrid);
@@ -275,7 +275,7 @@ public:
 	// count number of sym in the grid
 	// optional parameter matchType
 	// returns total count and fills reelSymbolCountVect with individual reel counts
-	int getSymbolCount(int sym, symbolMatchTypes matchType = symbolMatchTypes::exact) const;
+	int getSymbolCount(size_t sym, symbolMatchTypes matchType = symbolMatchTypes::exact) const;
 
 	// returns row of passed symbol on passed reel
 	// returns -1 if symbol not found
@@ -301,7 +301,7 @@ public:
 	// Return number of reels expanded
 	// The reelCheckVect parameter can be passed as { 0, 2, 4 } or as a defined variable like scatterReelsVect
 	// e.g. std::vector <int> scatterReelsVect = { 0, 2, 4 };
-	int expandSymbol(int symbol, std::vector<int> reelCheckVect);
+	int expandSymbol(int symbol, const std::vector<size_t>& reelCheckVect);
 
 	// Look for symbol on each reel.
 	// If found then expand symbol to fill reel with newSym
@@ -311,7 +311,7 @@ public:
 	// Look for symbol on each reel in reelCheckVect.
 	// If found then expand symbol to fill reel with newSym
 	// Return number of reels expanded
-	int expandSymbolToNew(int symbol, int newSym, std::vector<int> reelCheckVect);
+	int expandSymbolToNew(int symbol, int newSym, const std::vector<int>& reelCheckVect);
 
 	/************************************/
 	// Grid processing - replace
@@ -329,7 +329,7 @@ public:
 	// return number reels where symbol was replaced
 	// The reelCheckVect parameter can be passed as { 0, 2, 4 } or as a defined variable like scatterReelsVect
 	// e.g. std::vector <int> scatterReelsVect = { 0, 2, 4 };
-	int replaceSymbol(int symOld, int symNew, std::vector<int> reelCheckVect);
+	int replaceSymbol(int symOld, int symNew, const std::vector<int>& reelCheckVect);
 
 	// replace count random symbols in the grid with newSymbol (not already newSymbol)
 	std::vector<int> replaceRandomSymbols(int newSymbol, int count,

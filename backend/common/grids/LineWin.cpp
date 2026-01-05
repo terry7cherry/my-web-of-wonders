@@ -1,7 +1,7 @@
 #include "LineWin.h"
 #include <algorithm>
 
-int LineWin::applyMultiplier(const int newMultiplier, const MultipliersCombineType combineType)
+size_t LineWin::applyMultiplier(const size_t newMultiplier, const MultipliersCombineType combineType)
 {
     if (newMultiplier <= 0)
         reportError("Win.applyMultiplier", "Passed multiplier <= 0");
@@ -41,9 +41,9 @@ std::string LineWin::getWinText(std::string szSymbol, const bool showDirection) 
                 "Line%2d %s: %d %s = %d ",
                 payLineNum,
                 (direction == WinDirections::left_right) ? "L-R" : "R-L",
-                oak,
+                static_cast<int>(oak),
                 szSymbol.c_str(),
-                win
+                static_cast<int>(win)
             );
         }
         else
@@ -52,9 +52,9 @@ std::string LineWin::getWinText(std::string szSymbol, const bool showDirection) 
                 buffer, space,
                 "Line%2d: %d %s = %d ",
                 payLineNum,
-                oak,
+                static_cast<int>(oak),
                 szSymbol.c_str(),
-                win
+                static_cast<int>(win)
             );
         }
     }
@@ -63,9 +63,9 @@ std::string LineWin::getWinText(std::string szSymbol, const bool showDirection) 
         size = std::snprintf(
             buffer, space,
             "Scatter: %d %s = %d ",
-            oak,
+            static_cast<int>(oak),
             szSymbol.c_str(),
-            win
+            static_cast<int>(win)
         );
     }
 
@@ -78,8 +78,8 @@ std::string LineWin::getWinText(std::string szSymbol, const bool showDirection) 
         int added = std::snprintf(
             buffer + size, space,
             "(x%d) = %d",
-            multiplier,
-            totalWin
+            static_cast<int>(multiplier),
+            static_cast<int>(totalWin)
         );
         if (added < 0) added = 0;
         if (added > space) added = space;

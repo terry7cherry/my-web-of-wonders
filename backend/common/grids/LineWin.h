@@ -10,12 +10,12 @@
 class LineWin
 {
 public:
-    int symbol = -1;
-    int oak = 0;
-    int wildCount = 0;
-    int multiplier = 1;
-    int win = 0;
-    int totalWin = 0;
+    size_t symbol = 0;
+    size_t oak = 0;
+    size_t wildCount = 0;
+    size_t multiplier = 1;
+    size_t win = 0;
+    size_t totalWin = 0;
     WinDirections direction = WinDirections::none;
     const std::vector<size_t>* payLine = nullptr;
     int payLineNum = -1;
@@ -30,14 +30,14 @@ public:
     {
         if (win || force)
         {
-            symbol = -1;
+            symbol = 0;
             multiplier = 1;
             oak = wildCount = win = totalWin = 0;
             direction = WinDirections::none;
         }
     }
 
-    int applyMultiplier(int newMultiplier, MultipliersCombineType combineType);
+    size_t applyMultiplier(size_t newMultiplier, MultipliersCombineType combineType);
 
     /****************************************/
     // Display methods

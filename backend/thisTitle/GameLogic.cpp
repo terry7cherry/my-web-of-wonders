@@ -15,104 +15,104 @@
 
 namespace GameLogic
 {
-    int playGame(const GameMathsNew& gm, GameSession& gs, GameCycle& gc, const int force)
+    int playGame(const GameMathsNew& maths, GameSession& session, GameCycle& cycle, const int force)
     {
         if (force == 1)
         {
-            gc.baseNumScatters = 3;
-            gc.fsTrigger = true;
+            cycle.baseNumScatters = 3;
+            cycle.fsTrigger = true;
         }
         else
-            gc.totalWin += doBaseGame(gm, gs, gc);
+            cycle.totalWin += doBaseGame(maths, session, cycle);
 
-        if (gc.fsTrigger)
-            gc.totalWin += doFreeSpins(gm, gs, gc);
+        if (cycle.fsTrigger)
+            cycle.totalWin += doFreeSpins(maths, session, cycle);
 
-        gc.recordEvent<GameCycleCompleteEvent>(gc.totalWin);
-        return gc.totalWin;
+        cycle.recordEvent<GameCycleCompleteEvent>(cycle.totalWin);
+        return cycle.totalWin;
     }
 
-    int doBaseGame(const GameMathsNew& gm, GameSession& gs, GameCycle& gc)
+    int doBaseGame(const GameMathsNew& maths, GameSession& session, GameCycle& cycle)
     {
-        gc.grid.applySpin(gm.reelSetWeights.at("baseGame"));
+        cycle.grid.applySpin(maths.reelSetWeights.at("baseGame"));
 
-        gc.recordEvent<ReelSpinEvent>(gc.grid);
+        cycle.recordEvent<ReelSpinEvent>(cycle.grid);
 
-        const int spinWin = gc.grid.evaluateWins(gs.betMultiplier, false);
-        gc.baseGameWin += spinWin;
+        const size_t spinWin = cycle.grid.evaluateWins(session.betMultiplier, false);
+        cycle.baseGameWin += spinWin;
 
-        gc.recordEvent<WinAnalysisEvent>(gc.grid, "base game");
+        cycle.recordEvent<WinAnalysisEvent>(cycle.grid, "base game");
 
         //FIX
-        gc.baseNumScatters = gc.grid.getSymbolCount(9);
-        if (gc.baseNumScatters >= 3) gc.fsTrigger = true;
+        cycle.baseNumScatters = cycle.grid.getSymbolCount(9);
+        if (cycle.baseNumScatters >= 3) cycle.fsTrigger = true;
 
-        return gc.baseGameWin;
+        return cycle.baseGameWin;
     }
 
-    int doFreeSpins(const GameMathsNew& gm, GameSession& gs, GameCycle& gc)
+    int doFreeSpins(const GameMathsNew& maths, GameSession& session, GameCycle& cycle)
     {
-        static auto& fsStartSpins = gm.intThresholdTables.at("fsStartSpins");
-        gc.fsInitialSpins = fsStartSpins.at(gc.baseNumScatters);
-        gc.recordEvent<FreeSpinsTriggerEvent>(gc.fsInitialSpins);
+        static auto& fsStartSpins = maths.intThresholdTables.at("fsStartSpins");
+        cycle.fsInitialSpins = fsStartSpins.at(cycle.baseNumScatters);
+        cycle.recordEvent<FreeSpinsTriggerEvent>(cycle.fsInitialSpins);
 
-        for (gc.fsTotalSpinsPlayed = 0;
-             gc.fsTotalSpinsPlayed < gc.fsInitialSpins + gc.fsRetriggerSpins;
-             gc.fsTotalSpinsPlayed++
+        for (cycle.fsTotalSpinsPlayed = 0;
+             cycle.fsTotalSpinsPlayed < cycle.fsInitialSpins + cycle.fsRetriggerSpins;
+             cycle.fsTotalSpinsPlayed++
         )
-            gc.freeSpinsWin += doOneFreeSpin(gm, gs, gc);
+            cycle.freeSpinsWin += doOneFreeSpin(maths, session, cycle);
 
-        return gc.freeSpinsWin;
+        return cycle.freeSpinsWin;
     }
 
-    int doOneFreeSpin(const GameMathsNew& gm, GameSession& gs, GameCycle& gc)
+    int doOneFreeSpin(const GameMathsNew& maths, GameSession& session, GameCycle& cycle)
     {
-        gc.grid.gridMultiplier = gm.intWeightTables.at("fsMultiplierWeights").pick();
-        gc.recordEvent<NewFreeSpinEvent>(gc.grid.gridMultiplier);
+        cycle.grid.gridMultiplier = maths.intWeightTables.at("fsMultiplierWeights").pick();
+        cycle.recordEvent<NewFreeSpinEvent>(cycle.grid.gridMultiplier);
 
-        gc.grid.applySpin(gm.reelSetWeights.at("freeSpins"));
-        gc.recordEvent<ReelSpinEvent>(gc.grid);
+        cycle.grid.applySpin(maths.reelSetWeights.at("freeSpins"));
+        cycle.recordEvent<ReelSpinEvent>(cycle.grid);
 
-        doExpandingWilds(gm, gc);
+        //doExpandingWilds(maths, cycle);
 
-        int spinWin = gc.grid.evaluateWins(gs.betMultiplier, true);
+        size_t spinWin = cycle.grid.evaluateWins(session.betMultiplier, true);
         if (spinWin)
         {
-            if (gc.grid.gridMultiplier > 1)
-                spinWin = gc.grid.applyGridMultiplier(MultipliersCombineType::add);
+            if (cycle.grid.gridMultiplier > 1)
+                spinWin = cycle.grid.applyGridMultiplier(MultipliersCombineType::add);
         }
-        gc.recordEvent<WinAnalysisEvent>(gc.grid, "free spin");
+        cycle.recordEvent<WinAnalysisEvent>(cycle.grid, "free spin");
 
         //FIX
-        const int scatterCount = gc.grid.getSymbolCount(9);
+        const int scatterCount = cycle.grid.getSymbolCount(9);
         //FIX
 
         if (scatterCount >= 2)
         {
-            static auto& retriggerSpinTable = gm.intThresholdTables.at("fsRetriggerSpins");
+            static auto& retriggerSpinTable = maths.intThresholdTables.at("fsRetriggerSpins");
             const int retriggerSpins = retriggerSpinTable.at(scatterCount);
-            gc.fsRetriggerSpins += retriggerSpins;
-            if (retriggerSpins) gc.recordEvent<FreeSpinsRetriggerEvent>(retriggerSpins);
+            cycle.fsRetriggerSpins += retriggerSpins;
+            if (retriggerSpins) cycle.recordEvent<FreeSpinsRetriggerEvent>(retriggerSpins);
         }
 
         return spinWin;
     }
 
-    void doExpandingWilds(const GameMathsNew& gm, GameCycle& gc)
+    void doExpandingWilds(const GameMathsNew& maths, GameCycle& cycle)
     {
         //FIX
         constexpr int wildSymbol = 0;
 
         size_t numWildReelsExpanded = 0;
-        for (size_t reelNum = 0; reelNum < gc.grid.maxReels; ++reelNum)
-            if (gc.grid.getReelSymbolCount(reelNum, wildSymbol))
+        for (size_t reelNum = 0; reelNum < cycle.grid.maxReels; ++reelNum)
+            if (cycle.grid.getReelSymbolCount(reelNum, wildSymbol))
             {
                 numWildReelsExpanded++;
-                gc.grid.setReelSymbols(reelNum, wildSymbol);
+                cycle.grid.setReelSymbols(reelNum, wildSymbol);
             }
 
         if (numWildReelsExpanded)
-            gc.recordEvent<GridUpdateEvent>(
-                gc.grid, numWildReelsExpanded > 1 ? "Wilds expanded!" : "Wild expanded!");
+            cycle.recordEvent<GridUpdateEvent>(
+                cycle.grid, numWildReelsExpanded > 1 ? "Wilds expanded!" : "Wild expanded!");
     }
 }

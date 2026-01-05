@@ -9,7 +9,7 @@ public:
 	{
 	}
 
-	static void updateMeters(const int totalWin)
+	static void updateMeters(const int totalWin [[maybe_unused]])
 	{
 	}
 

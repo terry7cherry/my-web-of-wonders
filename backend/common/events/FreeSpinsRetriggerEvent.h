@@ -10,7 +10,7 @@ public:
 	{
 	}
 
-	static void updateMeters(const int spins, const int multiplier = 1)
+	static void updateMeters(const int spins [[maybe_unused]], const int multiplier [[maybe_unused]] = 1)
 	{
 	}
 

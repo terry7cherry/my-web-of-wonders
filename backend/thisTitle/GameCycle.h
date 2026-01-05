@@ -18,6 +18,11 @@ struct GameCycleReused
     {
         grid.setPayLines(gameMaths.payLines.at("default"));
     }
+
+    void reset()
+    {
+        grid.reset();
+    }
 };
 
 struct GameCycle
@@ -37,10 +42,10 @@ struct GameCycle
     unsigned int baseNumScatters = 0;
     bool fsTrigger = false;
 
-    explicit GameCycle(const GameMathsNew& gameMaths, GameCycleReused& reused)
+    explicit GameCycle(GameCycleReused& reused)
         : grid(reused.grid)
     {
-        grid.reset();
+        reused.reset();
     }
 
     template <typename T, typename... Args>

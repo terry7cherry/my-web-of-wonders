@@ -80,7 +80,8 @@ protected:
     static std::unordered_map<std::string, T> parseMap(const TaggedRange& range, ValueFunc valueConverter)
     {
         return TaggedDataMap<std::string, T>::parseMap(range, [](const std::string& key,
-                                                                 const std::string& cellLocation)
+                                                                 const std::string& cellLocation [[
+                                                                     maybe_unused]])
                                                        {
                                                            return key;
                                                        },
