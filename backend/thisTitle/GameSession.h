@@ -18,7 +18,7 @@ struct GameSession
     const BetType betType;
 
     GameSession(const int bet, const BetType betType, std::string rtp,
-                const GameMathsNew& gameMaths)
+                const GameMaths& gameMaths)
         : bet(bet),
           betMultiplier(bet / gameMaths.ints.at("minBet")),
           rtp(std::move(rtp)),

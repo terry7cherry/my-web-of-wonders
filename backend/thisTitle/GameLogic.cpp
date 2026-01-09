@@ -16,7 +16,7 @@
 
 namespace GameLogic
 {
-    unsigned int playGame(const GameMathsNew& maths, GameSession& session, GameCycle& cycle, const int force)
+    unsigned int playGame(const GameMaths& maths, GameSession& session, GameCycle& cycle, const int force)
     {
         if (force == 1)
         {
@@ -33,7 +33,7 @@ namespace GameLogic
         return cycle.totalWin;
     }
 
-    unsigned int doBaseGame(const GameMathsNew& maths, GameSession& session, GameCycle& cycle)
+    unsigned int doBaseGame(const GameMaths& maths, GameSession& session, GameCycle& cycle)
     {
         cycle.grid.applySpin(maths.reelSetWeights["baseGame"]);
 
@@ -51,7 +51,7 @@ namespace GameLogic
         return cycle.baseGameWin;
     }
 
-    unsigned int doFreeSpins(const GameMathsNew& maths, GameSession& session, GameCycle& cycle)
+    unsigned int doFreeSpins(const GameMaths& maths, GameSession& session, GameCycle& cycle)
     {
         auto& fsStartSpins = maths.awards["fsStartSpins"];
         cycle.fsInitialSpins = fsStartSpins.at(cycle.baseNumScatters);
@@ -67,7 +67,7 @@ namespace GameLogic
         return cycle.freeSpinsWin;
     }
 
-    unsigned int doOneFreeSpin(const GameMathsNew& maths, GameSession& session, GameCycle& cycle)
+    unsigned int doOneFreeSpin(const GameMaths& maths, GameSession& session, GameCycle& cycle)
     {
         cycle.grid.gridMultiplier = maths.weightTables["fsMultiplierWeights"].pick();
         cycle.recordEvent<NewFreeSpinEvent>(cycle.grid.gridMultiplier);
@@ -100,7 +100,7 @@ namespace GameLogic
         return spinWin;
     }
 
-    void doExpandingWilds(const GameMathsNew& maths [[maybe_unused]], GameCycle& cycle)
+    void doExpandingWilds(const GameMaths& maths [[maybe_unused]], GameCycle& cycle)
     {
         //FIX
         constexpr int wildSymbol = 0;

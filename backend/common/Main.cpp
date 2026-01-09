@@ -162,7 +162,7 @@ void showRtpReport(const uint64_t gamesPlayed, const uint64_t totalBet)
 }
 
 void threadWorker(const std::stop_token& st,
-                  const GameMathsNew& gameMaths,
+                  const GameMaths& gameMaths,
                   std::atomic<uint64_t>& nextBatch,
                   const uint64_t totalBatches,
                   const int batchSize,
@@ -194,7 +194,7 @@ void threadWorker(const std::stop_token& st,
 }
 
 
-void doMonteCarloStdMultiThread(const GameMathsNew& gameMaths, const int gameBet, const uint64_t simGames,
+void doMonteCarloStdMultiThread(const GameMaths& gameMaths, const int gameBet, const uint64_t simGames,
                                 const uint32 globalSeed)
 {
 	constexpr int BATCH_SIZE = 1'000'000;
@@ -244,13 +244,13 @@ void doMonteCarloStdMultiThread(const GameMathsNew& gameMaths, const int gameBet
 	GameCycleCompleteEvent::outputDistribution(false, true);
 }
 
-void doMonteCarloStdMultiThread(const GameMathsNew& gameMaths, const int gameBet, const uint64_t simGames)
+void doMonteCarloStdMultiThread(const GameMaths& gameMaths, const int gameBet, const uint64_t simGames)
 {
 	const uint32 seed = std::rand();
 	doMonteCarloStdMultiThread(gameMaths, gameBet, simGames, seed);
 }
 
-void doMonteCarloStd(const GameMathsNew& gameMaths, const int gameBet, const uint64_t simGames)
+void doMonteCarloStd(const GameMaths& gameMaths, const int gameBet, const uint64_t simGames)
 {
 	gameConsole.clearScreen();
 	setHeader("Std");
@@ -302,7 +302,7 @@ void doMonteCarloStd(const GameMathsNew& gameMaths, const int gameBet, const uin
 	GameCycleCompleteEvent::outputDistribution(false, true);
 }
 
-void doMonteCarloStd(const GameMathsNew& gameMaths, const int gameBet, const uint64_t simGames,
+void doMonteCarloStd(const GameMaths& gameMaths, const int gameBet, const uint64_t simGames,
                      const int globalSeed)
 {
 	mathRng.setSeed(globalSeed);
@@ -469,7 +469,7 @@ int getUsersPlayModeChoice(void)
 void startBackEndDevServer()
 {
 	setParSheet("test.xlsx");
-	const GameMathsNew& gameMaths = *parSheet->gameMathsVariants["default"][96];
+	const GameMaths& gameMaths = *parSheet->gameMathsVariants["default"][96];
 	GameSession gameSession(gameMaths.ints.at("minBet"), BetTypeDefault, "96", gameMaths);
 	gameConsole.initialise(PLAY_MODE);
 	using namespace drogon;
@@ -649,7 +649,7 @@ int main()
 					// all RTP options
 					for (int rtp : parSheet->rtps)
 					{
-						GameMathsNew& gameMaths = *parSheet->gameMathsVariants[betType][rtp];
+						GameMaths& gameMaths = *parSheet->gameMathsVariants[betType][rtp];
 						bet = gameMaths.ints.at("minBet");
 						if (seedSet)
 							doMonteCarloStdMultiThread(gameMaths, bet, simSize * MILLION, globalSeed);
@@ -660,7 +660,7 @@ int main()
 				else
 				{
 					// valid single RTP option
-					GameMathsNew& gameMaths = *parSheet->gameMathsVariants[betType][rtpOption];
+					GameMaths& gameMaths = *parSheet->gameMathsVariants[betType][rtpOption];
 					bet = gameMaths.ints.at("minBet");
 #ifdef SINGLETHREAD
 					if (seedSet)

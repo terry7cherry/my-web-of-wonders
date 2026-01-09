@@ -16,7 +16,7 @@
 //using TypeConfig = absl::flat_hash_map<std::string, T>;
 //using TypeConfig = std::unordered_map<std::string, T>;
 
-class GameMathsNew
+class GameMaths
 {
 public:
     TypeConfig<int> ints{{"int"}};

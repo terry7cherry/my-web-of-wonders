@@ -13,7 +13,7 @@ struct GameCycleReused
 {
     LineGrid grid;
 
-    explicit GameCycleReused(const GameMathsNew& gameMaths) :
+    explicit GameCycleReused(const GameMaths& gameMaths) :
         grid(gameMaths.ints.at("numReels"), gameMaths.ints.at("numRows"), gameMaths.payTables.at("default"))
     {
         grid.setPayLines(gameMaths.payLines.at("default"));

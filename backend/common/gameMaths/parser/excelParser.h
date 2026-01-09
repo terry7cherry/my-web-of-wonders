@@ -16,7 +16,7 @@
 class TaggedSheet
 {
 public:
-    std::unordered_map<std::string, std::unordered_map<int, std::unique_ptr<GameMathsNew>>> gameMathsVariants;
+    std::unordered_map<std::string, std::unordered_map<int, std::unique_ptr<GameMaths>>> gameMathsVariants;
     std::vector<int> rtps;
     std::vector<std::string> betTypes;
     std::string gameTitle;
@@ -286,10 +286,10 @@ public:
     {
         for (const auto& betType : taggedBetTypes[0]->value | std::views::keys)
         {
-            gameMathsVariants[betType] = std::unordered_map<int, std::unique_ptr<GameMathsNew>>();
+            gameMathsVariants[betType] = std::unordered_map<int, std::unique_ptr<GameMaths>>();
             for (const auto& rtp : taggedRtpMaps[0]->value | std::views::keys)
             {
-                auto gameMathsPtr = std::make_unique<GameMathsNew>();
+                auto gameMathsPtr = std::make_unique<GameMaths>();
                 addRelevantElementsToConfigForType(taggedInts, gameMathsPtr->ints, rtp, betType);
                 addRelevantElementsToConfigForType(taggedDoubles, gameMathsPtr->doubles, rtp, betType);
                 addRelevantElementsToConfigForType(taggedStrings, gameMathsPtr->strings, rtp, betType);
