@@ -53,8 +53,8 @@ public:
 
     // Reset the winVector then calculate wins. Applys line multipliers in multiplierVect
     // Re-populate winVector and return total win
-    size_t evaluateWins(size_t betMultiplier, [[maybe_unused]] bool doMeters,
-                        [[maybe_unused]] bool useDebugLine = false);
+    unsigned int evaluateWins(unsigned int betMultiplier, [[maybe_unused]] bool doMeters,
+                              [[maybe_unused]] bool useDebugLine = false);
 
 
     // Identify winning symbols in the grid with the following:
@@ -72,14 +72,14 @@ public:
 
     // Applies Grid.gridMultiplier (or optional passed, specialMultiplier) to all wins
     // Applies multiplier to each win and returns total win after multiplier is applied
-    size_t applyGridMultiplier(MultipliersCombineType combineType, int specialMultiplier = 0);
+    unsigned int applyGridMultiplier(MultipliersCombineType combineType, int specialMultiplier = 0);
 
 
     // check each win to see if includes a value in 'multiplierVect'
     // if more than 1 symbol in a win contains a multiplier, then they are combined using the passed combineType
     //      MultipliersCombineType::multiply or MultipliersCombineType::add
     // Returns the total win after multipliers are applied to all wins
-    size_t applyWinMultipliers(MultipliersCombineType combineType);
+    unsigned int applyWinMultipliers(MultipliersCombineType combineType);
 
     /****************************************/
     // Display methods

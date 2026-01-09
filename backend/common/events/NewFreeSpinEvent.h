@@ -14,11 +14,9 @@ public:
 	}
 
 protected:
-	static constexpr std::string_view EventType = "newFreeSpin";
-
 	std::string_view getEventType() const override
 	{
-		return EventType;
+		return "newFreeSpin";
 	}
 
 	Json::Value getDetailsAsJson() const override

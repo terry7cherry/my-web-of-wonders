@@ -228,7 +228,7 @@ double TaggedRtpMap::convertValue(const std::string& valueStr, const std::string
 
 ReelSet TaggedReelSet::parseReelSet(const TaggedRange& taggedRange, const size_t numRows)
 {
-    std::vector<std::vector<int>> reels(taggedRange.width);
+    std::vector<std::vector<uint8_t>> reels(taggedRange.width);
     const auto& data = taggedRange.data;
     for (size_t rowNum = 1; rowNum < data.size(); rowNum++)
     {
@@ -239,8 +239,8 @@ ReelSet TaggedReelSet::parseReelSet(const TaggedRange& taggedRange, const size_t
             try
             {
                 reels[reelNum].push_back(
-                    TaggedDataHelpers::stringToInt(
-                        valueStr, taggedRange.getCellLocationString(rowNum, reelNum)
+                    static_cast<uint8_t>(TaggedDataHelpers::stringToInt(
+                            valueStr, taggedRange.getCellLocationString(rowNum, reelNum))
                     )
                 );
             }
@@ -453,16 +453,16 @@ PayTable TaggedPayTable::parsePayTable(const TaggedRange& taggedRange)
             ". PayTable must include headers 'symbols' and 'payType' followed "
             "by an int header for each paying OAK.");
 
-    std::vector<std::vector<size_t>> payTableVect;
-    std::vector<size_t> paySymVect;
-    std::vector<size_t> scatterSymVect;
-    std::vector<size_t> wildSymVect;
-    std::vector<size_t> wildNoSubstVect;
+    std::vector<std::vector<unsigned int>> payTableVect;
+    std::vector<uint8_t> paySymVect;
+    std::vector<uint8_t> scatterSymVect;
+    std::vector<uint8_t> wildSymVect;
+    std::vector<uint8_t> wildNoSubstVect;
 
     for (size_t rowNum = 1; rowNum < data.size(); rowNum++)
     {
         const auto& row = data[rowNum];
-        std::vector<size_t> symbolVect(maxOAK + 1, 0);
+        std::vector<unsigned int> symbolVect(maxOAK + 1, 0);
         for (size_t colNum = 0; colNum < headers.size(); colNum++)
             if (auto oak = TaggedDataHelpers::tryStringToInt(headers[colNum]))
             {
@@ -482,7 +482,7 @@ PayTable TaggedPayTable::parsePayTable(const TaggedRange& taggedRange)
                 }
             }
         payTableVect.push_back(symbolVect);
-        const size_t symbolId = rowNum - 1;
+        const uint8_t symbolId = static_cast<uint8_t>(rowNum) - 1;
         const std::string& payType = row[1];
         if (payType == "line")
             paySymVect.push_back(symbolId);

@@ -25,10 +25,15 @@ typedef std::int64_t int64;
 typedef std::uint64_t uint64;
 
 typedef struct {
-	std::string szName;
-	std::string szSimDigits;
-	std::string szMathsDigits;
-	std::string szRtp;
+    std::string szName;
+    std::string szSimDigits;
+    std::string szMathsDigits;
+    std::string szRtp;
 } VERSION_DATA;
 
 //extern VERSION_DATA gameVersion;
+
+// Global sentinels
+// Sentinel to represent "no symbol" for grids storing symbols as uint8_t
+// Use UINT8_MAX (255) so it safely fits in uint8_t and can be compared/promoted to int
+constexpr uint8_t SYMBOL_NONE = UINT8_MAX;

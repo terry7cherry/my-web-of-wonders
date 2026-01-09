@@ -62,6 +62,7 @@ endif ()
 find_package(Drogon CONFIG REQUIRED)
 find_package(Xlnt CONFIG REQUIRED)
 find_package(jsoncpp CONFIG REQUIRED)
+find_package(absl CONFIG REQUIRED)
 
 # --------------------------------------------------------------------
 # Sources & main target
@@ -90,6 +91,7 @@ target_link_libraries(cpp-game
         xlnt::xlnt
         project_warnings
         JsonCpp::JsonCpp
+        absl::flat_hash_map
 
 )
 

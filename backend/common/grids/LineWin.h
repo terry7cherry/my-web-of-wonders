@@ -10,12 +10,12 @@
 class LineWin
 {
 public:
-    size_t symbol = 0;
-    size_t oak = 0;
-    size_t wildCount = 0;
-    size_t multiplier = 1;
-    size_t win = 0;
-    size_t totalWin = 0;
+    uint8_t symbol = 0;
+    unsigned int oak = 0;
+    unsigned int wildCount = 0;
+    unsigned int multiplier = 1;
+    unsigned int win = 0;
+    unsigned int totalWin = 0;
     WinDirections direction = WinDirections::none;
     const std::vector<size_t>* payLine = nullptr;
     int payLineNum = -1;
@@ -37,7 +37,7 @@ public:
         }
     }
 
-    size_t applyMultiplier(size_t newMultiplier, MultipliersCombineType combineType);
+    unsigned int applyMultiplier(unsigned int newMultiplier, MultipliersCombineType combineType);
 
     /****************************************/
     // Display methods
@@ -50,6 +50,6 @@ public:
 
     // Generates text that describes the LineWin
     // returns string in the format, "Line 7: 3 H1 = 40 [x2 line multiplier = 80]"
-    std::string getWinText(const std::map<int, std::string>& symbolMap,
+    std::string getWinText(const std::map<uint8_t, std::string>& symbolMap,
                            bool showDirection = false) const;
 };

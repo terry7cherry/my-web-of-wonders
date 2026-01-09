@@ -40,7 +40,7 @@ public:
         const xlnt::cell_reference cellRef(
             range.top_left().column() + column,
             range.top_left().row() + 1 + row);
-        return sheet.title() + "!" + cellRef.to_string();
+        return "'" + sheet.title() + "'!" + cellRef.to_string();
     }
 
     std::string getCellLocationString(const size_t row,
@@ -53,7 +53,7 @@ public:
 private:
     std::string calculateLocationString() const
     {
-        return sheet.title() + "!" + range.to_string();
+        return "'" + sheet.title() + "'!" + range.to_string();
     }
 
     std::vector<std::string> calculateBetTypes(const Json::Value& betTypesJson) const

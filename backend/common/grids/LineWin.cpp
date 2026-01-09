@@ -1,7 +1,8 @@
 #include "LineWin.h"
 #include <algorithm>
 
-size_t LineWin::applyMultiplier(const size_t newMultiplier, const MultipliersCombineType combineType)
+unsigned int LineWin::applyMultiplier(const unsigned int newMultiplier,
+                                      const MultipliersCombineType combineType)
 {
     if (newMultiplier <= 0)
         reportError("Win.applyMultiplier", "Passed multiplier <= 0");
@@ -16,7 +17,7 @@ size_t LineWin::applyMultiplier(const size_t newMultiplier, const MultipliersCom
                              : multiplier + newMultiplier;
         else if (combineType == MultipliersCombineType::multiply)
             multiplier *= newMultiplier;
-        totalWin = win * multiplier;
+        totalWin = static_cast<unsigned int>(win * multiplier);
     }
     return totalWin;
 }
@@ -89,7 +90,7 @@ std::string LineWin::getWinText(std::string szSymbol, const bool showDirection) 
     return std::string(buffer, size);
 }
 
-std::string LineWin::getWinText(const std::map<int, std::string>& symbolMap,
+std::string LineWin::getWinText(const std::map<uint8_t, std::string>& symbolMap,
                                 const bool showDirection) const
 {
     const std::string szSymbol = symbolMap.at(symbol);

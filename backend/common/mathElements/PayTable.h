@@ -28,16 +28,16 @@ class PayTable
 {
 public:
     // Data
-    std::vector<std::vector<size_t>> payData; // copy of passed pay data
-    size_t numSymbols;
-    std::vector<int> minPaySymbolsVect;
-    std::vector<size_t> paySymVect; // symbols that have a payout
-    std::vector<size_t> scatterSymVect; // symbols that are scatters
-    std::vector<size_t> wildSymVect; // symbols that are wild
-    std::vector<size_t> wildNoSubstVect; // symbols that wilds do not match
+    std::vector<std::vector<unsigned int>> payData; // copy of passed pay data
+    unsigned int numSymbols;
+    std::vector<unsigned int> minPaySymbolsVect;
+    std::vector<uint8_t> paySymVect; // symbols that have a payout
+    std::vector<uint8_t> scatterSymVect; // symbols that are scatters
+    std::vector<uint8_t> wildSymVect; // symbols that are wild
+    std::vector<uint8_t> wildNoSubstVect; // symbols that wilds do not match
     std::vector<SymbolData> symbolVect;
     uint32 wildMask = 0;
-    int minWinSymbols = -1;
+    unsigned int minWinSymbols = 0u;
     size_t maxWinSymbols = 0;
 
     //std::vector<MeterMap*> symbolWinMeterVect;
@@ -45,24 +45,24 @@ public:
 
 
     PayTable(
-        const std::vector<std::vector<size_t>>& payData,
-        const std::vector<size_t>& paySymVect,
-        const std::vector<size_t>& scatterSymVect,
-        const std::vector<size_t>& wildSymVect,
-        const std::vector<size_t>& wildNoSubstVect);
+        const std::vector<std::vector<unsigned int>>& payData,
+        const std::vector<uint8_t>& paySymVect,
+        const std::vector<uint8_t>& scatterSymVect,
+        const std::vector<uint8_t>& wildSymVect,
+        const std::vector<uint8_t>& wildNoSubstVect);
 
     ~PayTable() = default;
 
-    void symbolsInit(int symbolCount);
+    void symbolsInit(unsigned int symbolCount);
 
-    size_t getWin(size_t symbolIndex, size_t symbolCount, bool checkLimits = false) const;
+    unsigned int getWin(uint8_t symbolIndex, unsigned int symbolCount, bool checkLimits = false) const;
 
-    bool isWild(const int symbolId) const
+    bool isWild(const uint8_t symbolId) const
     {
         return symbolVect[symbolId].isWild;
     }
 
-    bool wildSubstitutes(const int symbolId) const
+    bool wildSubstitutes(const uint8_t symbolId) const
     {
         return symbolVect[symbolId].substWild;
     }

@@ -6,47 +6,6 @@
 
 #include "Console.h"
 
-#ifndef _WIN32
-// Fake COORD struct for macOS/Linux
-struct COORD
-{
-	int X;
-	int Y;
-};
-
-// Fake console handles
-using HANDLE = void*;
-using HWND = void*;
-using DWORD = unsigned int;
-
-// Stub functions for Windows API calls
-inline HANDLE GetStdHandle(int) { return nullptr; }
-inline HWND GetConsoleWindow() { return nullptr; }
-inline COORD GetLargestConsoleWindowSize(HANDLE) { return {80, 25}; }
-inline void ShowWindow(HWND, int)
-{
-}
-inline void SetConsoleCursorPosition(HANDLE, COORD)
-{
-}
-inline void SetConsoleTextAttribute(HANDLE, int)
-{
-}
-inline void SetCurrentConsoleFontEx(HANDLE, bool, void*)
-{
-}
-inline void SetWindowPos(HWND, HWND, int, int, int, int, int)
-{
-}
-inline void MoveWindow(HWND, int, int, int, int, bool)
-{
-}
-inline void GetConsoleScreenBufferInfo(HANDLE, void*)
-{
-}
-inline void Sleep(unsigned int ms) { usleep(ms * 1000); }
-#endif
-
 
 #ifdef _WIN32
 // deprecated - does not allow full screen to be set on Windows 11
@@ -87,7 +46,7 @@ void Console::initialise(const bool fullScreen)
 
 // Set the font size.
 // Optionally ensure console is minCharWidth characters wide, by reducing font size
-void Console::newFontSize(int size, int minCharWidth)
+void Console::newFontSize(const SHORT size, const int minCharWidth)
 {
 	fontSize = size;
 
@@ -105,7 +64,7 @@ void Console::newFontSize(int size, int minCharWidth)
 
 // Set the font size.
 // Ensure, by reducing font size, that console has minCharWidth x minCharHeight characters
-void Console::newFontSize(int size, int minCharWidth, int minCharHeight)
+void Console::newFontSize(const SHORT size, int minCharWidth, int minCharHeight)
 {
 	fontSize = size;
 
@@ -121,7 +80,7 @@ void Console::newFontSize(int size, int minCharWidth, int minCharHeight)
 	maxWidth = NewSBSize.X;
 }
 
-int Console::coutStyle(const std::string text, const int style, bool revert)
+int Console::coutStyle(const std::string& text, const WORD style, const bool revert)
 {
 	//GetConsoleScreenBufferInfo(consoleHandle, )
 	setStyle(style);
@@ -130,7 +89,7 @@ int Console::coutStyle(const std::string text, const int style, bool revert)
 	if (revert)
 		setStyle(consoleInfo.wAttributes);
 
-	return (int)text.length();
+	return static_cast<int>(text.length());
 }
 
 // Displays "PRESS [SPACE BAR] " + text
@@ -242,7 +201,8 @@ void Console::setWindowSize(const int width, const int height)
 
 void Console::clearScreen(void)
 {
-	system("cls");
+	for (int i = 0; i < 300; i++)
+		std::cout << "\n";
 }
 
 void Console::setCursorPos(int row, int col)
@@ -252,7 +212,7 @@ void Console::setCursorPos(int row, int col)
 	SetConsoleCursorPosition(hConsole, pos);
 }
 
-void Console::setFontSize(int size)
+void Console::setFontSize(const SHORT size)
 {
 	CONSOLE_FONT_INFOEX font;
 	font.cbSize = sizeof(font);
@@ -267,7 +227,7 @@ void Console::setFontSize(int size)
 	SetCurrentConsoleFontEx(consoleHandle, false, &font);
 }
 
-void Console::setStyle(int style)
+void Console::setStyle(const WORD style)
 {
 	SetConsoleTextAttribute(consoleHandle, style);
 }
@@ -292,7 +252,7 @@ void Console::waitKeyPress(char waitChar)
 
 char Console::waitAnyKey(void)
 {
-	const char keyPress = _getch();
+	const char keyPress = static_cast<char>(_getch());
 	clearBuffer();
 	return keyPress;
 }
@@ -301,7 +261,7 @@ bool Console::getKeyPress(char& key)
 {
 	if (!_kbhit()) return false;
 
-	key = _getch();
+	key = static_cast<char>(_getch());
 	return true;
 }
 
@@ -410,46 +370,63 @@ void Console::setWindowPos(int, int) const
 void Console::setWindowSize(int, int)
 {
 }
-void Console::clearScreen() { system("cls"); }
-void Console::setCursorPos(int, int)
+void Console::clearScreen()
 {
+	// ANSI clear for POSIX terminals
+	std::cout << "\033[0m\033[2J\033[3J\033[H" << std::flush;
 }
-void Console::setStyle(int)
+void Console::setCursorPos(int row, int col)
 {
+	if (row < 1) row = 1;
+	if (col < 1) col = 1;
+	std::printf("\033[%d;%dH", row, col);
+	std::fflush(stdout);
+}
+void Console::setStyle(int style)
+{
+	// Support invert (7 or 112) and reset (others)
+	if (style == 112 || style == 7)
+		std::cout << "\033[7m";
+	else
+		std::cout << "\033[0m";
+	std::cout << std::flush;
 }
 char Console::waitAnyKey()
 {
-	char keyPress = getch();
+	int ch = std::getchar();
+	if (ch == EOF) ch = 0;
 	clearBuffer();
-	return keyPress;
+	return static_cast<char>(ch);
 }
 void Console::waitKeyPress(char waitChar)
 {
-	char key;
-	for (;;)
-	{
-		if (!getKeyPress(key)) continue;
-
-		if (key == waitChar) break;
-	}
-
+	int ch = 0;
+	do { ch = std::getchar(); }
+	while (ch != EOF && static_cast<char>(ch) != waitChar);
 	clearBuffer();
 	blnWaitPress = false;
 }
-bool Console::getKeyPress(char& key)
+bool Console::getKeyPress(char&)
 {
-	bool keyPress = kbhit();
-	if (!kbhit()) return false;
-
-	key = getch();
-	return true;
+	// No non-blocking polling implemented on POSIX in this simplified version
+	return false;
 }
 bool Console::confirmYesNo(std::string) { return true; }
 bool Console::confirmYesNo(std::string, int, int) { return true; }
 void Console::clearBuffer()
 {
-	while (kbhit()) getch();
+	// No-op on POSIX in this simplified version
 }
-std::string Console::centreString(std::string szIn, int, bool) { return szIn; }
+std::string Console::centreString(std::string szIn, int width, bool padAfter)
+{
+	std::string newString((width - szIn.length()) / 2, ' ');
+	newString += szIn;
+	if (padAfter)
+	{
+		if (width > static_cast<int>(newString.length()))
+			newString.append(width - newString.length(), ' ');
+	}
+	return newString;
+}
 
 #endif // _WIN32

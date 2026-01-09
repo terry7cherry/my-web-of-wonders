@@ -113,7 +113,7 @@ public:
 
     // pass the winVect associated with symbol
     // winVect contains bet multiples 
-    inline void addScatterWin(int symbol, std::vector<int> winVect) {
+    inline void addScatterWin(uint8_t symbol, std::vector<int> winVect) {
         auto result = scatterPayMap.emplace(symbol, winVect);
 
 #if _DEBUG
@@ -122,7 +122,7 @@ public:
 #endif
     }
 
-    inline int getScatterWin(int symbol, int count) {
+    inline int getScatterWin(uint8_t symbol, int count) {
         int win = 0;
         if (scatterPayMap.size()) {
             auto it = scatterPayMap.find(symbol);

@@ -63,7 +63,7 @@ public:
 			uint32_t reelMask = 0;
 			for (int row = 0; row < reelHeightVect[reel]; ++row)
 			{
-				const int symId = getReelSymbol(reel, row);
+				const uint8_t symId = getReelSymbol(reel, row);
 				reelMask |= lpPayTable->symbolVect[symId].payMask;
 			}
 			quickWinMask &= reelMask;

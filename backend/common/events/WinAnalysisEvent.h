@@ -19,11 +19,9 @@ public:
 	}
 
 protected:
-	static constexpr std::string_view EventType = "winAnalysis";
-
 	std::string_view getEventType() const override
 	{
-		return EventType;
+		return "winAnalysis";
 	}
 
 	Json::Value getDetailsAsJson() const override;
@@ -31,8 +29,8 @@ protected:
 private:
 	static Json::Value convertWinToJson(const LineWin& win);
 
-	size_t totalWin = 0;
-	size_t gridMultiplier = 1;
+	unsigned int totalWin = 0;
+	unsigned int gridMultiplier = 1;
 	std::array<LineWin, WinAnalysisEventBufferSize> bufferedWins;
 	std::vector<LineWin> excessWins;
 	std::string analysisStage;

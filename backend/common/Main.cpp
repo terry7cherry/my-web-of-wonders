@@ -1,5 +1,3 @@
-//#define SIMPLE
-//#define SINGLETHREAD
 #include <iostream>
 #include <cstdio>
 #include <algorithm>
@@ -19,13 +17,14 @@
 #include "console/Console.h"
 
 // Game includes
-#include "../thisTitle/GameMaths.h"
+#include "defunct/GameMaths.h"
 #include "../thisTitle/GameCycle.h"
 #include "../thisTitle/GameLogic.h"
 #include "../thisTitle/GameSession.h"
 #include "../thisTitle/simConfig.h"
 #include "events/BasicEvent.h"
 #include "events/GameCycleCompleteEvent.h"
+#include "events/FreeSpinsCompleteEvent.h"
 #include "gameMaths/parser/excelParser.h"
 #include "NodeDevServer.h"
 #include "events/threadSafeMeters/MeterUpdate.h"
@@ -53,7 +52,8 @@ void signalHandler(int)
 Console gameConsole;
 std::string gameTitle;
 
-GameMathsNew gameMaths;
+TaggedSheet* parSheet;
+
 bool showGame = false;
 
 enum class simFunction
@@ -83,42 +83,51 @@ int reportAtCount = MILLION / 10;
 int reportCountLimit = 100 * MILLION;
 int reportCount = reportAtCount;
 
-void setHeader(std::string modeText = "", bool show = true)
+void setParSheet(const std::string& parSheetName)
 {
-	//FIX
-	/*
-	gameTitle = gameMaths.gameName;
+	try
+	{
+		parSheet = new TaggedSheet(parSheetName);
+	}
+	catch (const std::exception& e)
+	{
+		std::cerr << "Error loading PAR sheet: " << e.what() << std::endl;
+	}
+	gameTitle = parSheet->gameTitle;
+}
 
+void setHeader(std::string modeText = "", const bool show = true, const bool clearScreen = true)
+{
+	std::string consoleHeader = gameTitle;
 	if (rtpOption != -1)
 	{
-		gameTitle += " RTP";
-		gameTitle += (rtpOption ? gameMaths.rtpOptionVect.at(rtpOption) : "Cycle");
+		consoleHeader += " RTP";
+		consoleHeader += (rtpOption ? std::to_string(rtpOption) : "Cycle");
 	}
 
 	if (RN_STREAM_TEST)
-		gameTitle += " - RN_STREAM_TEST";
+		consoleHeader += " - RN_STREAM_TEST";
 	else
 	{
 		if (PLAY_MODE)
-			gameTitle += " - PLAYABLE";
+			consoleHeader += " - PLAYABLE";
 		else if (OUTPUT_REELS)
-			gameTitle += " - DATA OUTPUT";
+			consoleHeader += " - DATA OUTPUT";
 		else if (simMode == simFunction::reelTest)
-			gameTitle += " - REEL TEST";
+			consoleHeader += " - REEL TEST";
 		else
-			gameTitle += " - MONTE_CARLO";
+			consoleHeader += " - MONTE_CARLO";
 
 		if (FIXED_SEED)
-			gameTitle += "(FIXED SEED)";
+			consoleHeader += "(FIXED SEED)";
 
 		if (forceOption == 1)
-			gameTitle += " - FORCE FS";
+			consoleHeader += " - FORCE FS";
 	}
 	if (modeText.size())
-		gameTitle += (" - " + modeText);
+		consoleHeader += (" - " + modeText);
 
-	gameConsole.setHeader(gameTitle, show);
-	*/
+	gameConsole.setHeader(consoleHeader, show, clearScreen);
 }
 
 void outputData()
@@ -144,20 +153,18 @@ void doMonteCarloSimBB(int bbMode, uint64_t simGames)
 {
 }
 
-void showRtpReport(const uint64_t gamesPlayed, const uint64_t totalBet, const bool showHistory)
+void showRtpReport(const uint64_t gamesPlayed, const uint64_t totalBet)
 {
-	printf("%s%10I64d spins. RTP ", showHistory ? "\n" : "\r", gamesPlayed);
-	std::printf(", %s=%6.2f%%", "total",
-#ifdef SIMPLE
-	            static_cast<double>(GameCycleCompleteEvent::eventTotalWin.load() * 100) / totalBet);
-#else
-	            static_cast<double>(GameCycleCompleteEvent::eventTotalWin.global() * 100) / totalBet);
-#endif
+	std::printf("%s%10I64d spins. RTP ", "\n", gamesPlayed);
+	const long double percent = static_cast<long double>(GameCycleCompleteEvent::eventTotalWin.global()) * 100
+		/ static_cast<double>(totalBet);
+	std::printf(", %s=%6.2Lf%%", "total", percent);
 }
 
 void threadWorker(const std::stop_token& st,
-                  std::atomic<int>& nextBatch,
-                  const int totalBatches,
+                  const GameMathsNew& gameMaths,
+                  std::atomic<uint64_t>& nextBatch,
+                  const uint64_t totalBatches,
                   const int batchSize,
                   const int gameBet,
                   const uint32 globalSeed)
@@ -166,7 +173,7 @@ void threadWorker(const std::stop_token& st,
 
 	while (!st.stop_requested())
 	{
-		const int batch = nextBatch.fetch_add(1, std::memory_order_relaxed);
+		const uint64_t batch = nextBatch.fetch_add(1, std::memory_order_relaxed);
 
 		if (batch >= totalBatches)
 		{
@@ -187,7 +194,8 @@ void threadWorker(const std::stop_token& st,
 }
 
 
-void doMonteCarloStdMultiThread(const int gameBet, const uint64_t simGames, const uint32 globalSeed)
+void doMonteCarloStdMultiThread(const GameMathsNew& gameMaths, const int gameBet, const uint64_t simGames,
+                                const uint32 globalSeed)
 {
 	constexpr int BATCH_SIZE = 1'000'000;
 	const uint64_t totalBatches = simGames / BATCH_SIZE;
@@ -196,9 +204,9 @@ void doMonteCarloStdMultiThread(const int gameBet, const uint64_t simGames, cons
 
 	gameConsole.clearScreen();
 	setHeader("Std");
-	gameConsole.setCursorPos(2);
+	//gameConsole.setCursorPos(2);
 
-	std::atomic<int> nextBatch{0};
+	std::atomic<uint64_t> nextBatch{0};
 	std::vector<std::jthread> threads;
 
 	threads.reserve(threadCount);
@@ -208,6 +216,7 @@ void doMonteCarloStdMultiThread(const int gameBet, const uint64_t simGames, cons
 	{
 		threads.emplace_back(
 			threadWorker,
+			std::cref(gameMaths),
 			std::ref(nextBatch),
 			totalBatches,
 			BATCH_SIZE,
@@ -215,37 +224,37 @@ void doMonteCarloStdMultiThread(const int gameBet, const uint64_t simGames, cons
 			globalSeed
 		);
 	}
-	int last_seen = 0;
+	uint64_t last_seen = 0;
 	while (last_seen < simGames)
 	{
-#ifdef SIMPLE
-		const uint64_t current = GameCycleCompleteEvent::eventTotalCycles.load();
-#else
-		const uint64_t current = GameCycleCompleteEvent::eventTotalCycles.global();
-#endif
+		const uint64_t current = GameCycleCompleteEvent::eventTotalHits.global();
 		if (current != last_seen)
 		{
-			showRtpReport(current, bet * current, SHOW_RTP_REPORT_HISTORY);
+			showRtpReport(current, bet * current);
 			last_seen = current;
 		}
 		std::this_thread::sleep_for(std::chrono::milliseconds(500));
 	}
-	showRtpReport(simGames, bet * simGames, SHOW_RTP_REPORT_HISTORY);
+	showRtpReport(simGames, bet * simGames);
 	simTimer.outputTime();
+	std::printf("%20s,%12s,%12s,%12s,%12s,%12s,%12s\n",
+	            "Event", "RTP", "HitRate", "AvgPay", "AvgWin", "WinChance", "WinRate");
+	GameCycleCompleteEvent::finalReport(simGames, bet);
+	FreeSpinsCompleteEvent::finalReport(simGames, bet);
 	GameCycleCompleteEvent::outputDistribution(false, true);
 }
 
-void doMonteCarloStdMultiThread(const int gameBet, const uint64_t simGames)
+void doMonteCarloStdMultiThread(const GameMathsNew& gameMaths, const int gameBet, const uint64_t simGames)
 {
 	const uint32 seed = std::rand();
-	doMonteCarloStdMultiThread(gameBet, simGames, seed);
+	doMonteCarloStdMultiThread(gameMaths, gameBet, simGames, seed);
 }
 
-void doMonteCarloStd(const int gameBet, const uint64_t simGames)
+void doMonteCarloStd(const GameMathsNew& gameMaths, const int gameBet, const uint64_t simGames)
 {
 	gameConsole.clearScreen();
 	setHeader("Std");
-	gameConsole.setCursorPos(2);
+	//gameConsole.setCursorPos(2);
 
 	GameCycleReused reused(gameMaths);
 
@@ -274,7 +283,7 @@ void doMonteCarloStd(const int gameBet, const uint64_t simGames)
 		if (--reportCount == 0)
 		{
 			int64_t gamesPlayed = gameCount + 1;
-			showRtpReport(gamesPlayed, bet * gamesPlayed, SHOW_RTP_REPORT_HISTORY);
+			showRtpReport(gamesPlayed, bet * gamesPlayed);
 			if ((reportAtCount != reportCountLimit) && (gamesPlayed == (10 * reportAtCount)))
 				reportAtCount *= 10;
 			reportCount = reportAtCount;
@@ -291,6 +300,13 @@ void doMonteCarloStd(const int gameBet, const uint64_t simGames)
 	printf("\n");
 	simTimer.outputTime();
 	GameCycleCompleteEvent::outputDistribution(false, true);
+}
+
+void doMonteCarloStd(const GameMathsNew& gameMaths, const int gameBet, const uint64_t simGames,
+                     const int globalSeed)
+{
+	mathRng.setSeed(globalSeed);
+	doMonteCarloStd(gameMaths, gameBet, simGames);
 }
 
 
@@ -333,7 +349,7 @@ void doReelTest(int gameBet, uint64_t simGames, int reelsetId)
 		if (--reportCount == 0)
 		{
 			int64_t gamesPlayed = gameCount + 1;
-			gameMaths.rtpReport(gamesPlayed, bet * gamesPlayed, SHOW_RTP_REPORT_HISTORY);
+			gameMaths.rtpReport(gamesPlayed, bet * gamesPlayed);
 			if ((reportAtCount != reportCountLimit) && (gamesPlayed == (10 * reportAtCount)))
 				reportAtCount *= 10;
 			reportCount = reportAtCount;
@@ -376,103 +392,65 @@ void doReelTest(int gameBet, uint64_t simGames, int reelsetId)
 //	}
 //}
 
-// return index + 1 from gameMaths options
-// return 0 to sim all availble options
-int getUsersRtpChoice(void)
+int getUserChoiceFromList(const std::vector<std::string>& choices, const std::string& prompt)
 {
-	//FIX
-	/*
-	bool giveAllRtpOption = !PLAY_MODE && !RN_STREAM_TEST;
-	int lowOption = giveAllRtpOption ? 0 : 1;
-	int highOption = (int)gameMaths.rtpOptionVect.size();
-
-	gameConsole.setCursorPos(2);
-	gameConsole.coutStyle("\tSELLECT RTP", CONSOLE_INVERT);
+	setHeader();
 	std::cout << std::endl;
+	gameConsole.coutStyle("\t" + prompt, CONSOLE_INVERT);
+	std::cout << std::endl;
+	int choiceNum = 0;
+	for (const auto& choice : choices)
+		std::cout << std::format("\t\t{}) {}\n", choiceNum++, choice);
 
-	if (giveAllRtpOption)
-		printf("\t\t0) All\n");
-	int pick = 1;
-	for (int i = 0; i < (int)gameMaths.rtpOptionVect.size(); i++, pick++)
-		printf("\t\t%d) %s\n", pick, gameMaths.rtpOptionVect[i].c_str());
-
+	int newChoice = 0;
 	do
 	{
-		std::cout << "Enter a valid Option >";
-		std::cin >> pick;
+		std::cout << "\tEnter a valid Option >";
+		std::cin >> newChoice;
 	}
-	while (pick < lowOption || pick > highOption);
-	return pick;
-	*/
-	return 96;
+	while (newChoice < 0 || newChoice >= (int)choices.size());
+	return newChoice;
+}
+
+// return index + 1 from gameMaths options
+// return 0 to sim all available options
+int getUsersRtpChoice()
+{
+	constexpr bool giveAllRtpOption = !RN_STREAM_TEST;
+
+	std::vector<std::string> rtpOptionStrings;
+	if (giveAllRtpOption) rtpOptionStrings.emplace_back("All");
+	for (const int rtp : parSheet->rtps)
+		rtpOptionStrings.emplace_back(std::to_string(rtp));
+
+	const int userChoice = getUserChoiceFromList(rtpOptionStrings, "SELECT RTP");
+
+	return userChoice;
 }
 
 // return index + 1 from gameMaths options
 // return 0 to sim all availble options
-simFunction getUserSimModeChoice(void)
+std::string getUserBetTypeChoice(void)
 {
-	// get user configuration
-	int newMode = 0;
-
-	gameConsole.setCursorPos(2);
-	gameConsole.coutStyle("\tSET SIM MODE", CONSOLE_INVERT);
-	std::cout << std::endl;
-	//printf("\t0) Cycle Evaluation\n");
-	printf("\t\t1) Std-Game Monte-Carlo\n");
-	printf("\t\t2) Reel Test\n");
-#if 1
-	do
-	{
-		std::cout << "\tEnter a valid Option >";
-		std::cin >> newMode;
-	}
-	while (newMode < 1 || newMode > 2);
-#else
-	printf("\t\t3) BB-R3 Monte-Carlo\n");
-	printf("\t\t4) BB-R4 Monte-Carlo\n");
-	printf("\t\t5) BB-R5 Monte-Carlo\n");
-	if (!RN_STREAM_TEST)
-		printf("\t\t6) All BB Options Monte-Carlo\n");
-	do
-	{
-		std::cout << "\tEnter a valid Option >";
-		std::cin >> newMode;
-	}
-	while (newMode < 1 || newMode > (RN_STREAM_TEST ? 5 : 6));
-#endif
-	return (newMode == 1) ? simFunction::stdMontecarlo : simFunction::reelTest;
+	const int userChoice = getUserChoiceFromList(parSheet->betTypes, "SELECT RTP");
+	return parSheet->betTypes.at(userChoice);
 }
 
 // Prompt user to select play zone
 int getUserForceSelection(void)
 {
-	int force = 0;
-	if (DO_FREE_SPINS == false)
-		return force;
-
-
-	gameConsole.setCursorPos(2);
-	gameConsole.coutStyle("\tSET GAME FORCE\t", CONSOLE_INVERT);
-	std::cout << std::endl;
-	std::cout << "\t\t0   None - Random play\n";
-	std::cout << "\t\t1   Free Spins\n";
-	do
-	{
-		std::cout << "\tEnter a valid Option >";
-		std::cin >> force;
-	}
-	while (force < 0 || force > 1);
-
-	if (force == 1 && DO_FREE_SPINS == false)
-		force = 0;
-	return force;
+	std::vector<std::string> forceStrings;
+	forceStrings.emplace_back("None - Random play");
+	forceStrings.emplace_back("Free Spins");
+	const int userChoice = getUserChoiceFromList(forceStrings, "SET GAME FORCE");
+	return userChoice;
 }
 
 int getUsersPlayModeChoice(void)
 {
 	// get user configuration
 	int newMode = 0;
-	gameConsole.setCursorPos(2);
+	//gameConsole.setCursorPos(2);
 	gameConsole.coutStyle("\tSET PLAY MODE\t", CONSOLE_INVERT);
 	std::cout << std::endl;
 	printf("\t\t1) All games\n");
@@ -490,9 +468,8 @@ int getUsersPlayModeChoice(void)
 #ifdef FRONTEND
 void startBackEndDevServer()
 {
-	TaggedSheet* sheet = new TaggedSheet();
-	const GameMathsNew* gameMathsPtr = sheet->gameMathsVariants["default"][96];
-	const GameMathsNew gameMaths = *gameMathsPtr;
+	setParSheet("test.xlsx");
+	const GameMathsNew& gameMaths = *parSheet->gameMathsVariants["default"][96];
 	GameSession gameSession(gameMaths.ints.at("minBet"), BetTypeDefault, "96", gameMaths);
 	gameConsole.initialise(PLAY_MODE);
 	using namespace drogon;
@@ -587,10 +564,7 @@ int main()
 		return 0;
 	}
 
-	TaggedSheet* sheet = new TaggedSheet();
-	const GameMathsNew* gameMathsPtr = sheet->gameMathsVariants["default"][96];
-	gameMaths = *gameMathsPtr;
-	bet = gameMaths.ints.at("minBet");
+	setParSheet("test.xlsx");
 	if (RN_STREAM_TEST)
 	{
 		mathRng.setRng(RngOptions::data);
@@ -600,7 +574,6 @@ int main()
 		mathRng.setSeed(0);
 	else
 		mathRng.setSeed();
-	setHeader();
 
 	if (RN_STREAM_TEST)
 	{
@@ -621,8 +594,8 @@ int main()
 	}
 	else
 	{
-		simMode = getUserSimModeChoice();
-		setHeader();
+		simMode = simFunction::stdMontecarlo;
+		setHeader("", true, false);
 
 		printf("\nEnter number of Simulation runs in Millions: ");
 		std::cin >> simSize;
@@ -651,84 +624,55 @@ int main()
 		}
 		else
 		{
-			// Monte-Carlo options
-			//FIX
-			//int rtpChoice = getUsersRtpChoice();
-			//rtpOption = gameMaths.rtpSetOption(rtpChoice - 1);
-			setHeader();
+			const int rtpChoice = getUsersRtpChoice();
+			if (rtpChoice == 0)
+				rtpOption = -1;
+			else
+				rtpOption = parSheet->rtps.at(rtpChoice - 1);
+			const std::string betType = getUserBetTypeChoice();
 			forceOption = getUserForceSelection();
 			setHeader();
+
+			std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+			std::string seedString;
+			printf("\nEnter fixed seed. (Leave blank for random.)");
+			std::getline(std::cin, seedString);
+			const bool seedSet = !seedString.empty();
+			int globalSeed = 0;
+			if (seedSet)
+				globalSeed = std::stoi(seedString);
 			if (simMode == simFunction::stdMontecarlo)
 			{
 				// Std-Game Monte-Carlo
 				if (rtpOption == 0)
 				{
-					//FIX
-					/*
 					// all RTP options
-					for (int rtpIndex = 0; rtpIndex < gameMaths.rtpOptionVect.size(); rtpIndex++)
+					for (int rtp : parSheet->rtps)
 					{
-						//if (gameMaths.rtpSetOption(rtpIndex))
-						doMonteCarloStd(bet, simSize * MILLION);
+						GameMathsNew& gameMaths = *parSheet->gameMathsVariants[betType][rtp];
+						bet = gameMaths.ints.at("minBet");
+						if (seedSet)
+							doMonteCarloStdMultiThread(gameMaths, bet, simSize * MILLION, globalSeed);
+						else
+							doMonteCarloStdMultiThread(gameMaths, bet, simSize * MILLION);
 					}
-					*/
 				}
 				else
 				{
 					// valid single RTP option
+					GameMathsNew& gameMaths = *parSheet->gameMathsVariants[betType][rtpOption];
+					bet = gameMaths.ints.at("minBet");
 #ifdef SINGLETHREAD
-					doMonteCarloStd(bet, simSize * MILLION);
+					if (seedSet)
+						doMonteCarloStd(gameMaths, bet, simSize * MILLION, globalSeed);
+					else
+						doMonteCarloStd(gameMaths, bet, simSize * MILLION);
 #else
-					doMonteCarloStdMultiThread(bet, simSize * MILLION);
+					if (seedSet)
+						doMonteCarloStdMultiThread(gameMaths, bet, simSize * MILLION, globalSeed);
+					else
+						doMonteCarloStdMultiThread(gameMaths, bet, simSize * MILLION);
 #endif
-				}
-			}
-			else if (simMode == simFunction::bbMontecarlo)
-			{
-				// all BB Monte-Carlo
-				if (rtpOption == 0)
-				{
-					//FIX
-					/*
-					// all RTP options
-					for (int bbMode = 0; bbMode < 4; bbMode++)
-					{
-						for (int rtpIndex = 0; rtpIndex < gameMaths.rtpOptionVect.size(); rtpIndex
-						     ++)
-						{
-							//if (gameMaths.rtpSetOption(rtpIndex))
-							doMonteCarloSimBB(bbMode, simSize * MILLION);
-						}
-					}
-					*/
-				}
-				else
-				{
-					// valid single RTP option
-					for (int bbMode = 0; bbMode < 4; bbMode++)
-						doMonteCarloSimBB(bbMode, simSize * MILLION);
-				}
-			}
-			else
-			{
-				// single BB Monte-Carlo
-				int bbMode = (int)simMode - (int)simFunction::bbMontecarlo;
-				if (rtpOption == 0)
-				{
-					//FIX
-					/*
-					// all RTP options
-					for (int rtpIndex = 0; rtpIndex < gameMaths.rtpOptionVect.size(); rtpIndex++)
-					{
-						//if (rtpOption = gameMaths.rtpSetOption(rtpIndex))
-						doMonteCarloSimBB(bbMode, simSize * MILLION);
-					}
-					*/
-				}
-				else
-				{
-					// valid single RTP option
-					doMonteCarloSimBB(bbMode, simSize * MILLION);
 				}
 			}
 		}

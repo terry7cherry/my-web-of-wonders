@@ -3,35 +3,42 @@
 // cpp-dev-library
 #include "../headers/pch.h"
 #include "LineGrid.h"
+#include "LineWin.h"
 
 
 class BothWaysLineGrid :
-		public LineGrid {
+	public LineGrid
+{
 public:
 	uint32_t lrMask = UINT32_MAX;
 	uint32_t rlMask = UINT32_MAX;
 
-	BothWaysLineGrid(int reels, int rows) : LineGrid(reels, rows) {
+	BothWaysLineGrid(int reels, int rows) : LineGrid(reels, rows)
+	{
 	}
 
-	uint32_t quickWinCheck(void) {
+	uint32_t quickWinCheck(void)
+	{
 		int stopReel = 0;
 
 		uint32_t quickWinMask = lrMask = rlMask = 0; // default no wins
 		if (lpPayTable)
 			stopReel = lpPayTable->minWinSymbols;
-		else {
+		else
+		{
 			reportError("PayGrid:quickWinCheck", "No pay table set");
 			return quickWinMask;
 		}
-		int symId = -1;
+		uint8_t symId = SYMBOL_NONE;
 
 		// check left_right
 		lrMask = UINT32_MAX;
-		for (int reel = 0; reel < stopReel; ++reel) {
+		for (int reel = 0; reel < stopReel; ++reel)
+		{
 			uint32_t reelMask = 0;
-			for (int row = 0; row < reelHeightVect[reel]; ++row) {
-				if ((symId = getReelSymbol(reel, row)) >= 0)
+			for (int row = 0; row < reelHeightVect[reel]; ++row)
+			{
+				if ((symId = getReelSymbol(reel, row)) != SYMBOL_NONE)
 					reelMask |= symbolVect[symId].payMask;
 			}
 			lrMask &= reelMask;
@@ -40,10 +47,12 @@ public:
 		// check right_left
 		stopReel = maxReels - lpPayTable->minWinSymbols;
 		rlMask = UINT32_MAX;
-		for (int reel = maxReels - 1; reel >= stopReel; --reel) {
+		for (int reel = maxReels - 1; reel >= stopReel; --reel)
+		{
 			uint32_t reelMask = 0;
-			for (int row = 0; row < reelHeightVect[reel]; ++row) {
-				if ((symId = getReelSymbol(reel, row)) >= 0)
+			for (int row = 0; row < reelHeightVect[reel]; ++row)
+			{
+				if ((symId = getReelSymbol(reel, row)) != SYMBOL_NONE)
 					reelMask |= symbolVect[symId].payMask;
 			}
 			rlMask &= reelMask;
@@ -58,7 +67,8 @@ public:
 	// Re-populate winVector and return total win
 	// payMaxOakTwice = true: pays both directions for 5oak win, L-R and R-L
 	// payMaxOakTwice = false: pays 5oak win as a single pay line, not both directions
-	int evaluateWins(int betMultiplier, bool doMeters, bool payMaxOakTwice = true) {
+	int evaluateWins(int betMultiplier, bool doMeters, bool payMaxOakTwice = true)
+	{
 		int totalWin = 0;
 
 		winVector.clear();
@@ -74,18 +84,20 @@ public:
 	}
 
 	// Calculate win for each symbol present in first reel and in lrMask
-	int lrWinCheck(int betMultiplier, bool doMeters) {
+	int lrWinCheck(int betMultiplier, bool doMeters)
+	{
 		int totalWin = 0;
 		int lineMultiplier, wildMultiplier = 1;
 		int number, consecutiveWilds, wildCount = 0;
 		int startSymbol, symbolToMatch;
 		int startReel = 0;
 
-		for (int line = 0; line < lpPayLines->lineCount; ++line) {
+		for (int line = 0; line < lpPayLines->lineCount; ++line)
+		{
 			bool blnCheckLine;
 			int row = lpPayLines->getRow(line, startReel);
 			startSymbol = symbolToMatch = symbols[startReel][row];
-			symbolData &startSymData = symbolVect[startSymbol];
+			symbolData& startSymData = symbolVect[startSymbol];
 
 			if (startSymData.isScatter && !startSymData.isWild)
 				blnCheckLine = false;
@@ -98,37 +110,46 @@ public:
 
 			number = consecutiveWilds = wildCount = 0;
 			wildMultiplier = lineMultiplier = 1;
-			for (int reel = startReel; reel < maxReels; reel++) {
+			for (int reel = startReel; reel < maxReels; reel++)
+			{
 				// start from beginning again to account for multipliers
 				row = lpPayLines->getRow(line, reel);
-				int nextSym = symbols[reel][row];
-				symbolData &nextSymData = symbolVect[nextSym];
+				uint8_t nextSym = symbols[reel][row];
+				symbolData& nextSymData = symbolVect[nextSym];
 
 				if (nextSymData.isScatter && !nextSymData.isWild)
 					break;
-				if (symbolVect[symbolToMatch].isWild || nextSymData.isWild || nextSym == symbolToMatch) {
+				if (symbolVect[symbolToMatch].isWild || nextSymData.isWild || nextSym == symbolToMatch)
+				{
 					number++;
 					if (multiplierVect[reel][row] > 0)
 						lineMultiplier *= multiplierVect[reel][row];
-					if (symbolVect[symbolToMatch].isWild) {
-						if (nextSymData.isWild) {
+					if (symbolVect[symbolToMatch].isWild)
+					{
+						if (nextSymData.isWild)
+						{
 							consecutiveWilds++;
 							if (multiplierVect[reel][row] > 0)
 								wildMultiplier *= multiplierVect[reel][row];
-						} else
+						}
+						else
 							symbolToMatch = nextSym;
 					}
 					if (nextSymData.isWild)
 						wildCount++;
-				} else
+				}
+				else
 					break;
 			}
 
-			if (number >= lpPayTable->minPaySymbolsVect[symbolToMatch]) {
-				if (consecutiveWilds >= lpPayTable->minWinSymbols) {
+			if (number >= lpPayTable->minPaySymbolsVect[symbolToMatch])
+			{
+				if (consecutiveWilds >= lpPayTable->minWinSymbols)
+				{
 					// Wilds make a payout. If wins are equal pay more symbols in preference to less wilds
 					if ((wildMultiplier * lpPayTable->getWin(startSymbol, consecutiveWilds)) > (
-						    lineMultiplier * lpPayTable->getWin(symbolToMatch, number))) {
+						lineMultiplier * lpPayTable->getWin(symbolToMatch, number)))
+					{
 						//  Wild payout > symbol payout e.g. W-W-W > W-W-W-sym.
 						symbolToMatch = startSymbol;
 						number = consecutiveWilds;
@@ -137,16 +158,18 @@ public:
 				}
 
 				int win = betMultiplier * lpPayTable->getWin(symbolToMatch, number);
-				if (win) {
+				if (win)
+				{
 					totalWin += (win * lineMultiplier);
 					//if (doMeters)
 					//	lpPayTable->meterWin(symbolToMatch, number);
 
 					// add additional line win data - possibly only needed for playable
-					Win lineWin;
+					LineWin lineWin;
 					lineWin.payLine = line;
 					lineWin.win = lineWin.totalWin = win;
-					if (lineMultiplier > 1) {
+					if (lineMultiplier > 1)
+					{
 						lineWin.multiplier = lineMultiplier;
 						lineWin.totalWin *= lineMultiplier;
 					}
@@ -162,18 +185,20 @@ public:
 	}
 
 	// Calculate win for each symbol present in last reel and in rlMask
-	int rlWinCheck(int betMultiplier, bool doMeters) {
+	int rlWinCheck(int betMultiplier, bool doMeters)
+	{
 		int totalWin = 0;
 		int lineMultiplier, wildMultiplier = 1;
 		int number, consecutiveWilds, wildCount = 0;
 		int startSymbol, symbolToMatch;
 		int startReel = maxReels - 1;
 
-		for (int line = 0; line < lpPayLines->lineCount; ++line) {
+		for (int line = 0; line < lpPayLines->lineCount; ++line)
+		{
 			bool blnCheckLine;
 			int row = lpPayLines->getRow(line, startReel);
 			startSymbol = symbolToMatch = symbols[startReel][row];
-			symbolData &startSymData = symbolVect[startSymbol];
+			symbolData& startSymData = symbolVect[startSymbol];
 
 			if (startSymData.isScatter && !startSymData.isWild)
 				blnCheckLine = false;
@@ -186,37 +211,46 @@ public:
 
 			number = consecutiveWilds = wildCount = 0;
 			wildMultiplier = lineMultiplier = 1;
-			for (int reel = startReel; reel >= 0; reel--) {
+			for (int reel = startReel; reel >= 0; reel--)
+			{
 				// start from beginning again to account for multipliers
 				row = lpPayLines->getRow(line, reel);
-				int nextSym = symbols[reel][row];
-				symbolData &nextSymData = symbolVect[nextSym];
+				uint8_t nextSym = symbols[reel][row];
+				symbolData& nextSymData = symbolVect[nextSym];
 
 				if (nextSymData.isScatter && !nextSymData.isWild)
 					break;
-				if (symbolVect[symbolToMatch].isWild || nextSymData.isWild || nextSym == symbolToMatch) {
+				if (symbolVect[symbolToMatch].isWild || nextSymData.isWild || nextSym == symbolToMatch)
+				{
 					number++;
 					if (multiplierVect[reel][row] > 0)
 						lineMultiplier *= multiplierVect[reel][row];
-					if (symbolVect[symbolToMatch].isWild) {
-						if (nextSymData.isWild) {
+					if (symbolVect[symbolToMatch].isWild)
+					{
+						if (nextSymData.isWild)
+						{
 							consecutiveWilds++;
 							if (multiplierVect[reel][row] > 0)
 								wildMultiplier *= multiplierVect[reel][row];
-						} else
+						}
+						else
 							symbolToMatch = nextSym;
 					}
 					if (nextSymData.isWild)
 						wildCount++;
-				} else
+				}
+				else
 					break;
 			}
 
-			if (number >= lpPayTable->minPaySymbolsVect[symbolToMatch]) {
-				if (consecutiveWilds >= lpPayTable->minWinSymbols) {
+			if (number >= lpPayTable->minPaySymbolsVect[symbolToMatch])
+			{
+				if (consecutiveWilds >= lpPayTable->minWinSymbols)
+				{
 					// Wilds make a payout. If wins are equal pay more symbols in preference to less wilds
 					if ((wildMultiplier * lpPayTable->getWin(startSymbol, consecutiveWilds)) > (
-						    lineMultiplier * lpPayTable->getWin(symbolToMatch, number))) {
+						lineMultiplier * lpPayTable->getWin(symbolToMatch, number)))
+					{
 						//  Wild payout > symbol payout e.g. W-W-W > W-W-W-sym.
 						symbolToMatch = startSymbol;
 						number = consecutiveWilds;
@@ -225,16 +259,18 @@ public:
 				}
 
 				int win = betMultiplier * lpPayTable->getWin(symbolToMatch, number);
-				if (win) {
+				if (win)
+				{
 					totalWin += (win * lineMultiplier);
 					//if (doMeters)
 					//	lpPayTable->meterWin(symbolToMatch, number);
 
 					// add additional line win data - possibly only needed for playable
-					Win lineWin;
-					lineWin.payLine = line;
+					LineWin lineWin;
+					lineWin.payLine = &lpPayLines->lineVect[line];
 					lineWin.win = lineWin.totalWin = win;
-					if (lineMultiplier > 1) {
+					if (lineMultiplier > 1)
+					{
 						lineWin.multiplier = lineMultiplier;
 						lineWin.totalWin *= lineMultiplier;
 					}
@@ -250,25 +286,33 @@ public:
 	}
 
 
-	int removeMaxOakDuplicates(void) {
-		std::vector<Win>::iterator it1, it2;
+	int removeMaxOakDuplicates(void)
+	{
+		std::vector<LineWin>::iterator it1, it2;
 		int lostWin = 0;
 
 		it1 = winVector.begin();
-		do {
-			if (it1->oak == this->maxReels) {
+		do
+		{
+			if (it1->oak == this->maxReels)
+			{
 				bool done = false;
 				it2 = it1 + 1;
-				do {
-					if (it1->payLine == it2->payLine) {
+				do
+				{
+					if (it1->payLine == it2->payLine)
+					{
 						lostWin += it2->totalWin;
 						it2 = winVector.erase(it2);
 						done = true;
-					} else
+					}
+					else
 						it2++;
-				} while (!done && it2 != winVector.end());
+				}
+				while (!done && it2 != winVector.end());
 			}
-		} while (++it1 != winVector.end());
+		}
+		while (++it1 != winVector.end());
 		return lostWin;
 	}
 };

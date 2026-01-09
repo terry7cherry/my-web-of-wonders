@@ -62,11 +62,11 @@ public:
 
 		// check for symbols on 1st reel and in quickWinMask, includes wilds
 		int reel = 0;
-		int symId;
+		uint8_t symId;
 		for (int row = 0; row < reelHeightVect[reel]; row++)
 		{
 			// build list of symbols to check for matches
-			if ((symId = getReelSymbol(reel, row)) == -1)
+			if ((symId = getReelSymbol(reel, row)) == SYMBOL_NONE)
 				break;
 			const SymbolData& symData = lpPayTable->symbolVect[symId];
 			if (symData.isWild)
@@ -108,7 +108,7 @@ public:
 			for (int row = 0; row < reelHeightVect[reel]; row++)
 			{
 				// look for winning symbols on this reel
-				if ((symId = getReelSymbol(reel, row)) == -1)
+				if ((symId = getReelSymbol(reel, row)) == SYMBOL_NONE)
 					break;
 				SymbolData& symData = lpPayTable->symbolVect[symId];
 
@@ -158,7 +158,7 @@ public:
 
 	// Checks if there is a win for passed "symbol"
 	// If so applies multipler to the win and returns the incremental win: (initialWin * multiplier) - initialWin
-	int setWinMultiplier(const int symbol, const int multiplier)
+	int setWinMultiplier(const uint8_t symbol, const int multiplier)
 	{
 		int newWin = 0;
 		int initialWin = 0;

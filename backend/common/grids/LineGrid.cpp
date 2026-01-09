@@ -1,21 +1,21 @@
 #include "LineGrid.h"
 
-size_t LineGrid::evaluateWins(const size_t betMultiplier, [[maybe_unused]] bool doMeters,
-                              [[maybe_unused]] bool useDebugLine)
+unsigned int LineGrid::evaluateWins(const unsigned int betMultiplier, [[maybe_unused]] bool doMeters,
+                                    [[maybe_unused]] bool useDebugLine)
 {
-    size_t totalWin = 0;
+    unsigned int totalWin = 0;
 
     winVector.clear();
 
     if ((quickWinMask = quickWinCheck()))
     {
-        int symbolToMatch;
-        int startSymbol;
-        size_t wildCount = 0;
-        size_t consecutiveWilds;
-        size_t number;
-        size_t wildMultiplier;
-        size_t lineMultiplier;
+        uint8_t symbolToMatch;
+        uint8_t startSymbol;
+        unsigned int wildCount = 0;
+        unsigned int consecutiveWilds;
+        unsigned int number;
+        unsigned int wildMultiplier;
+        unsigned int lineMultiplier;
         const std::vector<SymbolData>& symbolVect = lpPayTable->symbolVect;
         for (int line = 0; line < lpPayLines->lineCount; ++line)
         {
@@ -40,7 +40,7 @@ size_t LineGrid::evaluateWins(const size_t betMultiplier, [[maybe_unused]] bool 
             {
                 // start from beginning again to account for multipliers
                 row = lpPayLines->getRow(line, reel);
-                int nextSym = reelSymbolVect[reel][row];
+                uint8_t nextSym = reelSymbolVect[reel][row];
                 const SymbolData& nextSymData = symbolVect[nextSym];
 
                 if (nextSymData.isScatter && !nextSymData.isWild)
@@ -86,11 +86,12 @@ size_t LineGrid::evaluateWins(const size_t betMultiplier, [[maybe_unused]] bool 
                     }
                 }
 
-                size_t win = betMultiplier * lpPayTable->getWin(
-                    symbolToMatch, number);
+                unsigned int win = static_cast<unsigned int>(
+                    betMultiplier * lpPayTable->getWin(symbolToMatch, number)
+                );
                 if (win)
                 {
-                    totalWin += (win * lineMultiplier);
+                    totalWin += static_cast<unsigned int>(win * lineMultiplier);
                     //if (doMeters)
                     //	lpPayTable->meterWin(symbolToMatch, number);
 
@@ -103,7 +104,9 @@ size_t LineGrid::evaluateWins(const size_t betMultiplier, [[maybe_unused]] bool 
                     if (lineMultiplier > 1)
                     {
                         lineWin.multiplier = lineMultiplier;
-                        lineWin.totalWin *= lineMultiplier;
+                        lineWin.totalWin = static_cast<unsigned int>(
+                            lineWin.totalWin * lineMultiplier
+                        );
                     }
                     lineWin.oak = number;
                     lineWin.wildCount = wildCount;
@@ -116,12 +119,12 @@ size_t LineGrid::evaluateWins(const size_t betMultiplier, [[maybe_unused]] bool 
         }
     }
 
-    for (size_t scatterSymbol : lpPayTable->scatterSymVect)
+    for (uint8_t scatterSymbol : lpPayTable->scatterSymVect)
     {
-        int symbolCount = this->getSymbolCount(scatterSymbol);
+        unsigned int symbolCount = this->getSymbolCount(scatterSymbol);
         if (symbolCount < lpPayTable->minPaySymbolsVect[scatterSymbol])
             continue;
-        if (size_t win = betMultiplier * lpPayLines->lineCount * lpPayTable->
+        if (unsigned int win = betMultiplier * static_cast<unsigned int>(lpPayLines->lineCount) * lpPayTable->
             getWin(scatterSymbol, symbolCount))
         {
             totalWin += win;
@@ -148,7 +151,7 @@ int LineGrid::setWinningSymbols()
         {
             if (lineWin.direction == WinDirections::left_right)
             {
-                for (int reel = 0; reel < lineWin.oak; reel++)
+                for (size_t reel = 0; reel < lineWin.oak; reel++)
                     isWinVect[reel][(*lineWin.payLine)[reel]] = true;
             }
             else
@@ -245,29 +248,30 @@ int LineGrid::countActiveWinMultipliers()
     return activeCount;
 }
 
-size_t LineGrid::applyGridMultiplier(const MultipliersCombineType combineType,
-                                     const int specialMultiplier)
+unsigned int LineGrid::applyGridMultiplier(const MultipliersCombineType combineType,
+                                           const int specialMultiplier)
 {
     const int applyMultiplier = specialMultiplier
                                     ? specialMultiplier
                                     : this->gridMultiplier;
-    size_t totalWin = 0;
+    unsigned int totalWin = 0;
     if (applyMultiplier > 1)
     {
         for (size_t i = 0; i < winVector.size(); i++)
-            totalWin += winVector[i].applyMultiplier(
-                applyMultiplier, combineType);
+            totalWin += static_cast<unsigned int>(
+                winVector[i].applyMultiplier(applyMultiplier, combineType)
+            );
     }
     return totalWin;
 }
 
-size_t LineGrid::applyWinMultipliers(const MultipliersCombineType combineType)
+unsigned int LineGrid::applyWinMultipliers(const MultipliersCombineType combineType)
 {
     size_t startReel = 0, endReel = 0;
-    size_t totalWin = 0;
+    unsigned int totalWin = 0;
     for (LineWin& win : winVector)
     {
-        size_t winMultiplier = win.multiplier;
+        unsigned int winMultiplier = win.multiplier;
 
         if (win.winType == "line")
         {
@@ -282,7 +286,7 @@ size_t LineGrid::applyWinMultipliers(const MultipliersCombineType combineType)
 
         for (size_t reel = startReel; reel < endReel; reel++)
         {
-            const size_t cellMultiplier = multiplierVect[reel][lpPayLines->getRow(
+            const unsigned int cellMultiplier = multiplierVect[reel][lpPayLines->getRow(
                 win.payLine, reel)];
             if (cellMultiplier > 0)
             {
@@ -292,9 +296,9 @@ size_t LineGrid::applyWinMultipliers(const MultipliersCombineType combineType)
                     winMultiplier += cellMultiplier;
             }
         }
-        totalWin += (winMultiplier > 1)
-                        ? win.applyMultiplier(winMultiplier, combineType)
-                        : win.totalWin;
+        totalWin += static_cast<unsigned int>((winMultiplier > 1)
+                                                  ? win.applyMultiplier(winMultiplier, combineType)
+                                                  : win.totalWin);
     }
     return totalWin;
 }

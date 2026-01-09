@@ -50,8 +50,8 @@ public:
 private:
     uint64_t* tls()
     {
-        thread_local uint64_t tls[10] = {};
-        thread_local bool registered[10] = {};
+        thread_local uint64_t tls[100] = {};
+        thread_local bool registered[100] = {};
         if (!registered[_id]) [[unlikely]]
         {
             MeterUpdate::subscribe([this]() { this->flush(); });

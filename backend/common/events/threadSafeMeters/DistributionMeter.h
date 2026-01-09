@@ -1,10 +1,8 @@
 #pragma once
-//#define SIMPLE
-//#define SINGLETHREAD
 
 #include <fstream>
 #include <filesystem>
-#include <numeric>
+#include <mutex>
 
 #include "../../utils/Timer.h"
 
@@ -12,24 +10,15 @@ class DistributionMeter
 {
 public:
     DistributionMeter()
-#ifndef SIMPLE
         : _id(allocateId())
-#endif
     {
         globalMap.reserve(5000);
     }
 
     void add(const int win)
     {
-#ifdef SIMPLE
-#ifndef SINGLETHREAD
-        std::lock_guard<std::mutex> lock(mutex);
-#endif
-        globalAdd(win);
-#else
         std::unordered_map<int, uint64_t>& localMap = tls()[_id];
         ++localMap[win];
-#endif
     }
 
     void globalAdd(const int win, const uint64_t toAdd = 1)
@@ -37,7 +26,6 @@ public:
         globalMap[win] += toAdd;
     }
 
-#ifndef SIMPLE
     void flush()
     {
         auto& localMap = tls()[_id];
@@ -50,9 +38,8 @@ public:
         }
         localMap.clear();
     }
-#endif
 
-    void fileOutput(const uint64_t totalIncludingZero, const bool descendingOrder,
+    void fileOutput(const bool descendingOrder,
                     const bool doConsoleProgress)
     {
         std::ofstream outfile;
@@ -73,14 +60,6 @@ public:
 
         // Copy unordered_map to a vector for sorting
         std::vector<std::pair<int, uint64_t>> sortedData(globalMap.begin(), globalMap.end());
-
-        const uint64_t totalStored = std::accumulate(sortedData.begin(), sortedData.end(), 0ULL,
-                                                     [](auto sum, const auto& pair)
-                                                     {
-                                                         return sum + pair.second;
-                                                     });
-        const uint64_t zeroCount = totalIncludingZero - totalStored;
-        sortedData.emplace_back(0, zeroCount);
 
         if (descendingOrder)
         {
@@ -114,12 +93,11 @@ public:
 private:
     std::mutex mutex;
     std::unordered_map<int, uint64_t> globalMap{};
-#ifndef SIMPLE
 
     std::unordered_map<int, uint64_t>* tls()
     {
         thread_local std::unordered_map<int, uint64_t> tls[10] = {};
-        thread_local bool registered[10] = {};
+        thread_local bool registered[100] = {};
         if (!registered[_id]) [[unlikely]]
         {
             registered[_id] = true;
@@ -136,5 +114,4 @@ private:
     }
 
     const size_t _id;
-#endif
 };

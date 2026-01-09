@@ -17,11 +17,9 @@ public:
     }
 
 protected :
-    static constexpr std::string_view EventType = "gridUpdate";
-
     std::string_view getEventType() const override
     {
-        return EventType;
+        return "gridUpdate";
     }
 
     Json::Value getDetailsAsJson() const override;

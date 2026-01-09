@@ -6,13 +6,13 @@
 class ReelSet
 {
 private:
-	std::vector<std::vector<int>> mSourceReelsVect;
+	std::vector<std::vector<uint8_t>> mSourceReelsVect;
 	bool mDebugOutput = false;
 
 public:
 	std::string mSzName = "";
 	std::vector<size_t> reelSizeVect;
-	std::vector<std::vector<int>> wrappedBandVect;
+	std::vector<std::vector<uint8_t>> wrappedBandVect;
 
 	/**********************************************/
 	// constructors
@@ -20,9 +20,9 @@ public:
 
 	// uses maxWindow to create wrapped bands
 	ReelSet(const std::string& szName, size_t maxReelWindowHeight,
-	        const std::vector<std::vector<int>>& bandsVect);
+	        const std::vector<std::vector<uint8_t>>& bandsVect);
 
-	ReelSet(const std::string& szName, const std::vector<std::vector<int>>& bandsVect);
+	ReelSet(const std::string& szName, const std::vector<std::vector<uint8_t>>& bandsVect);
 
 
 	/**********************************************/
@@ -47,7 +47,7 @@ public:
 	void createWrappedBands(size_t maxHeight);
 
 	// copy source to dest and add wrap-around of "maxHeight" symbols in dest
-	static void createWrappedBand(std::vector<int>& dest, const std::vector<int>& source,
+	static void createWrappedBand(std::vector<uint8_t>& dest, const std::vector<uint8_t>& source,
 	                              size_t maxHeight);
 
 

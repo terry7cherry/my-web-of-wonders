@@ -9,7 +9,7 @@
 class EventsArena
 {
 public:
-    explicit EventsArena(std::size_t initialBlockSize)
+    explicit EventsArena(const std::size_t initialBlockSize)
         : initialBlockSize_(initialBlockSize)
     {
         blocks_.push_back(makeBlock(initialBlockSize_));
@@ -21,7 +21,7 @@ public:
             std::free(b.begin);
     }
 
-    void* allocate(std::size_t size, std::size_t alignment)
+    void* allocate(const std::size_t size, const std::size_t alignment)
     {
         Block& b = blocks_.back();
 

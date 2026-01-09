@@ -6,15 +6,15 @@
 #include "WaysWin.h"
 
 // basic constructor with no starting win positions
-WaysWin::WaysWin(int winSymbol, int maxReelCount, int maxRowCount)
-    : maxReels(maxReelCount), maxRows(maxRowCount), symbol(winSymbol)  // set member variables
+WaysWin::WaysWin(const uint8_t winSymbol, const int maxReelCount, const int maxRowCount)
+    : maxReels(maxReelCount), maxRows(maxRowCount), symbol(winSymbol) // set member variables
 {
     if (maxReels)
         resizeVectors();
 }
 
 // default constructor for creating arrays
-WaysWin::WaysWin() : WaysWin(-1, 0, 0)
+WaysWin::WaysWin() : WaysWin(SYMBOL_NONE, 0, 0)
 {
 }
 
@@ -84,7 +84,7 @@ std::string WaysWin::getWinText(std::string szSymbol)
 
     int space = 120;
     int size = std::snprintf(buffer, space, "%d %s(%d) x%d Ways ",
-        oak, szSymbol.c_str(), winVal, winWays);
+                             oak, szSymbol.c_str(), winVal, winWays);
     if (size < 0) size = 0;
     if (size > space) size = space;
     space -= size;

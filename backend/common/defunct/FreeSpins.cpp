@@ -1,11 +1,11 @@
 #include "__GameMaths.h"
-#include "../common/events/FreeSpinsTriggerEvent.h"
-#include "../common/events/FreeSpinsRetriggerEvent.h"
-#include "../common/events/NewFreeSpinEvent.h"
-#include "../common/events/ReelSpinEvent.h"
-#include "../common/events/GridUpdateEvent.h"
-#include "../common/events/WinAnalysisEvent.h"
-#include "../common/events/FreeSpinsEndEvent.h"
+#include "../events/FreeSpinsTriggerEvent.h"
+#include "../events/FreeSpinsRetriggerEvent.h"
+#include "../events/NewFreeSpinEvent.h"
+#include "../events/ReelSpinEvent.h"
+#include "../events/GridUpdateEvent.h"
+#include "../events/WinAnalysisEvent.h"
+#include "../events/FreeSpinsCompleteEvent.h"
 
 /*
 ;

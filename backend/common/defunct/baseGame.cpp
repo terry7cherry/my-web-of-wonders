@@ -1,6 +1,6 @@
 #include "__GameMaths.h"
-#include "../common/events/ReelSpinEvent.h"
-#include "../common/events/WinAnalysisEvent.h"
+#include "../events/ReelSpinEvent.h"
+#include "../events/WinAnalysisEvent.h"
 /*
 ;
 

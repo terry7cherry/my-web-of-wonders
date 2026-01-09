@@ -6,21 +6,27 @@
 #include "TaggedRange.h"
 #include "TaggedDataTypes.h"
 #include "../GameMaths.h"
-//#include "../caching/TypeConfig.h"
-template <typename T>
-using TypeConfig = std::unordered_map<std::string, T>;
+#include <absl/container/flat_hash_map.h>
+#include "../caching/TypeConfig.h"
+//template <typename T>
+//using TypeConfig = absl::flat_hash_map<std::string, T>;
+//using TypeConfig = std::unordered_map<std::string, T>;
 
 
 class TaggedSheet
 {
 public:
-    std::unordered_map<std::string, std::unordered_map<int, GameMathsNew*>> gameMathsVariants;
+    std::unordered_map<std::string, std::unordered_map<int, std::unique_ptr<GameMathsNew>>> gameMathsVariants;
+    std::vector<int> rtps;
+    std::vector<std::string> betTypes;
+    std::string gameTitle;
+    std::string gameVersion;
 
-    TaggedSheet()
+    TaggedSheet(const std::string& parSheetName)
     {
         xlnt::workbook wb;
-        std::filesystem::path p = std::filesystem::path(GAME_SOURCE_DIR) / "backend" / "thisTitle" /
-            "parSheets" / "test.xlsx";
+        const std::filesystem::path p = std::filesystem::path(GAME_SOURCE_DIR) / "backend" / "thisTitle" /
+            "parSheets" / parSheetName;
         wb.load(p);
         extractTaggedRanges(wb);
         sortTaggedRangesByDescendingSpecificity();
@@ -29,7 +35,7 @@ public:
         std::string testString = "test";
     }
 
-    void extractTaggedRanges(xlnt::workbook wb)
+    void extractTaggedRanges(const xlnt::workbook& wb)
     {
         const size_t numSheets = wb.sheet_count();
         for (size_t sheetIndex = 0; sheetIndex < numSheets; sheetIndex++)
@@ -40,9 +46,22 @@ public:
             {
                 if (range.height() != 1) continue;
                 const std::string value = sheet.cell(range.top_left()).value<std::string>();
-                Json::Value jsonTag = parseJsonObjectOrReturnNull(value);
-                if (jsonTag.isNull()) continue;
-                taggedRanges.push_back(std::make_shared<TaggedRange>(sheet, range, jsonTag));
+                const bool looksLikeJson = value.starts_with("{") && value.ends_with("}");
+                if (looksLikeJson)
+                {
+                    Json::Value jsonTag = parseJsonObjectOrReturnNull(value);
+                    if (jsonTag.isNull())
+                    {
+                        std::cerr << "The value in cell '" + sheet.title() + "'!" + range.to_string() +
+                            " looks as though it may be a JSON object but it is malformed." << std::endl;
+                        std::cerr <<
+                            "\tIf this is data you wish to parse, ensure all property keys and any"
+                            "string values are enclosed in quotes."
+                            << std::endl;
+                    }
+                    else
+                        taggedRanges.push_back(std::make_shared<TaggedRange>(sheet, range, jsonTag));
+                }
             }
         }
     }
@@ -67,13 +86,45 @@ public:
 
     void createSimpleTaggedData()
     {
+        bool foundTitle = false;
+        bool foundVersion = false;
         for (const std::shared_ptr<TaggedRange>& taggedRange : taggedRanges)
         {
+            if (taggedRange->type == "metadata")
+            {
+                if (taggedRange->specificity)
+                    throw std::runtime_error(
+                        "Metadata tag must be global and must not specify RTP or betType.");
+                else
+                {
+                    std::vector<Metadata> metadata;
+                    for (xlnt::row_t row = 0; row < taggedRange->data.size(); row++)
+                    {
+                        metadata.push_back(Metadata(taggedRange, row));
+                    }
+                    for (const auto& dataPoint : metadata)
+                    {
+                        if (dataPoint.fullName == "gameTitle")
+                        {
+                            foundTitle = true;
+                            gameTitle = dataPoint.value;
+                        }
+                        if (dataPoint.fullName == "gameVersion")
+                        {
+                            foundVersion = true;
+                            gameVersion = dataPoint.value;
+                        }
+                    }
+                }
+            }
             if (taggedRange->type == "betTypes")
             {
                 if (taggedBetTypes.empty())
-                    taggedBetTypes.push_back(
-                        std::make_shared<TaggedBetTypeMap>(taggedRange));
+                {
+                    taggedBetTypes.push_back(std::make_shared<TaggedBetTypeMap>(taggedRange));
+                    for (const auto& betType : taggedBetTypes[0]->value | std::views::keys)
+                        betTypes.push_back(betType);
+                }
                 else
                     throw std::runtime_error(
                         "Multiple betTypes tables found at " + taggedRange->location + " and " +
@@ -82,12 +133,17 @@ public:
             else if (taggedRange->type == "rtps")
             {
                 if (taggedRtpMaps.empty())
-                    taggedRtpMaps.push_back(
-                        std::make_shared<TaggedRtpMap>(taggedRange));
+                {
+                    taggedRtpMaps.push_back(std::make_shared<TaggedRtpMap>(taggedRange));
+                    for (const auto& rtp : taggedRtpMaps[0]->value | std::views::keys)
+                        rtps.push_back(rtp);
+                }
                 else
+                {
                     throw std::runtime_error(
                         "Multiple rtps tables found at " + taggedRange->location + " and " +
                         taggedBetTypes[0]->taggedRangePtr->location);
+                }
             }
             else if (taggedRange->type == "int")
             {
@@ -164,12 +220,21 @@ public:
                 taggedPayLines.push_back(
                     std::make_shared<TaggedPayLines>(taggedRange));
             }
-            else if (taggedRange->type == "intThresholdTable")
+            else if (taggedRange->type == "intThresholdTable"
+                || taggedRange->type == "thresholdTable"
+                || taggedRange->type == "awardTable"
+                || taggedRange->type == "awards")
             {
                 taggedIntThresholdTables.push_back(
                     std::make_shared<TaggedIntThresholdTable>(taggedRange));
             }
         }
+        if (!foundTitle)
+            throw std::runtime_error(
+                "No gameTitle found in metadata. Par sheet must include a tagged range with type \"metadata\" and two values: gameTitle and gameVersion.");
+        if (!foundVersion)
+            throw std::runtime_error(
+                "No gameVersion found in metadata. Par sheet must include a tagged range with type \"metadata\" and two values: gameTitle and gameVersion.");
     }
 
     void createReelSets()
@@ -206,7 +271,9 @@ public:
     {
         for (const std::shared_ptr<TaggedRange>& taggedRange : taggedRanges)
         {
-            if (taggedRange->type == "reelSetWeightTable")
+            if (taggedRange->type == "reelSetWeightTable"
+                || taggedRange->type == "reelSetWeights"
+                || taggedRange->type == "reelSetWeight")
             {
                 taggedReelSetWeights.push_back(
                     std::make_unique<TaggedReelSetWeights>(taggedRange, reelSetMap)
@@ -219,10 +286,10 @@ public:
     {
         for (const auto& betType : taggedBetTypes[0]->value | std::views::keys)
         {
-            gameMathsVariants[betType] = {};
+            gameMathsVariants[betType] = std::unordered_map<int, std::unique_ptr<GameMathsNew>>();
             for (const auto& rtp : taggedRtpMaps[0]->value | std::views::keys)
             {
-                const auto gameMathsPtr = new GameMathsNew;
+                auto gameMathsPtr = std::make_unique<GameMathsNew>();
                 addRelevantElementsToConfigForType(taggedInts, gameMathsPtr->ints, rtp, betType);
                 addRelevantElementsToConfigForType(taggedDoubles, gameMathsPtr->doubles, rtp, betType);
                 addRelevantElementsToConfigForType(taggedStrings, gameMathsPtr->strings, rtp, betType);
@@ -246,7 +313,7 @@ public:
                 addRelevantElementsToConfigForType(taggedPayLines, gameMathsPtr->payLines, rtp, betType);
                 addRelevantElementsToConfigForType(taggedIntThresholdTables, gameMathsPtr->intThresholdTables,
                                                    rtp, betType);
-                gameMathsVariants[betType][rtp] = gameMathsPtr;
+                gameMathsVariants[betType][rtp] = std::move(gameMathsPtr);
             }
         }
     }
@@ -261,11 +328,11 @@ public:
 
         for (const auto& elementPtr : sourceElements)
         {
-            const auto& rtps = elementPtr->taggedRangePtr->rtps;
-            if (!rtps.empty() && std::ranges::find(rtps, rtp) == rtps.end())
+            const auto& targetRtps = elementPtr->taggedRangePtr->rtps;
+            if (!targetRtps.empty() && std::ranges::find(targetRtps, rtp) == targetRtps.end())
                 continue;
-            const auto& betTypes = elementPtr->taggedRangePtr->betTypes;
-            if (!betTypes.empty() && std::ranges::find(betTypes, betType) == betTypes.end())
+            const auto& targetBetTypes = elementPtr->taggedRangePtr->betTypes;
+            if (!targetBetTypes.empty() && std::ranges::find(targetBetTypes, betType) == targetBetTypes.end())
                 continue;
 
             if (intermediaryMap.contains(elementPtr->fullName))
@@ -292,6 +359,7 @@ public:
             }
         }
 
+        destinationMap.reserve(intermediaryMap.size());
         for (const auto& [name, elementPtr] : intermediaryMap)
         {
             destinationMap.insert({name, elementPtr->value});
@@ -329,13 +397,15 @@ public:
 
     static Json::Value parseJsonObjectOrReturnNull(const std::string& input)
     {
-        Json::CharReaderBuilder builder;
-        builder["collectComments"] = false;
+        static const std::unique_ptr<Json::CharReader> reader([]
+        {
+            Json::CharReaderBuilder builder;
+            builder["collectComments"] = false;
+            return std::unique_ptr<Json::CharReader>(builder.newCharReader());
+        }());
 
         Json::Value root;
         std::string errors;
-
-        const std::unique_ptr<Json::CharReader> reader(builder.newCharReader());
 
         const char* begin = input.data();
         const char* end = begin + input.size();

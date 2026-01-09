@@ -111,7 +111,7 @@ public:
 	{
 		if (cls)
 			clearScreen();
-		setCursorPos(0);
+		//setCursorPos(0);
 		if (invert)
 			coutStyle(szHeader, CONSOLE_INVERT);
 		else
@@ -127,7 +127,7 @@ public:
 	void flashText(std::string text, int line, int col, int msSpeed, int repeat,
 	               bool endInvert = false);
 
-	int coutStyle(std::string text, int style, bool revert = true);
+	int coutStyle(const std::string& text, WORD style, bool revert = true);
 
 	// Displays "PRESS [SPACE BAR] " + text
 	void showPressText(std::string text, int stringLimit, int row = -1, int col = 0);
@@ -137,15 +137,15 @@ public:
 	void waitAnyKeyText(std::string text, int stringLimit, int row = -1, int col = 0);
 
 	// sets the font size to the passed value
-	void setFontSize(int size);
+	void setFontSize(SHORT size);
 
 	// Set the font size.
 	// Optionally ensure console is minCharWidth characters wide, by reducing font size
-	void newFontSize(int size, int minCharWidth = 0);
+	void newFontSize(SHORT size, int minCharWidth = 0);
 
 	// Set the font size.
 	// Ensure, by reducing font size, that console has minCharWidth x minCharHeight characters
-	void newFontSize(int size, int minCharWidth, int minCharHeight);
+	void newFontSize(SHORT size, int minCharWidth, int minCharHeight);
 
 	/*********************************************************/
 	// Easy interfaces to std / Windows methods
@@ -168,7 +168,7 @@ public:
 	void setCursorPos(int row, int col = 0);
 
 	// apply a text/background colour style
-	void setStyle(int style);
+	void setStyle(WORD style);
 
 	// Keyboard Input Methods
 	char waitAnyKey(void);
@@ -195,7 +195,7 @@ protected:
 	HANDLE consoleHandle = nullptr;
 	HWND consoleWindow = nullptr;
 	CONSOLE_SCREEN_BUFFER_INFO consoleInfo{};
-	int fontSize = 0;
+	SHORT fontSize = 0;
 	char szClrLine[10] = "%80s";
 };
 

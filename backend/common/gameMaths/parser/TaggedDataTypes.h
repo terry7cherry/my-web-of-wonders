@@ -347,3 +347,8 @@ struct TaggedIntThresholdTable : TaggedThresholdTable<int>
     {
     }
 };
+
+struct Metadata : TaggedString
+{
+    using TaggedString::TaggedString;
+};

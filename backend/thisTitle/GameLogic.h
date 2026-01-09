@@ -16,13 +16,13 @@ enum EventID
 
 namespace GameLogic
 {
-    int playGame(const GameMathsNew& maths, GameSession& session, GameCycle& cycle, int force = 0);
+    unsigned int playGame(const GameMathsNew& maths, GameSession& session, GameCycle& cycle, int force = 0);
 
-    int doBaseGame(const GameMathsNew& maths, GameSession& session, GameCycle& cycle);
+    unsigned int doBaseGame(const GameMathsNew& maths, GameSession& session, GameCycle& cycle);
 
-    int doFreeSpins(const GameMathsNew& maths, GameSession& session, GameCycle& cycle);
+    unsigned int doFreeSpins(const GameMathsNew& maths, GameSession& session, GameCycle& cycle);
 
-    int doOneFreeSpin(const GameMathsNew& maths, GameSession& session, GameCycle& cycle);
+    unsigned int doOneFreeSpin(const GameMathsNew& maths, GameSession& session, GameCycle& cycle);
 
     void forceSpinToAwardFreeSpins(const GameMathsNew& gameMaths, GameCycle& gameCycle);
 

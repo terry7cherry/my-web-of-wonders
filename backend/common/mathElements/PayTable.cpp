@@ -3,27 +3,27 @@
 
 
 PayTable::PayTable(
-    const std::vector<std::vector<size_t>>& payData,
-    const std::vector<size_t>& paySymVect,
-    const std::vector<size_t>& scatterSymVect,
-    const std::vector<size_t>& wildSymVect,
-    const std::vector<size_t>& wildNoSubstVect)
+    const std::vector<std::vector<unsigned int>>& payData,
+    const std::vector<uint8_t>& paySymVect,
+    const std::vector<uint8_t>& scatterSymVect,
+    const std::vector<uint8_t>& wildSymVect,
+    const std::vector<uint8_t>& wildNoSubstVect)
     : payData(payData),
-      numSymbols(payData.size()),
+      numSymbols(static_cast<unsigned int>(payData.size())),
       paySymVect(paySymVect),
       scatterSymVect(scatterSymVect),
       wildSymVect(wildSymVect),
       wildNoSubstVect(wildNoSubstVect)
 {
-    minPaySymbolsVect.resize(payData.size(), -1);
+    minPaySymbolsVect.resize(payData.size(), SYMBOL_NONE);
 
     maxWinSymbols = payData[0].size() - 1;
-    minWinSymbols = -1;
+    minWinSymbols = 0u;
     int iSym = 0;
 
     for (const auto& symbolPayData : payData)
     {
-        for (size_t i = 0; i < symbolPayData.size(); i++)
+        for (uint8_t i = 0; i < symbolPayData.size(); i++)
         {
             // find min pay count for this symbol
             if (symbolPayData[i] > 0)
@@ -45,12 +45,12 @@ PayTable::PayTable(
     symbolsInit(numSymbols);
 }
 
-void PayTable::symbolsInit(const int symbolCount)
+void PayTable::symbolsInit(const unsigned int symbolCount)
 {
     wildMask = 0;
     symbolVect.resize(symbolCount);
 
-    for (int i = 0; i < symbolCount; i++)
+    for (unsigned int i = 0u; i < symbolCount; i++)
     {
         symbolVect[i].index = i;
         symbolVect[i].substWild = true; // assume wilds substitutes for all
@@ -63,12 +63,12 @@ void PayTable::symbolsInit(const int symbolCount)
     }
 
     // update for symbols that cannot use Wild
-    for (int symId : wildNoSubstVect)
+    for (uint8_t symId : wildNoSubstVect)
         symbolVect[symId].substWild = false;
 
 
     // update for pay symbols and fill the wildMask
-    for (int symId : paySymVect)
+    for (uint8_t symId : paySymVect)
     {
         symbolVect[symId].payMask = symbolVect[symId].mask;
         if (symbolVect[symId].substWild)
@@ -77,7 +77,7 @@ void PayTable::symbolsInit(const int symbolCount)
 
     // apply the wildMask to all wild symbols
     int i = 0;
-    for (int symId : wildSymVect)
+    for (uint8_t symId : wildSymVect)
     {
         symbolVect[symId].isWild = true;
         symbolVect[symId].payMask = wildMask;
@@ -86,7 +86,7 @@ void PayTable::symbolsInit(const int symbolCount)
 
     // update for scatter symbols
     i = 0;
-    for (int symId : scatterSymVect)
+    for (uint8_t symId : scatterSymVect)
     {
         symbolVect[symId].isScatter = true;
         symbolVect[symId].scatterIndex = i++;
@@ -94,7 +94,8 @@ void PayTable::symbolsInit(const int symbolCount)
     }
 }
 
-size_t PayTable::getWin(const size_t symbolIndex, const size_t symbolCount, const bool checkLimits) const
+unsigned int PayTable::getWin(const uint8_t symbolIndex, const unsigned int symbolCount,
+                              const bool checkLimits) const
 {
     if (checkLimits)
     {

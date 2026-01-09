@@ -25,7 +25,7 @@ std::string szReelSetFolder = "reelSets";
 // Constructors
 /*******************************/
 
-ReelSet::ReelSet(const std::string& szName, const std::vector<std::vector<int>>& bandsVect)
+ReelSet::ReelSet(const std::string& szName, const std::vector<std::vector<uint8_t>>& bandsVect)
 {
 	mSzName = szName;
 	mSourceReelsVect = bandsVect;
@@ -37,7 +37,7 @@ ReelSet::ReelSet(const std::string& szName, const std::vector<std::vector<int>>&
 }
 
 ReelSet::ReelSet(const std::string& szName, const size_t maxReelWindowHeight,
-                 const std::vector<std::vector<int>>& bandsVect)
+                 const std::vector<std::vector<uint8_t>>& bandsVect)
 	: ReelSet(szName, bandsVect)
 {
 	createWrappedBands(maxReelWindowHeight);
@@ -68,7 +68,7 @@ void ReelSet::createWrappedBands(const size_t maxHeight)
 		reportError("ReelSet::createWrappedBands", "No data in 'mSourceReelsVect'");
 }
 
-void ReelSet::createWrappedBand(std::vector<int>& dest, const std::vector<int>& source,
+void ReelSet::createWrappedBand(std::vector<uint8_t>& dest, const std::vector<uint8_t>& source,
                                 const size_t maxHeight)
 {
 	dest = source;
@@ -116,7 +116,7 @@ void ReelSet::fileOutput(std::map<int, std::string> symbolMap) const
 	}
 
 	size_t maxReelLen = 0;
-	for (const auto & rl : mSourceReelsVect)
+	for (const auto& rl : mSourceReelsVect)
 	{
 		size_t rLen = rl.size();
 		if (rLen > maxReelLen)
@@ -130,7 +130,7 @@ void ReelSet::fileOutput(std::map<int, std::string> symbolMap) const
 		for (int i = 0; i < maxReelLen; i++)
 		{
 			ss.str("");
-			for (std::vector<int> reel : mSourceReelsVect)
+			for (std::vector<uint8_t> reel : mSourceReelsVect)
 				ss << ((i < reel.size()) ? symbolMap[reel[i]] : "") << ",";
 			outfile << ss.str() << std::endl;
 			//fprintf_s(fp, "%s\n", ss.str().c_str());
@@ -141,7 +141,7 @@ void ReelSet::fileOutput(std::map<int, std::string> symbolMap) const
 		for (int i = 0; i < maxReelLen; i++)
 		{
 			ss.str("");
-			for (std::vector<int> reel : mSourceReelsVect)
+			for (std::vector<uint8_t> reel : mSourceReelsVect)
 			{
 				if (i < reel.size())
 					ss << reel[i];
@@ -168,7 +168,7 @@ int ReelSet::checkSymbolBlocks(const int maxBlock, const int noCheckSymbol,
 		int reel;
 		int pos;
 		int blockSize;
-		int symbolId;
+		uint8_t symbolId;
 		std::string szSymbol;
 	};
 	std::vector<blockError> errVect;
@@ -179,7 +179,7 @@ int ReelSet::checkSymbolBlocks(const int maxBlock, const int noCheckSymbol,
 		int i = 0;
 		while (i < rLen)
 		{
-			const int sym = wrappedBandVect[rl][i];
+			const uint8_t sym = wrappedBandVect[rl][i];
 			int block = 1;
 			int j = i == (rLen - 1) ? 0 : i + 1;
 			while (i < rLen && wrappedBandVect[rl][j] == sym)
