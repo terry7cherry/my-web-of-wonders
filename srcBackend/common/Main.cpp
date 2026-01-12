@@ -372,7 +372,6 @@ int getUserChoiceFromList(const std::string& gameTitle, const std::vector<std::s
 	int choiceNum = 0;
 	for (const auto& choice : choices)
 		std::cout << "\t\t" + std::to_string(choiceNum++) + ") " + choice << std::endl;
-	//std::cout << std::format("\t\t{}) {}\n", choiceNum++, choice);
 
 	int newChoice = 0;
 	std::string choiceString;
@@ -458,7 +457,7 @@ int getSimSize(const std::string& gameTitle)
 
 
 #ifdef FRONTEND
-void startBackEndDevServer()
+void startAPIServer()
 {
 	ParSheet parSheet("test.xlsx");
 	const GameMaths& gameMaths = *parSheet.gameMathsVariants["default"][96];
@@ -487,7 +486,9 @@ void startBackEndDevServer()
 					                      << i << std::endl;
 				                      continue;
 			                      }
-			                      eventsArray[i] = gameCycle.events[i]->toJson();
+			                      Json::Value eventJson = gameCycle.events[i]->toJson();
+			                      if (!eventJson.isNull())
+				                      eventsArray[i] = gameCycle.events[i]->toJson();
 		                      }
 		                      result["events"] = eventsArray;
 
@@ -498,21 +499,20 @@ void startBackEndDevServer()
 	app().addListener("0.0.0.0", 8080);
 
 #ifndef FRONTEND_DEV
-// Serve static files from "../srcFrontend/dist" in production
-app()
-		.setDocumentRoot (FRONTEND_DIST_DIR)
-		.setFileTypes (
+	// Serve static files from "../srcFrontend/dist" in production
+	app()
+		.setDocumentRoot(FRONTEND_DIST_DIR)
+		.setFileTypes(
 
 
-
-{
-	"gif", "png", "jpg", "js", "css", "html", "ico", "swf", "xap", "apk", "cur", "xml",
-		"mp3"
-});
+			{
+				"gif", "png", "jpg", "js", "css", "html", "ico", "swf", "xap", "apk", "cur", "xml",
+				"mp3"
+			});
 #endif
 
-std::cout<< "Starting dev server" << std::endl;
-app().run();
+	std::cout << "Starting dev server" << std::endl;
+	app().run();
 }
 #endif
 
@@ -543,7 +543,7 @@ int main()
 
 	node.start();
 #endif
-	startBackEndDevServer();
+	startAPIServer();
 	return 0;
 #else
 	int bet;
@@ -644,12 +644,12 @@ int main()
 					GameMaths& gameMaths = *parSheet.gameMathsVariants[betType][rtpOption];
 					bet = static_cast<int>(gameMaths.ints.at("minBet") * gameMaths.betTypeCost);
 #ifdef SINGLETHREAD
-					if (seedSet)
-						doMonteCarloStd(gameMaths, bet, simSize * MILLION, globalSeed);
-					else
-						doMonteCarloStd(gameMaths, bet, simSize * MILLION);
+	if (seedSet)
+		doMonteCarloStd(gameMaths, bet, simSize * MILLION, globalSeed);
+	else
+		doMonteCarloStd(gameMaths, bet, simSize * MILLION);
 #else
-					doMonteCarloStdMultiThread(gameMaths, bet, simSize * MILLION, globalSeed);
+	doMonteCarloStdMultiThread(gameMaths, bet, simSize * MILLION, globalSeed);
 #endif
 				}
 			}

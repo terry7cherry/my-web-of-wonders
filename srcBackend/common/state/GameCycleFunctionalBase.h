@@ -4,7 +4,7 @@
 #include <concepts>
 #include <memory_resource>
 
-#include "../events/BasicEvent.h"
+#include "../events/eventTemplates/BasicEvent.h"
 
 struct GameCycleReused;
 

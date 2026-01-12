@@ -1,31 +1,25 @@
 #pragma once
 
-#include "BasicEvent.h"
-
 #include "../grids/Grid.h"
+#include "eventTemplates/GridEventTemplate.h"
 
-static constexpr int ReelSpinMaxReels = 10;
-static constexpr int ReelSpinMaxRows = 10;
-
-class ReelSpinEvent : public BasicEvent
+class ReelSpinEvent : public GridEventTemplate<ReelSpinEvent>
 {
 public:
-    explicit ReelSpinEvent(const Grid& grid);
+    explicit ReelSpinEvent(const Grid& grid) :
+        GridEventTemplate(grid)
+    {
+    }
 
     static void updateMeters(const Grid& grid [[maybe_unused]])
     {
     }
 
 protected:
-    std::string_view getEventType() const override
+    Json::Value toJson() const override
     {
-        return "reelSpin";
+        Json::Value eventDetails = GridEventTemplate::toJson();
+        eventDetails["eventType"] = "reelSpin";
+        return eventDetails;
     }
-
-    Json::Value getDetailsAsJson() const override;
-
-private:
-    std::array<int, ReelSpinMaxReels * ReelSpinMaxRows> symbols{};
-    size_t numReels;
-    size_t numRows;
 };

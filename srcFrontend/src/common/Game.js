@@ -175,8 +175,6 @@ export default class Game {
             freeSpinsEnd: this.handleFreeSpinsEnd,
             newFreeSpin: this.handleNewFreeSpin,
             gridUpdate: this.handleGridUpdate,
-            gameCycleComplete: () => {
-            },
         };
         return eventHandlers;
     }
@@ -392,7 +390,8 @@ export default class Game {
     async displayGameRound(gameRound) {
         console.log(gameRound);
         await this.startNewSpin("rand");
-        for (let [eventType, eventDetails] of gameRound.events) {
+        for (let eventDetails of gameRound.events) {
+            const {eventType} = eventDetails;
             const eventHandler = this.eventHandlers[eventType];
             if (!eventHandler || typeof eventHandler != "function") {
                 await this.warnUnhandledEvent(eventType, eventDetails);

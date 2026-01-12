@@ -1,15 +1,16 @@
 #pragma once
 
-#include "BasicEvent.h"
+#include "eventTemplates/GridEventTemplate.h"
 #include "../grids/Grid.h"
 
-static constexpr int GridUpdateMaxReels = 10;
-static constexpr int GridUpdateMaxRows = 10;
-
-class GridUpdateEvent : public BasicEvent
+class GridUpdateEvent : public GridEventTemplate<GridUpdateEvent>
 {
 public:
-    explicit GridUpdateEvent(const Grid& grid, std::string message = "Grid updated!");
+    explicit GridUpdateEvent(const Grid& grid, std::string message = "Grid updated!")
+        : GridEventTemplate(grid),
+          message(std::move(message))
+    {
+    }
 
     static void updateMeters(const Grid& grid[[maybe_unused]],
                              std::string message [[maybe_unused]] = "Grid updated!")
@@ -17,16 +18,14 @@ public:
     }
 
 protected :
-    std::string_view getEventType() const override
+    Json::Value toJson() const override
     {
-        return "gridUpdate";
+        Json::Value eventDetails = GridEventTemplate::toJson();
+        eventDetails["eventType"] = "gridUpdate";
+        eventDetails["message"] = message;
+        return eventDetails;
     }
 
-    Json::Value getDetailsAsJson() const override;
-
 private :
-    std::array<int, GridUpdateMaxReels * GridUpdateMaxRows> symbols{};
-    size_t numReels;
-    size_t numRows;
     std::string message;
 };

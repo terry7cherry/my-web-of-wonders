@@ -23,11 +23,8 @@ WinAnalysisEvent::WinAnalysisEvent(const LineGrid& grid, const std::string& anal
     }
 }
 
-Json::Value WinAnalysisEvent::getDetailsAsJson() const
+Json::Value WinAnalysisEvent::getWinsAsJson() const
 {
-    Json::Value eventDetails;
-    eventDetails["totalWin"] = totalWin;
-    eventDetails["analysisStage"] = std::string(analysisStage);
     Json::Value winsAsJson(Json::arrayValue);
     for (size_t i = 0; i < numWins && i < WinAnalysisEventBufferSize; ++i)
     {
@@ -41,8 +38,7 @@ Json::Value WinAnalysisEvent::getDetailsAsJson() const
             winsAsJson.append(convertWinToJson(win));
         }
     }
-    eventDetails["wins"] = winsAsJson;
-    return eventDetails;
+    return winsAsJson;
 }
 
 Json::Value WinAnalysisEvent::convertWinToJson(const LineWin& win)

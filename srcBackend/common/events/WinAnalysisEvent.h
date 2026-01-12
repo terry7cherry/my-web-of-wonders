@@ -1,6 +1,6 @@
 #pragma once
 
-#include "BasicEvent.h"
+#include "eventTemplates/BasicEvent.h"
 
 #include <vector>
 
@@ -19,14 +19,18 @@ public:
 	}
 
 protected:
-	std::string_view getEventType() const override
+	Json::Value toJson() const override
 	{
-		return "winAnalysis";
+		Json::Value eventDetails;
+		eventDetails["eventType"] = "winAnalysis";
+		eventDetails["totalWin"] = totalWin;
+		eventDetails["analysisStage"] = std::string(analysisStage);
+		eventDetails["wins"] = getWinsAsJson();
+		return eventDetails;
 	}
 
-	Json::Value getDetailsAsJson() const override;
-
 private:
+	Json::Value getWinsAsJson() const;
 	static Json::Value convertWinToJson(const LineWin& win);
 
 	unsigned int totalWin = 0;

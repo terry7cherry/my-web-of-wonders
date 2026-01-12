@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include "../BasicEvent.h"
+#include "BasicEvent.h"
 #include "../threadSafeMeters/IntSumMeter.h"
 #include "../threadSafeMeters/DistributionMeter.h"
 #include "../threadSafeMeters/IntMaxMeter.h"
@@ -103,16 +103,7 @@ public:
     }
 
 protected :
-    std::string_view getEventType() const override { return "gameSectionComplete"; }
-
     inline static std::string phaseName = "Template";
-
-    Json::Value getDetailsAsJson() const override
-    {
-        Json::Value eventDetails;
-        eventDetails["totalWin"] = totalWin;
-        return eventDetails;
-    }
 
 private :
     const int totalWin;

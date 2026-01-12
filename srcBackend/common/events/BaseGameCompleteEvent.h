@@ -10,7 +10,4 @@ public:
     }
 
     inline static std::string phaseName = "Base Game";
-
-protected :
-    std::string_view getEventType() const override { return "baseGameComplete"; }
 };

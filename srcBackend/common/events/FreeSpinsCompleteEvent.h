@@ -16,5 +16,10 @@ public:
 	inline static std::string phaseName = "Free Spins";
 
 protected :
-	std::string_view getEventType() const override { return "freeSpinsEnd"; }
+	Json::Value toJson() const override
+	{
+		Json::Value eventDetails;
+		eventDetails["eventType"] = "freeSpinsComplete";
+		return eventDetails;
+	}
 };

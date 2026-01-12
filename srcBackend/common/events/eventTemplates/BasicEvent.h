@@ -13,23 +13,12 @@ public:
 	{
 	}
 
-	Json::Value toJson() const
+	virtual Json::Value toJson() const
 	{
-		Json::Value eventAsJson(Json::arrayValue);
-		eventAsJson[0] = std::string(getEventType());
-		eventAsJson[1] = getDetailsAsJson();
-		return eventAsJson;
+		return Json::nullValue;
 	};
 
 protected:
-	virtual std::string_view getEventType() const = 0;
-
-	virtual Json::Value getDetailsAsJson() const
-	{
-		Json::Value eventDetails;
-		return eventDetails;
-	};
-
 	template <
 		typename Iterable,
 		typename T = std::decay_t<decltype(*std::begin(std::declval<Iterable&>()))>,

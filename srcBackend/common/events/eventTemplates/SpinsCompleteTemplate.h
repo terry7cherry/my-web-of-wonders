@@ -73,8 +73,4 @@ public:
         const auto& winsMeter = finalSpinsWinsMeter.getSortedData();
         outputHitAndWinReport(hitsMeter, winsMeter, totalBet);
     }
-
-protected
-:
-    std::string_view getEventType() const override { return "spinsPhaseEnd"; }
 };

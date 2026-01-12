@@ -1,6 +1,6 @@
 #pragma once
 
-#include "BasicEvent.h"
+#include "eventTemplates/BasicEvent.h"
 
 class NewFreeSpinEvent : public BasicEvent
 {
@@ -14,14 +14,10 @@ public:
 	}
 
 protected:
-	std::string_view getEventType() const override
-	{
-		return "newFreeSpin";
-	}
-
-	Json::Value getDetailsAsJson() const override
+	Json::Value toJson() const override
 	{
 		Json::Value eventDetails;
+		eventDetails["eventType"] = "newFreeSpin";
 		eventDetails["multiplier"] = multiplier;
 		return eventDetails;
 	}
