@@ -5,8 +5,8 @@ out/
 .idea/
 .git/
 .gitignore
-frontend/node_modules/
-frontend/dist/
+srcFrontend/node_modules/
+srcFrontend/dist/
 Dockerfile
 docker-compose.yml
 vcpkg_installed

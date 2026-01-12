@@ -32,11 +32,11 @@ RUN ${VCPKG_ROOT}/vcpkg install --triplet x64-linux --x-manifest-root=/src
 
 # Copy source
 COPY CMakeLists.txt ./
-COPY backend ./backend
-COPY frontend ./frontend
+COPY srcBackend ./srcBackend
+COPY srcFrontend ./srcFrontend
 
 # Install node modules
-WORKDIR ./frontend
+WORKDIR ./srcFrontend
 RUN npm i
 
 
@@ -61,7 +61,8 @@ RUN apt-get update && apt-get install -y \
     ca-certificates && rm -rf /var/lib/apt/lists/*
 
 COPY --from=build /src/build/cpp-game /usr/local/bin/cpp-game
-COPY --from=build /src/frontend/dist /src/frontend/dist
+COPY --from=build /src/srcFrontend/dist /src/srcFrontend/dist
+COPY --from=build /src/srcBackend/thisTitle/parSheets /src/srcBackend/thisTitle/parSheets
 
 EXPOSE 8080
 CMD ["cpp-game"]

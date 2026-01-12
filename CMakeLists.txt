@@ -68,11 +68,18 @@ find_package(absl CONFIG REQUIRED)
 # Sources & main target
 # --------------------------------------------------------------------
 file(GLOB_RECURSE CPP_GAME_SOURCES
-        "${CMAKE_CURRENT_SOURCE_DIR}/backend/*.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/srcBackend/*.cpp"
 )
+
+list(FILTER CPP_GAME_SOURCES EXCLUDE REGEX "srcBackend/common/defunct/.*")
 
 add_executable(cpp-game ${CPP_GAME_SOURCES})
 add_compile_definitions(NOMINMAX)
+
+# Enable precompiled headers for faster builds
+target_precompile_headers(cpp-game PRIVATE
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/srcBackend/common/headers/pch.h>"
+)
 
 # --------------------------------------------------------------------
 # Excel files
@@ -158,7 +165,7 @@ if (FRONTEND AND NOT FRONTEND_DEV)
 
     add_custom_target(frontend_build
             COMMAND npm run build
-            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/frontend
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/srcFrontend
             COMMENT "Building frontend with vite"
             VERBATIM
     )
@@ -172,13 +179,13 @@ endif ()
 if (FRONTEND_DEV)
     target_compile_definitions(cpp-game PUBLIC
             FRONTEND_DEV=1
-            FRONTEND_DIR=\"${CMAKE_SOURCE_DIR}/frontend\"
+            FRONTEND_DIR=\"${CMAKE_SOURCE_DIR}/srcFrontend\"
     )
 endif ()
 
 if (FRONTEND)
     target_compile_definitions(cpp-game PUBLIC
             FRONTEND=1
-            FRONTEND_DIST_DIR=\"${CMAKE_SOURCE_DIR}/frontend/dist\"
+            FRONTEND_DIST_DIR=\"${CMAKE_SOURCE_DIR}/srcFrontend/dist\"
     )
 endif ()

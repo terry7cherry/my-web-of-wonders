@@ -3,8 +3,10 @@
 /out/
 /x64/
 /uploads/
+# Defunct
+/srcBackend/common/defunct
 # Frontend
-/frontend/node_modules
+/srcFrontend/node_modules
 # CMake
 CMakeCache.txt
 CMakeFiles/
