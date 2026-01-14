@@ -2,11 +2,17 @@
 
 #include "../../common/grids/LineGrid.h"
 #include "../../common/gameMaths/GameMaths.h"
-#include "../../common/state/GameCycleFunctionalBase.h"
+#include "../../common/state/GameCycleBase.h"
 
 struct GameCycleReused
 {
-    LineGrid grid;
+    LineGrid grid; // Use a different Grid class if necessary, e.g., WaysGrid.
+
+    // Add other members here that are very costly to initialise.
+    // Initialise them once either in the GameCycleReused initialiser list or in the constructor body.
+    // Reset them in the reset() method (called before each game cycle).
+    // Add a reference to them as a member in the GameCycle struct and add to the initialiser list.
+    // (Follow how this is done with the grid member.)
 
     explicit GameCycleReused(const GameMaths& gameMaths) :
         grid(gameMaths)
@@ -19,7 +25,7 @@ struct GameCycleReused
     }
 };
 
-struct GameCycle : GameCycleFunctionalBase
+struct GameCycle : GameCycleBase
 {
     LineGrid& grid;
     unsigned int totalWin = 0;
