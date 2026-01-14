@@ -29,6 +29,8 @@ compile_commands.json
 *.dll
 *.dylib
 *.exe
+# Lock files
+~$*
 # Visual Studio
 .vs/
 *.vcxproj*
