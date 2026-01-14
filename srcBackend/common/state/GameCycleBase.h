@@ -8,12 +8,12 @@
 
 struct GameCycleReused;
 
-struct GameCycleFunctionalBase
+struct GameCycleBase
 {
 #ifdef FRONTEND
     std::vector<BasicEvent*> events;
 #endif
-    explicit GameCycleFunctionalBase()
+    explicit GameCycleBase()
     {
     }
 
