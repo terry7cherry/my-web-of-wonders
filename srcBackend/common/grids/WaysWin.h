@@ -2,7 +2,7 @@
 
 // cpp-dev-library
 #include "../headers/pch.h"
-#include "../mathElements/PayTable.h"
+#include "../gameMaths/mathElements/PayTable.h"
 
 
 /*******************************************************************/
@@ -17,7 +17,7 @@ public:
 	int maxRows;
 
 	// Win data
-	uint8_t symbol = SYMBOL_NONE; // winnning symbol
+	Symbol symbol = SYMBOL_NONE; // winnning symbol
 	int oak = 0; // 'of a kind' - how many symbols in the win
 	int winVal = 0; // win for 1 way of this 'oak' of 'symbol'
 	int winWays = 1; // how many ways for this 'oak' of 'symbol'
@@ -43,7 +43,7 @@ public:
 	// Parameters:
 	//		winSymbol		the winning symbol 
 	//		maxReelCount	the number of reels in the grid
-	WaysWin(uint8_t winSymbol, int maxReelCount, int maxRowCount);
+	WaysWin(Symbol winSymbol, int maxReelCount, int maxRowCount);
 
 	WaysWin(); // default constructor for creating arrays
 

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "../common/grids/LineGrid.h"
-#include "../common/gameMaths/GameMaths.h"
-#include "../common/state/GameCycleFunctionalBase.h"
+#include "../../common/grids/LineGrid.h"
+#include "../../common/gameMaths/GameMaths.h"
+#include "../../common/state/GameCycleFunctionalBase.h"
 
 struct GameCycleReused
 {

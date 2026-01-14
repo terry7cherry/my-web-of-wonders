@@ -1,13 +1,15 @@
 #pragma once
 #include <string>
+#include <absl/container/flat_hash_map.h>
 #include <memory>
 #include <algorithm>
 #include "TaggedRange.h"
-#include "../../mathElements/ReelSet.h"
-#include "../../mathElements/WeightTables.h"
-#include "../../mathElements/PayTable.h"
-#include "../../mathElements/PayLines.h"
-#include "../../mathElements/ThresholdTable.h"
+#include "../../grids/Grid.h"
+#include "../mathElements/ReelSet.h"
+#include "../mathElements/WeightTables.h"
+#include "../mathElements/PayTable.h"
+#include "../mathElements/PayLines.h"
+#include "../mathElements/ThresholdTable.h"
 
 namespace TaggedDataHelpers
 {
@@ -235,12 +237,14 @@ struct TaggedBetTypeMap : TaggedDoubleMap
 
 struct TaggedReelSet : TaggedDataIndividual<ReelSet>
 {
-    TaggedReelSet(const TaggedRangePtr& taggedRangePtr, const size_t numRows)
-        : TaggedDataIndividual(taggedRangePtr, parseReelSet(*taggedRangePtr, numRows))
+    TaggedReelSet(const TaggedRangePtr& taggedRangePtr, const size_t numRows,
+                  const std::unordered_map<std::string, Symbol>& symbolIndexMap)
+        : TaggedDataIndividual(taggedRangePtr, parseReelSet(*taggedRangePtr, numRows, symbolIndexMap))
     {
     }
 
-    static ReelSet parseReelSet(const TaggedRange& taggedRange, size_t numRows);
+    static ReelSet parseReelSet(const TaggedRange& taggedRange, size_t numRows,
+                                const std::unordered_map<std::string, Symbol>& symbolIndexMap);
 };
 
 struct TaggedReelSetWeights : TaggedDataIndividual<ReelSetWeightTable>
@@ -351,4 +355,72 @@ struct TaggedIntThresholdTable : TaggedThresholdTable<int>
 struct Metadata : TaggedString
 {
     using TaggedString::TaggedString;
+};
+
+struct TaggedSymbol : TaggedData<Symbol>
+{
+    const std::string cellLocation;
+
+    TaggedSymbol(
+        const TaggedRangePtr& taggedRangePtr,
+        const size_t row,
+        const std::unordered_map<std::string, Symbol>& symbolIndexMap
+    )
+        : TaggedData(taggedRangePtr, calculateFullName(*taggedRangePtr, row), calculateValue(
+                         *taggedRangePtr, row, symbolIndexMap)),
+          cellLocation(taggedRangePtr->getCellLocationString(row, 1))
+    {
+    }
+
+protected:
+    static std::string calculateFullName(const TaggedRange& taggedRange, const size_t row)
+    {
+        if (taggedRange.name.empty()) return taggedRange.data[row][0];
+        return taggedRange.name + "." + taggedRange.data[row][0];
+    }
+
+    static Symbol calculateValue(const TaggedRange& taggedRange, const size_t row,
+                                 const std::unordered_map<std::string, Symbol>& symbolIndexMap)
+    {
+        const std::string valueStr = taggedRange.data[row][1];
+        return convertValue(valueStr, taggedRange.getCellLocationString(row, 1), symbolIndexMap);
+    };
+
+public:
+    static Symbol convertValue(const std::string& valueStr, const std::string& cellLocation,
+                               const std::unordered_map<std::string, Symbol>& symbolIndexMap);
+};
+
+struct TaggedSymbolVector : TaggedData<std::vector<Symbol>>
+{
+    const std::string cellLocation;
+
+    TaggedSymbolVector(
+        const TaggedRangePtr& taggedRangePtr,
+        const size_t row,
+        const std::unordered_map<std::string, Symbol>& symbolIndexMap
+    )
+        : TaggedData(taggedRangePtr, calculateFullName(*taggedRangePtr, row), calculateValue(
+                         *taggedRangePtr, row, symbolIndexMap)),
+          cellLocation(taggedRangePtr->getCellLocationString(row, 1))
+    {
+    }
+
+protected:
+    static std::string calculateFullName(const TaggedRange& taggedRange, const size_t row)
+    {
+        if (taggedRange.name.empty()) return taggedRange.data[row][0];
+        return taggedRange.name + "." + taggedRange.data[row][0];
+    }
+
+    static std::vector<Symbol> calculateValue(const TaggedRange& taggedRange, const size_t row,
+                                              const std::unordered_map<std::string, Symbol>& symbolIndexMap)
+    {
+        const std::string valueStr = taggedRange.data[row][1];
+        return convertValue(valueStr, taggedRange.getCellLocationString(row, 1), symbolIndexMap);
+    };
+
+private:
+    static std::vector<Symbol> convertValue(const std::string& valueStr, const std::string& cellLocation,
+                                            const std::unordered_map<std::string, Symbol>& symbolIndexMap);
 };

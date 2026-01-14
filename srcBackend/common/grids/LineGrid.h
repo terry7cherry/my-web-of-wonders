@@ -3,7 +3,7 @@
 // cpp-dev-library
 #include "PayGrid.h"
 #include "../console/Console.h"
-#include "../mathElements/PayLines.h"
+#include "../gameMaths/mathElements/PayLines.h"
 #include "LineWin.h"
 
 

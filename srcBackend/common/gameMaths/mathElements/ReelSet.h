@@ -1,18 +1,18 @@
 #pragma once
 
-#include "../headers/pch.h"
+#include "../../headers/pch.h"
 
 // Create a vector of this structure to initialise all instances of class ReelSet
 class ReelSet
 {
 private:
-	std::vector<std::vector<uint8_t>> mSourceReelsVect;
+	std::vector<std::vector<Symbol>> mSourceReelsVect;
 	bool mDebugOutput = false;
 
 public:
 	std::string mSzName = "";
 	std::vector<size_t> reelSizeVect;
-	std::vector<std::vector<uint8_t>> wrappedBandVect;
+	std::vector<std::vector<Symbol>> wrappedBandVect;
 
 	/**********************************************/
 	// constructors
@@ -20,9 +20,9 @@ public:
 
 	// uses maxWindow to create wrapped bands
 	ReelSet(const std::string& szName, size_t maxReelWindowHeight,
-	        const std::vector<std::vector<uint8_t>>& bandsVect);
+	        const std::vector<std::vector<Symbol>>& bandsVect);
 
-	ReelSet(const std::string& szName, const std::vector<std::vector<uint8_t>>& bandsVect);
+	ReelSet(const std::string& szName, const std::vector<std::vector<Symbol>>& bandsVect);
 
 
 	/**********************************************/
@@ -47,7 +47,7 @@ public:
 	void createWrappedBands(size_t maxHeight);
 
 	// copy source to dest and add wrap-around of "maxHeight" symbols in dest
-	static void createWrappedBand(std::vector<uint8_t>& dest, const std::vector<uint8_t>& source,
+	static void createWrappedBand(std::vector<Symbol>& dest, const std::vector<Symbol>& source,
 	                              size_t maxHeight);
 
 

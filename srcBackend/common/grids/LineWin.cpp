@@ -90,7 +90,7 @@ std::string LineWin::getWinText(std::string szSymbol, const bool showDirection) 
     return std::string(buffer, size);
 }
 
-std::string LineWin::getWinText(const std::map<uint8_t, std::string>& symbolMap,
+std::string LineWin::getWinText(const std::map<Symbol, std::string>& symbolMap,
                                 const bool showDirection) const
 {
     const std::string szSymbol = symbolMap.at(symbol);

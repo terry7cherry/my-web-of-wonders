@@ -81,6 +81,8 @@ Windows setup
    - Go to: File → Settings → Build, Execution, Deployment → CMake
    - Ensure the Windows presets you care about are enabled (e.g.
      `windows-sim-debug`, `windows-sim-release`, `windows-frontend`).
+   - Click the 3 dots in the top right next to the debug button, then edit.
+   - Under "cpp-game" make sure "Emulate terminal in the output console" is ticked.
 
 5. Build & run
 
@@ -162,21 +164,26 @@ macOS setup
    - Start CLion.
    - Open the folder `~/Projects/cpp-{your-game-name}`.
 
-   4. a) Replace VCPKG_ROOT
+   a) Replace VCPKG_ROOT
 
         - In CMakePresets.json, replace each occurrence of $env{VCPKG_ROOT} with the path returned by:
            echo "$VCPKG_ROOT"
 
-   4. b) Select toolchains:
+   b) Select toolchains:
 
         - File → Settings → Build, Execution, Deployment → Toolchains
         - Use the default "macOS" toolchain (Apple Clang).
         - Ensure CMake and Ninja are detected (CLion usually finds `/opt/homebrew/bin/ninja`).
 
-   4. c) Enable CMake presets:
+   c) Enable CMake presets:
 
         - File → Settings → Build, Execution, Deployment → CMake
         - Enable all the macos-* presets by ticking the check boxes.
+
+   d) Turn on terminal emulation:
+
+        - Click the 3 dots in the top right next to the debug button, then edit.
+        - Under "cpp-game" make sure "Emulate terminal in the output console" is ticked.
 
 5. Build & run
 

@@ -1,7 +1,12 @@
-#include "TaggedDataTypes.h"
+#include <absl/container/flat_hash_map.h>
 #include <algorithm>
 #include <stdexcept>
 #include <string>
+#include <json/json.h>
+#include "TaggedDataTypes.h"
+
+
+#include "../../grids/Grid.h"
 
 /******************************************/
 /* Helper functions                       */
@@ -9,6 +14,34 @@
 
 namespace TaggedDataHelpers
 {
+    Json::Value parseJsonArrayOrReturnNull(const std::string& input)
+    {
+        static const std::unique_ptr<Json::CharReader> reader([]
+        {
+            Json::CharReaderBuilder builder;
+            builder["collectComments"] = false;
+            return std::unique_ptr<Json::CharReader>(builder.newCharReader());
+        }());
+
+        Json::Value root;
+        std::string errors;
+
+        const char* begin = input.data();
+        const char* end = begin + input.size();
+
+        if (!reader->parse(begin, end, &root, &errors))
+        {
+            return {};
+        }
+
+        if (!root.isArray())
+        {
+            return {};
+        }
+
+        return root;
+    }
+
     int stringToInt(std::string valueStr, const std::string& cellLocation)
     {
         valueStr.erase(std::ranges::remove(valueStr, ',').begin(), valueStr.end());
@@ -226,9 +259,10 @@ double TaggedRtpMap::convertValue(const std::string& valueStr, const std::string
 /* ReelSet implementation                 */
 /******************************************/
 
-ReelSet TaggedReelSet::parseReelSet(const TaggedRange& taggedRange, const size_t numRows)
+ReelSet TaggedReelSet::parseReelSet(const TaggedRange& taggedRange, const size_t numRows,
+                                    const std::unordered_map<std::string, Symbol>& symbolIndexMap)
 {
-    std::vector<std::vector<uint8_t>> reels(taggedRange.width);
+    std::vector<std::vector<Symbol>> reels(taggedRange.width);
     const auto& data = taggedRange.data;
     for (size_t rowNum = 1; rowNum < data.size(); rowNum++)
     {
@@ -236,19 +270,26 @@ ReelSet TaggedReelSet::parseReelSet(const TaggedRange& taggedRange, const size_t
         {
             const std::string& valueStr = data[rowNum][reelNum];
             if (valueStr.empty()) continue;
-            try
+            const auto& symbolIndexOptional = TaggedDataHelpers::tryStringToInt(valueStr);
+            if (symbolIndexOptional.has_value())
             {
-                reels[reelNum].push_back(
-                    static_cast<uint8_t>(TaggedDataHelpers::stringToInt(
-                            valueStr, taggedRange.getCellLocationString(rowNum, reelNum))
-                    )
-                );
+                reels[reelNum].push_back(static_cast<Symbol>(symbolIndexOptional.value()));
             }
-            catch (std::exception& e)
+            else
             {
-                throw std::runtime_error(
-                    "Error parsing reelSet " + taggedRange.name +
-                    ". A symbol could not be converted to an int. Error: " + e.what());
+                auto it = symbolIndexMap.find(valueStr);
+                if (it != symbolIndexMap.end())
+                {
+                    reels[reelNum].push_back(static_cast<Symbol>(it->second));
+                }
+                else
+                {
+                    throw std::runtime_error(
+                        "ReelSet '" + taggedRange.name + "' at " + taggedRange.location +
+                        " references unknown symbol '" + valueStr +
+                        "'. Ensure a symbol with this name exists in the paytable."
+                    );
+                }
             }
         }
     }
@@ -454,14 +495,16 @@ PayTable TaggedPayTable::parsePayTable(const TaggedRange& taggedRange)
             "by an int header for each paying OAK.");
 
     std::vector<std::vector<unsigned int>> payTableVect;
-    std::vector<uint8_t> paySymVect;
-    std::vector<uint8_t> scatterSymVect;
-    std::vector<uint8_t> wildSymVect;
-    std::vector<uint8_t> wildNoSubstVect;
+    std::vector<Symbol> paySymVect;
+    std::vector<Symbol> scatterSymVect;
+    std::vector<Symbol> wildSymVect;
+    std::vector<Symbol> wildNoSubstVect;
+    std::vector<std::string> symbolNames;
 
     for (size_t rowNum = 1; rowNum < data.size(); rowNum++)
     {
         const auto& row = data[rowNum];
+        symbolNames.push_back(row[0]);
         std::vector<unsigned int> symbolVect(maxOAK + 1, 0);
         for (size_t colNum = 0; colNum < headers.size(); colNum++)
             if (auto oak = TaggedDataHelpers::tryStringToInt(headers[colNum]))
@@ -482,7 +525,7 @@ PayTable TaggedPayTable::parsePayTable(const TaggedRange& taggedRange)
                 }
             }
         payTableVect.push_back(symbolVect);
-        const uint8_t symbolId = static_cast<uint8_t>(rowNum) - 1;
+        const Symbol symbolId = static_cast<uint8_t>(rowNum) - 1;
         const std::string& payType = row[1];
         if (payType == "line")
             paySymVect.push_back(symbolId);
@@ -496,7 +539,7 @@ PayTable TaggedPayTable::parsePayTable(const TaggedRange& taggedRange)
         else if (payType == "scatter")
             scatterSymVect.push_back(symbolId);
     }
-    return PayTable(payTableVect, paySymVect, scatterSymVect, wildSymVect, wildNoSubstVect);
+    return PayTable(payTableVect, paySymVect, scatterSymVect, wildSymVect, wildNoSubstVect, symbolNames);
 }
 
 /******************************************/
@@ -532,4 +575,47 @@ PayLines TaggedPayLines::parsePayLines(const TaggedRange& taggedRange)
     }
 
     return {payLinesVect};
+}
+
+/******************************************/
+/* Symbol implementation                  */
+/******************************************/
+
+Symbol TaggedSymbol::convertValue(const std::string& valueStr,
+                                  const std::string& cellLocation,
+                                  const std::unordered_map<std::string, Symbol>& symbolIndexMap)
+{
+    const auto intOptional = TaggedDataHelpers::tryStringToInt(valueStr);
+    if (intOptional.has_value()) return static_cast<Symbol>(intOptional.value());
+
+    auto it = symbolIndexMap.find(valueStr);
+    if (it != symbolIndexMap.end()) return it->second;
+    throw std::runtime_error("Unknown symbol '" + valueStr + "' at " + cellLocation);
+}
+
+std::vector<Symbol> TaggedSymbolVector::convertValue(const std::string& valueStr,
+                                                     const std::string& cellLocation,
+                                                     const std::unordered_map<std::string, Symbol>&
+                                                     symbolIndexMap)
+{
+    if (!valueStr.starts_with("[") || !valueStr.ends_with("]"))
+        throw std::runtime_error(
+            "Invalid symbol list '" + valueStr + "' at " + cellLocation +
+            ". Must be in the form of a json array beginning with '[' and ending with ']'.");
+
+    Json::Value jsonValue = TaggedDataHelpers::parseJsonArrayOrReturnNull(valueStr);
+    if (jsonValue.isNull())
+        throw std::runtime_error(
+            "Invalid symbol list '" + valueStr + "' at " + cellLocation +
+            ". Does not parse to valid Json. Ensure symbols, if named, are in double quotes.");
+    if (!jsonValue.isArray())
+        throw std::runtime_error("Invalid symbol list '" + valueStr + "' at " + cellLocation +
+            ". Symbols must be specified as a json array.");
+    std::vector<Symbol> symbolVector;
+    for (const auto& symbolStr : jsonValue)
+    {
+        symbolVector.
+            push_back(TaggedSymbol::convertValue(symbolStr.asString(), cellLocation, symbolIndexMap));
+    }
+    return symbolVector;
 }

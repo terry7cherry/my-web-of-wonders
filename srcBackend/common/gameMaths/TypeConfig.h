@@ -40,7 +40,7 @@ public:
         auto it = data.find(key);
         if (ABSL_PREDICT_TRUE(it != data.end()))
             return it->second;
-        std::cerr << "Config with name '" + key + "' and type " + getTypeString() + "not found.\n"
+        std::cerr << "Config with name '" + key + "' and type " + getTypeString() + " not found.\n"
             << "Note that for int, double, string, and bool types, the name is the 'name' property in the JSON tag, concatenated with the string in the left column of the table.\n"
             << "Ensure this config element is specified for the current rtp and betType or that it is covered by a more general definition."
             << std::endl;
@@ -62,7 +62,7 @@ private:
         return result + " or " + typeNames.back();
     }
 
-    absl::flat_hash_map<std::string, T> data;
+    std::unordered_map<std::string, T> data;
     std::vector<std::string> typeNames;
 };
 

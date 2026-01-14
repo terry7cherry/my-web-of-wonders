@@ -1,8 +1,8 @@
-#include "../headers/pch.h"
+#include "../../headers/pch.h"
 
 #include "ReelSet.h"
-#include "../rng/MathsRng.h"
-#include "../grids/Grid.h"
+#include "../../rng/MathsRng.h"
+#include "../../grids/Grid.h"
 
 #ifdef _WIN32
 #define MEMCPY_SAFE(dest, destsz, src, count) memcpy_s(dest, destsz, src, count)
@@ -25,7 +25,7 @@ std::string szReelSetFolder = "reelSets";
 // Constructors
 /*******************************/
 
-ReelSet::ReelSet(const std::string& szName, const std::vector<std::vector<uint8_t>>& bandsVect)
+ReelSet::ReelSet(const std::string& szName, const std::vector<std::vector<Symbol>>& bandsVect)
 {
 	mSzName = szName;
 	mSourceReelsVect = bandsVect;
@@ -37,7 +37,7 @@ ReelSet::ReelSet(const std::string& szName, const std::vector<std::vector<uint8_
 }
 
 ReelSet::ReelSet(const std::string& szName, const size_t maxReelWindowHeight,
-                 const std::vector<std::vector<uint8_t>>& bandsVect)
+                 const std::vector<std::vector<Symbol>>& bandsVect)
 	: ReelSet(szName, bandsVect)
 {
 	createWrappedBands(maxReelWindowHeight);
@@ -68,7 +68,7 @@ void ReelSet::createWrappedBands(const size_t maxHeight)
 		reportError("ReelSet::createWrappedBands", "No data in 'mSourceReelsVect'");
 }
 
-void ReelSet::createWrappedBand(std::vector<uint8_t>& dest, const std::vector<uint8_t>& source,
+void ReelSet::createWrappedBand(std::vector<Symbol>& dest, const std::vector<Symbol>& source,
                                 const size_t maxHeight)
 {
 	dest = source;
@@ -130,7 +130,7 @@ void ReelSet::fileOutput(std::map<int, std::string> symbolMap) const
 		for (int i = 0; i < maxReelLen; i++)
 		{
 			ss.str("");
-			for (std::vector<uint8_t> reel : mSourceReelsVect)
+			for (std::vector<Symbol> reel : mSourceReelsVect)
 				ss << ((i < reel.size()) ? symbolMap[reel[i]] : "") << ",";
 			outfile << ss.str() << std::endl;
 			//fprintf_s(fp, "%s\n", ss.str().c_str());
@@ -141,7 +141,7 @@ void ReelSet::fileOutput(std::map<int, std::string> symbolMap) const
 		for (int i = 0; i < maxReelLen; i++)
 		{
 			ss.str("");
-			for (std::vector<uint8_t> reel : mSourceReelsVect)
+			for (std::vector<Symbol> reel : mSourceReelsVect)
 			{
 				if (i < reel.size())
 					ss << reel[i];
@@ -168,7 +168,7 @@ int ReelSet::checkSymbolBlocks(const int maxBlock, const int noCheckSymbol,
 		int reel;
 		int pos;
 		int blockSize;
-		uint8_t symbolId;
+		Symbol symbolId;
 		std::string szSymbol;
 	};
 	std::vector<blockError> errVect;
@@ -179,7 +179,7 @@ int ReelSet::checkSymbolBlocks(const int maxBlock, const int noCheckSymbol,
 		int i = 0;
 		while (i < rLen)
 		{
-			const uint8_t sym = wrappedBandVect[rl][i];
+			const Symbol sym = wrappedBandVect[rl][i];
 			int block = 1;
 			int j = i == (rLen - 1) ? 0 : i + 1;
 			while (i < rLen && wrappedBandVect[rl][j] == sym)

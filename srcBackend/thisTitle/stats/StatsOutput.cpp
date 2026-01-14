@@ -1,8 +1,8 @@
 #include "StatsOutput.h"
 
-#include "../common/events/BaseGameCompleteEvent.h"
-#include "../common/events/GameCycleCompleteEvent.h"
-#include "../common/events/FreeSpinsCompleteEvent.h"
+#include "../../common/events/BaseGameCompleteEvent.h"
+#include "../../common/events/GameCycleCompleteEvent.h"
+#include "../../common/events/FreeSpinsCompleteEvent.h"
 
 void Stats::outputStats(const uint64_t simGames, const std::string& betType, const int rtp, const int bet)
 {

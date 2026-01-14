@@ -62,7 +62,7 @@ public:
 
 		// check for symbols on 1st reel and in quickWinMask, includes wilds
 		int reel = 0;
-		uint8_t symId;
+		Symbol symId;
 		for (int row = 0; row < reelHeightVect[reel]; row++)
 		{
 			// build list of symbols to check for matches
@@ -158,7 +158,7 @@ public:
 
 	// Checks if there is a win for passed "symbol"
 	// If so applies multipler to the win and returns the incremental win: (initialWin * multiplier) - initialWin
-	int setWinMultiplier(const uint8_t symbol, const int multiplier)
+	int setWinMultiplier(const Symbol symbol, const int multiplier)
 	{
 		int newWin = 0;
 		int initialWin = 0;

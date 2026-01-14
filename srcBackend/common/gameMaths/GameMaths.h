@@ -5,10 +5,10 @@
 #endif
 #include <string>
 #include <unordered_map>
-#include "../mathElements/WeightTables.h"
-#include "../mathElements/PayLines.h"
-#include "../mathElements/PayTable.h"
-#include "../mathElements/ThresholdTable.h"
+#include "mathElements/WeightTables.h"
+#include "./mathElements/PayLines.h"
+#include "./mathElements/PayTable.h"
+#include "./mathElements/ThresholdTable.h"
 #include <absl/container/flat_hash_map.h>
 #include "TypeConfig.h"
 
@@ -25,6 +25,8 @@ public:
     int rtp;
     std::string betType;
     TypeConfig<int> ints{{"int"}};
+    TypeConfig<Symbol> symbols{{"symbol"}};
+    TypeConfig<std::vector<Symbol>> symbolVectors{{"symbols"}};
     TypeConfig<double> doubles{{"double"}};
     TypeConfig<std::string> strings{{"string"}};
     TypeConfig<bool> bools{{"bool"}};

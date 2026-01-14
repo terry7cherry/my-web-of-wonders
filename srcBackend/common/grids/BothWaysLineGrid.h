@@ -29,7 +29,7 @@ public:
 			reportError("PayGrid:quickWinCheck", "No pay table set");
 			return quickWinMask;
 		}
-		uint8_t symId = SYMBOL_NONE;
+		Symbol symId = SYMBOL_NONE;
 
 		// check left_right
 		lrMask = UINT32_MAX;
@@ -114,7 +114,7 @@ public:
 			{
 				// start from beginning again to account for multipliers
 				row = lpPayLines->getRow(line, reel);
-				uint8_t nextSym = symbols[reel][row];
+				Symbol nextSym = symbols[reel][row];
 				symbolData& nextSymData = symbolVect[nextSym];
 
 				if (nextSymData.isScatter && !nextSymData.isWild)
@@ -215,7 +215,7 @@ public:
 			{
 				// start from beginning again to account for multipliers
 				row = lpPayLines->getRow(line, reel);
-				uint8_t nextSym = symbols[reel][row];
+				Symbol nextSym = symbols[reel][row];
 				symbolData& nextSymData = symbolVect[nextSym];
 
 				if (nextSymData.isScatter && !nextSymData.isWild)

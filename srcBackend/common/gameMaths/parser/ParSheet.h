@@ -2,12 +2,14 @@
 #include <xlnt/xlnt.hpp>
 #include <algorithm>
 #include <ranges>
+#include <json/json.h>
 
 #include "TaggedRange.h"
 #include "TaggedDataTypes.h"
 #include "../GameMaths.h"
 #include <absl/container/flat_hash_map.h>
 #include "../TypeConfig.h"
+#include "../../utils/Timer.h"
 //template <typename T>
 //using TypeConfig = absl::flat_hash_map<std::string, T>;
 //using TypeConfig = std::unordered_map<std::string, T>;
@@ -19,20 +21,23 @@ public:
     std::unordered_map<std::string, std::unordered_map<int, std::unique_ptr<GameMaths>>> gameMathsVariants;
     std::vector<int> rtps;
     std::vector<std::string> betTypes;
+    std::string fileName;
     std::string gameTitle;
     std::string gameVersion;
 
     ParSheet(const std::string& parSheetName)
+        : fileName(parSheetName)
     {
+        Timer timer("Spreadsheet Parsing");
         xlnt::workbook wb;
         const std::filesystem::path p = std::filesystem::path(GAME_SOURCE_DIR) / "srcBackend" / "thisTitle" /
-            "parSheets" / parSheetName;
+            "parSheets" / fileName;
         wb.load(p);
         extractTaggedRanges(wb);
         sortTaggedRangesByDescendingSpecificity();
         createAndCategoriseTaggedData();
         createGameMaths();
-        std::string testString = "test";
+        timer.outputMilli();
     }
 
     void extractTaggedRanges(const xlnt::workbook& wb)
@@ -81,6 +86,7 @@ public:
     {
         createSimpleTaggedData();
         createReelSets();
+        createSymbols();
         createReelSetWeights();
     }
 
@@ -240,6 +246,8 @@ public:
     void createReelSets()
     {
         const size_t windowHeight = getWindowHeight();
+        const std::unordered_map<std::string, Symbol> symbolIndexMap = taggedPayTables[0]->value.
+            symbolIndexMap;
 
         for (const std::shared_ptr<TaggedRange>& taggedRange : taggedRanges)
         {
@@ -252,7 +260,7 @@ public:
                         "variants. To achieve this, create multiple reelsets with distinct names "
                         "and specify distinct reelSetWeightTable where required.");
 
-                const TaggedReelSet taggedReelSet(taggedRange, windowHeight);
+                const TaggedReelSet taggedReelSet(taggedRange, windowHeight, symbolIndexMap);
                 if (const auto& identicalReelSetIt = reelSetMap.find(taggedReelSet.fullName);
                     identicalReelSetIt != reelSetMap.end())
                     throw std::runtime_error(
@@ -263,6 +271,32 @@ public:
                 reelSetMap.insert({taggedReelSet.fullName, taggedReelSet.value});
                 taggedReelSets.push_back(
                     std::make_shared<TaggedReelSet>(taggedReelSet));
+            }
+        }
+    }
+
+    void createSymbols()
+    {
+        const std::unordered_map<std::string, Symbol> symbolIndexMap = taggedPayTables[0]->value.
+            symbolIndexMap;
+
+        for (const std::shared_ptr<TaggedRange>& taggedRange : taggedRanges)
+        {
+            if (taggedRange->type == "symbol")
+            {
+                for (xlnt::row_t row = 0; row < taggedRange->data.size(); row++)
+                {
+                    taggedSymbols.push_back(
+                        std::make_shared<TaggedSymbol>(taggedRange, row, symbolIndexMap));
+                }
+            }
+            else if (taggedRange->type == "symbolVector")
+            {
+                for (xlnt::row_t row = 0; row < taggedRange->data.size(); row++)
+                {
+                    taggedSymbolVectors.push_back(
+                        std::make_shared<TaggedSymbolVector>(taggedRange, row, symbolIndexMap));
+                }
             }
         }
     }
@@ -295,18 +329,26 @@ public:
                 gameMathsPtr->targetRTP = taggedRtpMaps[0]->value.at(rtp);
                 gameMathsPtr->rtp = rtp;
                 gameMathsPtr->betType = betType;
+                addRelevantElementsToConfigForType(taggedSymbols, gameMathsPtr->symbols, rtp, betType);
+                addRelevantElementsToConfigForType(taggedSymbolVectors, gameMathsPtr->symbolVectors, rtp,
+                                                   betType);
                 addRelevantElementsToConfigForType(taggedInts, gameMathsPtr->ints, rtp, betType);
                 addRelevantElementsToConfigForType(taggedDoubles, gameMathsPtr->doubles, rtp, betType);
                 addRelevantElementsToConfigForType(taggedStrings, gameMathsPtr->strings, rtp, betType);
                 addRelevantElementsToConfigForType(taggedBools, gameMathsPtr->bools, rtp, betType);
                 addRelevantElementsToConfigForType(taggedIntMaps, gameMathsPtr->intMaps, rtp, betType);
-                addRelevantElementsToConfigForType(taggedDoubleMaps, gameMathsPtr->doubleMaps, rtp, betType);
-                addRelevantElementsToConfigForType(taggedStringMaps, gameMathsPtr->stringMaps, rtp, betType);
-                addRelevantElementsToConfigForType(taggedBoolMaps, gameMathsPtr->boolMaps, rtp, betType);
-                addRelevantElementsToConfigForType(taggedPayTables, gameMathsPtr->payTables, rtp, betType);
-                addRelevantElementsToConfigForType(taggedIntWeightTables, gameMathsPtr->intWeightTables, rtp,
+                addRelevantElementsToConfigForType(taggedDoubleMaps, gameMathsPtr->doubleMaps, rtp,
                                                    betType);
-                addRelevantElementsToConfigForType(taggedReelSetWeights, gameMathsPtr->reelSetWeights, rtp,
+                addRelevantElementsToConfigForType(taggedStringMaps, gameMathsPtr->stringMaps, rtp,
+                                                   betType);
+                addRelevantElementsToConfigForType(taggedBoolMaps, gameMathsPtr->boolMaps, rtp, betType);
+                addRelevantElementsToConfigForType(taggedPayTables, gameMathsPtr->payTables, rtp,
+                                                   betType);
+                addRelevantElementsToConfigForType(taggedIntWeightTables, gameMathsPtr->intWeightTables,
+                                                   rtp,
+                                                   betType);
+                addRelevantElementsToConfigForType(taggedReelSetWeights, gameMathsPtr->reelSetWeights,
+                                                   rtp,
                                                    betType);
                 addRelevantElementsToConfigForType(taggedDoubleWeightTables,
                                                    gameMathsPtr->doubleWeightTables,
@@ -316,7 +358,8 @@ public:
                                                    betType);
                 addRelevantElementsToConfigForType(taggedReelSets, gameMathsPtr->reelSets, rtp, betType);
                 addRelevantElementsToConfigForType(taggedPayLines, gameMathsPtr->payLines, rtp, betType);
-                addRelevantElementsToConfigForType(taggedIntThresholdTables, gameMathsPtr->intThresholdTables,
+                addRelevantElementsToConfigForType(taggedIntThresholdTables,
+                                                   gameMathsPtr->intThresholdTables,
                                                    rtp, betType);
                 validateBetTypeCost(gameMathsPtr->betTypeCost, gameMathsPtr->ints["minBet"]);
                 gameMathsVariants[betType][rtp] = std::move(gameMathsPtr);
@@ -324,7 +367,10 @@ public:
         }
     }
 
-    template <typename T, typename VectorType>
+    template
+    <
+        typename T, typename VectorType>
+
     void addRelevantElementsToConfigForType(const VectorType& sourceElements,
                                             TypeConfig<T>& destinationMap,
                                             const int rtp,
@@ -338,7 +384,8 @@ public:
             if (!targetRtps.empty() && std::ranges::find(targetRtps, rtp) == targetRtps.end())
                 continue;
             const auto& targetBetTypes = elementPtr->taggedRangePtr->betTypes;
-            if (!targetBetTypes.empty() && std::ranges::find(targetBetTypes, betType) == targetBetTypes.end())
+            if (!targetBetTypes.empty() && std::ranges::find(targetBetTypes, betType) == targetBetTypes.
+                end())
                 continue;
 
             if (intermediaryMap.contains(elementPtr->fullName))
@@ -443,6 +490,8 @@ public:
 
 private
 :
+    std::vector<std::shared_ptr<TaggedSymbol>> taggedSymbols;
+    std::vector<std::shared_ptr<TaggedSymbolVector>> taggedSymbolVectors;
     std::vector<std::shared_ptr<TaggedRange>> taggedRanges;
     std::vector<std::shared_ptr<TaggedInt>> taggedInts;
     std::vector<std::shared_ptr<TaggedDouble>> taggedDoubles;

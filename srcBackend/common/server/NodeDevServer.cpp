@@ -1,5 +1,5 @@
 // Precompiled header first to ensure Winsock2 precedes Windows.h
-#include "headers/pch.h"
+#include "../headers/pch.h"
 
 #include <vector>
 #include "NodeDevServer.h"

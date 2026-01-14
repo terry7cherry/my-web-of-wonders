@@ -1,7 +1,7 @@
 #include "SpinResult.h"
 
 #include <stdexcept>
-#include "../mathElements/ReelSet.h"
+#include "../gameMaths/mathElements/ReelSet.h"
 #include "../rng/MathsRng.h"
 
 SpinResult::SpinResult(const ReelSet& reelSet, const bool randomSpin)

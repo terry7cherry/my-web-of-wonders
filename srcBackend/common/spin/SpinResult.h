@@ -2,8 +2,8 @@
 
 #include <cstddef>
 #include <vector>
-#include "../mathElements/ReelSet.h"
-#include "../mathElements/WeightTables.h"
+#include "../gameMaths/mathElements/ReelSet.h"
+#include "../gameMaths/mathElements/WeightTables.h"
 
 /**
  * @brief Determines reelstops for spin and stores the result.

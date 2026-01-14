@@ -1,7 +1,7 @@
 #pragma once
 
-// cpp-dev-library
-#include "../statistics/MeterFile.h"
+#include <absl/container/flat_hash_map.h>
+#include "../../statistics/MeterFile.h"
 
 
 /************************************/
@@ -22,6 +22,7 @@ typedef struct
 
     uint32 mask;
     uint32 payMask;
+    std::string name;
 } SymbolData;
 
 class PayTable
@@ -31,14 +32,16 @@ public:
     std::vector<std::vector<unsigned int>> payData; // copy of passed pay data
     unsigned int numSymbols;
     std::vector<unsigned int> minPaySymbolsVect;
-    std::vector<uint8_t> paySymVect; // symbols that have a payout
-    std::vector<uint8_t> scatterSymVect; // symbols that are scatters
-    std::vector<uint8_t> wildSymVect; // symbols that are wild
-    std::vector<uint8_t> wildNoSubstVect; // symbols that wilds do not match
+    std::vector<Symbol> paySymVect; // symbols that have a payout
+    std::vector<Symbol> scatterSymVect; // symbols that are scatters
+    std::vector<Symbol> wildSymVect; // symbols that are wild
+    std::vector<Symbol> wildNoSubstVect; // symbols that wilds do not match
     std::vector<SymbolData> symbolVect;
     uint32 wildMask = 0;
     unsigned int minWinSymbols = 0u;
     size_t maxWinSymbols = 0;
+    std::vector<std::string> symbolNames;
+    std::unordered_map<std::string, Symbol> symbolIndexMap;
 
     //std::vector<MeterMap*> symbolWinMeterVect;
     //std::vector<MeterMap*> symbolHitMeterVect;
@@ -46,23 +49,25 @@ public:
 
     PayTable(
         const std::vector<std::vector<unsigned int>>& payData,
-        const std::vector<uint8_t>& paySymVect,
-        const std::vector<uint8_t>& scatterSymVect,
-        const std::vector<uint8_t>& wildSymVect,
-        const std::vector<uint8_t>& wildNoSubstVect);
+        const std::vector<Symbol>& paySymVect,
+        const std::vector<Symbol>& scatterSymVect,
+        const std::vector<Symbol>& wildSymVect,
+        const std::vector<Symbol>& wildNoSubstVect,
+        const std::vector<std::string>& symbolNames
+    );
 
     ~PayTable() = default;
 
     void symbolsInit(unsigned int symbolCount);
 
-    unsigned int getWin(uint8_t symbolIndex, unsigned int symbolCount, bool checkLimits = false) const;
+    unsigned int getWin(Symbol symbolIndex, unsigned int symbolCount, bool checkLimits = false) const;
 
-    bool isWild(const uint8_t symbolId) const
+    bool isWild(const Symbol symbolId) const
     {
         return symbolVect[symbolId].isWild;
     }
 
-    bool wildSubstitutes(const uint8_t symbolId) const
+    bool wildSubstitutes(const Symbol symbolId) const
     {
         return symbolVect[symbolId].substWild;
     }

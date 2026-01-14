@@ -1,8 +1,9 @@
 #pragma once
 
 #include "GameLogic.h"
-#include "GameSession.h"
-#include "GameCycle.h"
+#include "state/GameSession.h"
+#include "state/GameCycle.h"
+#include "forces/simForces.h"
 #include "../common/spin/SpinResult.h"
 #include "../common/events/BaseGameCompleteEvent.h"
 #include "../common/events/FreeSpinsCompleteEvent.h"
@@ -18,9 +19,9 @@ namespace GameLogic
 {
     unsigned int playGame(const GameMaths& maths, GameSession& session, GameCycle& cycle, const int force)
     {
-        if (force == 1)
+        if (force == SimForces::ForceFreeSpins)
         {
-            cycle.baseNumScatters = 3;
+            cycle.fsInitialSpins = 10;
             cycle.fsTrigger = true;
         }
         else
@@ -50,17 +51,17 @@ namespace GameLogic
 
         cycle.recordEvent<WinAnalysisEvent>(cycle.grid, "base game");
 
-        //FIX
-        cycle.baseNumScatters = cycle.grid.getSymbolCount(9);
-        if (cycle.baseNumScatters >= 3) cycle.fsTrigger = true;
+        static Symbol fsTriggerSymbol = maths.symbols["fsTriggerSymbol"];
+        cycle.baseNumScatters = cycle.grid.getSymbolCount(fsTriggerSymbol);
+        auto& fsStartSpins = maths.awards["fsStartSpins"];
+        if ((cycle.fsInitialSpins = fsStartSpins.at(cycle.baseNumScatters)))
+            cycle.fsTrigger = true;
 
         return cycle.baseGameWin;
     }
 
     unsigned int doFreeSpins(const GameMaths& maths, GameSession& session, GameCycle& cycle)
     {
-        auto& fsStartSpins = maths.awards["fsStartSpins"];
-        cycle.fsInitialSpins = fsStartSpins.at(cycle.baseNumScatters);
         cycle.recordEvent<FreeSpinsTriggerEvent>(cycle.fsInitialSpins);
 
         for (cycle.fsTotalSpinsPlayed = 0;
@@ -90,8 +91,8 @@ namespace GameLogic
         }
         cycle.recordEvent<WinAnalysisEvent>(cycle.grid, "free spin");
 
-        //FIX
-        const int scatterCount = cycle.grid.getSymbolCount(9);
+        static Symbol fsTriggerSymbol = maths.symbols["fsTriggerSymbol"];
+        const int scatterCount = cycle.grid.getSymbolCount(fsTriggerSymbol);
 
         if (scatterCount >= 2)
         {

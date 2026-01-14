@@ -23,8 +23,10 @@ typedef std::int32_t int32;
 typedef std::uint32_t uint32;
 typedef std::int64_t int64;
 typedef std::uint64_t uint64;
+typedef std::uint8_t Symbol;
 
-typedef struct {
+typedef struct
+{
     std::string szName;
     std::string szSimDigits;
     std::string szMathsDigits;

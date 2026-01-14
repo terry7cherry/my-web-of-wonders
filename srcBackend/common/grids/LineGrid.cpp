@@ -9,8 +9,8 @@ unsigned int LineGrid::evaluateWins(const unsigned int betMultiplier, [[maybe_un
 
     if ((quickWinMask = quickWinCheck()))
     {
-        uint8_t symbolToMatch;
-        uint8_t startSymbol;
+        Symbol symbolToMatch;
+        Symbol startSymbol;
         unsigned int wildCount = 0;
         unsigned int consecutiveWilds;
         unsigned int number;
@@ -40,7 +40,7 @@ unsigned int LineGrid::evaluateWins(const unsigned int betMultiplier, [[maybe_un
             {
                 // start from beginning again to account for multipliers
                 row = lpPayLines->getRow(line, reel);
-                uint8_t nextSym = reelSymbolVect[reel][row];
+                Symbol nextSym = reelSymbolVect[reel][row];
                 const SymbolData& nextSymData = symbolVect[nextSym];
 
                 if (nextSymData.isScatter && !nextSymData.isWild)
@@ -119,7 +119,7 @@ unsigned int LineGrid::evaluateWins(const unsigned int betMultiplier, [[maybe_un
         }
     }
 
-    for (uint8_t scatterSymbol : lpPayTable->scatterSymVect)
+    for (Symbol scatterSymbol : lpPayTable->scatterSymVect)
     {
         unsigned int symbolCount = this->getSymbolCount(scatterSymbol);
         if (symbolCount < lpPayTable->minPaySymbolsVect[scatterSymbol])

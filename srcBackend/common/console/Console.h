@@ -53,7 +53,7 @@ struct CONSOLE_SCREEN_BUFFER_INFO
 #define CONSOLE_INPUT  (BG_WHITE | TEXT_BLUE)
 #define CONSOLE_FLASH  0
 #else
-// On non-Windows, these are just placeholders; setStyle() can ignore them.
+// Cross-platform symbolic values used by Console::setStyle to emit ANSI escapes
 #define TEXT_WHITE   0
 #define TEXT_CYAN    0
 #define TEXT_MAGENTA 0
@@ -74,9 +74,10 @@ struct CONSOLE_SCREEN_BUFFER_INFO
 #define BG_BLACK   0
 #define BG_GREY    0
 
+// Use small integers so we can reliably compare and map to ANSI
 #define CONSOLE_STD    0
-#define CONSOLE_INVERT 0
-#define CONSOLE_INPUT  0
+#define CONSOLE_INVERT 1
+#define CONSOLE_INPUT  2
 #define CONSOLE_FLASH  0
 #endif
 
@@ -89,12 +90,6 @@ public:
 	int maxLines = 0;
 	int maxWidth = 0;
 
-	// deprecated - does not allow full screen to be set on Windows 11
-	// use initialise instead
-	void init(bool fullScreen);
-
-	// sets up console for use on Windows 11 and earlier
-	void initialise(bool fullScreen);
 
 	// remember the new string and show it
 	// default action is to clear screen then show header
@@ -159,10 +154,6 @@ public:
 
 	static void hideCursor();
 
-	void setWindowPos(int fromLeft, int fromTop) const;
-
-	static void setWindowSize(int width, int height);
-
 	void clearScreen(void);
 
 	void setCursorPos(int row, int col = 0);
@@ -174,8 +165,6 @@ public:
 	char waitAnyKey(void);
 
 	void waitKeyPress(char waitChar);
-
-	static bool getKeyPress(char& key);
 
 	bool confirmYesNo(std::string szText);
 

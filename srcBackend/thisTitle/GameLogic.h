@@ -1,8 +1,8 @@
 #pragma once
 
 #include "../common/gameMaths/GameMaths.h"
-#include "GameSession.h"
-#include "GameCycle.h"
+#include "state/GameSession.h"
+#include "state/GameCycle.h"
 
 enum EventID
 {

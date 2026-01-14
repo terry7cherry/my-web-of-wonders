@@ -1,7 +1,8 @@
 #pragma once
 
 // cpp-dev-library
-#include "../mathElements/PayTable.h"
+#include "../gameMaths/mathElements/PayTable.h"
+#include "../headers/pch.h"
 #include "../console/Console.h"
 #include "Grid.h"
 
@@ -68,7 +69,7 @@ public:
 			uint32_t reelMask = 0;
 			for (int row = 0; row < reelHeightVect[reel]; ++row)
 			{
-				const uint8_t symId = getReelSymbol(reel, row);
+				const Symbol symId = getReelSymbol(reel, row);
 				reelMask |= lpPayTable->symbolVect[symId].payMask;
 			}
 			quickWinMask &= reelMask;

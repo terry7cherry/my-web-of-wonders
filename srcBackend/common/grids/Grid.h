@@ -1,7 +1,7 @@
 #pragma once
 #include <map>
 
-#include "../mathElements/ReelSet.h"
+#include "../gameMaths/mathElements/ReelSet.h"
 #include "../spin/SpinResult.h"
 #include "../gameMaths/GameMaths.h"
 
@@ -19,7 +19,7 @@ enum class GridDataTypes
 class Grid
 {
 protected:
-	std::map<uint8_t, std::string> mTextMap;
+	std::map<Symbol, std::string> mTextMap;
 	std::map<int, short> mColourMap;
 	Console* lpConsole = nullptr;
 
@@ -37,7 +37,7 @@ public:
 	/************************************/
 
 	std::vector<bool> lockedVect;
-	std::vector<std::vector<uint8_t>> reelSymbolVect; // [reel][row]
+	std::vector<std::vector<Symbol>> reelSymbolVect; // [reel][row]
 	std::vector<std::vector<unsigned int>> multiplierVect; // [reel][row]
 
 	// constructor
@@ -60,7 +60,7 @@ public:
 	void copy(const Grid& sourceGrid);
 
 	// if Grid dimensions match, then copies all occurances of 'symbol' to 'reelSymbolVect'
-	void copySymbol(const Grid& sourceGrid, uint8_t symbol);
+	void copySymbol(const Grid& sourceGrid, Symbol symbol);
 
 	/************************************/
 	// Pre Spin
@@ -157,13 +157,13 @@ public:
 	/**************************************************/
 
 	// return the symbol at the passed reel, row
-	uint8_t getReelSymbol(const size_t reel, const size_t row) const
+	Symbol getReelSymbol(const size_t reel, const size_t row) const
 	{
 		return reelSymbolVect[reel][row];
 	}
 
 	// return the symbol at the passed {reel, row}
-	uint8_t getSymbol(const std::vector<size_t>& gridPos) const
+	Symbol getSymbol(const std::vector<size_t>& gridPos) const
 	{
 		return reelSymbolVect[gridPos[0]][gridPos[1]];
 	}
@@ -172,7 +172,7 @@ public:
 	//   0,  1,  2,  3,  4,
 	//	 5,  6,  7,  8,  9,
 	//	10, 11, 12, 13, 14
-	uint8_t getSymbol(const size_t index) const
+	Symbol getSymbol(const size_t index) const
 	{
 		return getSymbol(getGridPosition(index));
 	}
@@ -182,13 +182,13 @@ public:
 	/**************************************************/
 
 	// set the symbol at the passed reel, row
-	void setSymbol(const size_t reel, const size_t row, const uint8_t newSymbol)
+	void setSymbol(const size_t reel, const size_t row, const Symbol newSymbol)
 	{
 		reelSymbolVect[reel][row] = newSymbol;
 	}
 
 	// set the symbol at the passed gridPos {reel, row}
-	inline void setSymbol(const std::vector<size_t>& gridPos, const uint8_t newSymbol)
+	inline void setSymbol(const std::vector<size_t>& gridPos, const Symbol newSymbol)
 	{
 		reelSymbolVect[gridPos[0]][gridPos[1]] = newSymbol;
 	}
@@ -197,23 +197,23 @@ public:
 	//		 0,  1,  2,  3,  4,
 	//		 5,  6,  7,  8,  9,
 	//		10, 11, 12, 13, 14
-	void setSymbol(const size_t index, const uint8_t newSymbol)
+	void setSymbol(const size_t index, const Symbol newSymbol)
 	{
 		setSymbol(getGridPosition(index), newSymbol);
 	}
 
 	// replace current reel symbols with 'count' of 'newSymbol' from top to bottom
-	void setReelSymbols(size_t reel, uint8_t newSymbol, int count);
+	void setReelSymbols(size_t reel, Symbol newSymbol, int count);
 
 	// fill 'reel' with 'newSymbol'
-	void setReelSymbols(size_t reel, uint8_t newSymbol);
+	void setReelSymbols(size_t reel, Symbol newSymbol);
 
 	// replace current reel symbols with 'newSymbol' for each element in rowVect
 	// rowVect may contain:
 	//		1. An entry for each row position, each non-zero entry is set e.g. { 0,0,1}
 	//		2. The indexes of rows to set e.g. {2}
 	// returns vector of grid indexes that have been set
-	std::vector<size_t> setReelSymbols(size_t reel, uint8_t newSymbol,
+	std::vector<size_t> setReelSymbols(size_t reel, Symbol newSymbol,
 	                                   const std::vector<size_t>& rowVect);
 
 
@@ -273,13 +273,13 @@ public:
 
 	// count number of sym on passed reel
 	// optional parameter matchType
-	int getReelSymbolCount(size_t reel, uint8_t sym,
+	int getReelSymbolCount(size_t reel, Symbol sym,
 	                       symbolMatchTypes matchType = symbolMatchTypes::exact) const;
 
 	// count number of sym in the grid
 	// optional parameter matchType
 	// returns total count and fills reelSymbolCountVect with individual reel counts
-	int getSymbolCount(uint8_t sym, symbolMatchTypes matchType = symbolMatchTypes::exact) const;
+	int getSymbolCount(Symbol sym, symbolMatchTypes matchType = symbolMatchTypes::exact) const;
 
 	// returns row of passed symbol on passed reel
 	// returns -1 if symbol not found

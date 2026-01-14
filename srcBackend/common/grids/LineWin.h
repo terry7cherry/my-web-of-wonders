@@ -10,7 +10,7 @@
 class LineWin
 {
 public:
-    uint8_t symbol = 0;
+    Symbol symbol = 0;
     unsigned int oak = 0;
     unsigned int wildCount = 0;
     unsigned int multiplier = 1;
@@ -50,6 +50,6 @@ public:
 
     // Generates text that describes the LineWin
     // returns string in the format, "Line 7: 3 H1 = 40 [x2 line multiplier = 80]"
-    std::string getWinText(const std::map<uint8_t, std::string>& symbolMap,
+    std::string getWinText(const std::map<Symbol, std::string>& symbolMap,
                            bool showDirection = false) const;
 };

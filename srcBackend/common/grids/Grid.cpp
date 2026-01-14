@@ -25,7 +25,7 @@
 // constructor
 /**************************************************/
 Grid::Grid(const size_t reels, const size_t rows)
-	: reelDataBytes(sizeof(uint8_t) * rows),
+	: reelDataBytes(sizeof(Symbol) * rows),
 	  maxReels(reels),
 	  maxRows(rows),
 	  maxCells(maxReels * maxRows)
@@ -105,7 +105,7 @@ void Grid::copy(const Grid& sourceGrid)
 }
 
 // if Grid dimensions match, then copies all occurrences of 'symbol' to 'reelSymbolVect'
-void Grid::copySymbol(const Grid& sourceGrid, const uint8_t symbol)
+void Grid::copySymbol(const Grid& sourceGrid, const Symbol symbol)
 {
 	if (sourceGrid.maxReels != maxReels)
 	{
@@ -185,14 +185,14 @@ void Grid::clearSpinLock()
 /**************************************************/
 
 // replace current reel symbols with 'count' of 'newSymbol' from top to bottom
-void Grid::setReelSymbols(const size_t reel, const uint8_t newSymbol, const int count)
+void Grid::setReelSymbols(const size_t reel, const Symbol newSymbol, const int count)
 {
 	for (int row = 0; row < count; row++)
 		reelSymbolVect[reel][row] = newSymbol;
 }
 
 // fill 'reel' with 'newSymbol'
-void Grid::setReelSymbols(const size_t reel, const uint8_t newSymbol)
+void Grid::setReelSymbols(const size_t reel, const Symbol newSymbol)
 {
 	for (int row = 0; row < reelHeightVect[reel]; row++)
 		reelSymbolVect[reel][row] = newSymbol;
@@ -203,7 +203,7 @@ void Grid::setReelSymbols(const size_t reel, const uint8_t newSymbol)
 //		1. An entry for each row position, each non-zero entry is set e.g. { 0,0,1}
 //		2. The indexes of rows to set e.g. {2}
 // returns vector of grid indexes that have been set
-std::vector<size_t> Grid::setReelSymbols(const size_t reel, const uint8_t newSymbol,
+std::vector<size_t> Grid::setReelSymbols(const size_t reel, const Symbol newSymbol,
                                          const std::vector<size_t>& rowVect)
 {
 	std::vector<size_t> setIndexVect;
@@ -237,7 +237,7 @@ std::vector<size_t> Grid::setReelSymbols(const size_t reel, const uint8_t newSym
 
 // count number of sym on passed reel
 // optional parameter matchType
-int Grid::getReelSymbolCount(const size_t reel, const uint8_t sym,
+int Grid::getReelSymbolCount(const size_t reel, const Symbol sym,
                              const symbolMatchTypes matchType) const
 {
 	int count = 0;
@@ -285,7 +285,7 @@ int Grid::getReelSymbolCount(const size_t reel, const uint8_t sym,
 	return count;
 }
 
-int Grid::getSymbolCount(const uint8_t sym, const symbolMatchTypes matchType) const
+int Grid::getSymbolCount(const Symbol sym, const symbolMatchTypes matchType) const
 {
 	int total = 0;
 	for (size_t reel = 0; reel < maxReels; ++reel)
@@ -297,7 +297,7 @@ int Grid::getSymbolCount(const uint8_t sym, const symbolMatchTypes matchType) co
 
 // returns first row of passed symbol on passed reel
 // returns -1 if symbol not found
-std::optional<size_t> Grid::getReelSymbolRow(const size_t reel, const uint8_t sym,
+std::optional<size_t> Grid::getReelSymbolRow(const size_t reel, const Symbol sym,
                                              const symbolMatchTypes matchType) const
 {
 	if (matchType == symbolMatchTypes::exact)
@@ -351,7 +351,7 @@ std::optional<size_t> Grid::getReelSymbolRow(const size_t reel, const uint8_t sy
 // Look for symbol on reel. If found then expand symbol to fill reel
 // If optional parameter newSym is passed then expand and replace with newSym
 // return number of symbol on reel before expanded
-int Grid::expandReelSymbol(const size_t reel, const uint8_t symbol, const uint8_t newSym)
+int Grid::expandReelSymbol(const size_t reel, const Symbol symbol, const Symbol newSym)
 {
 	int count = getReelSymbolCount(reel, symbol, symbolMatchTypes::exact);
 	if (count)

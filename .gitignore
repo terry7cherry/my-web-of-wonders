@@ -3,6 +3,8 @@
 /out/
 /x64/
 /uploads/
+# Config cache
+/srcBackend/common/config/cache.txt
 # Defunct
 /srcBackend/common/defunct
 # Frontend

@@ -4,7 +4,7 @@
 #include "WaysWin.h"
 
 // basic constructor with no starting win positions
-WaysWin::WaysWin(const uint8_t winSymbol, const int maxReelCount, const int maxRowCount)
+WaysWin::WaysWin(const Symbol winSymbol, const int maxReelCount, const int maxRowCount)
     : maxReels(maxReelCount), maxRows(maxRowCount), symbol(winSymbol) // set member variables
 {
     if (maxReels)

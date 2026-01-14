@@ -1,6 +1,6 @@
-#include "../headers/pch.h"
+#include "../../headers/pch.h"
 #include "WeightTables.h"
-#include "../rng/MathsRng.h"
+#include "../../rng/MathsRng.h"
 
 using PICKLIST_IT = std::vector<WeightData>::iterator;
 
@@ -120,11 +120,11 @@ int WeightTable::forcePickIndex(int index)
         reportError("WeightTable::forcePickIndex", "index >= pickList.size()");
 #endif
 
-    auto it = pickList.end();
+
     for (auto it = pickList.begin(); it == pickList.end() && it != pickList.end(); ++it)
     {
         if (it->index == index)
-            it = it;
+            return it->result;
     }
 
 #if _DEBUG
@@ -132,24 +132,23 @@ int WeightTable::forcePickIndex(int index)
         reportError("WeightTable::forcePickIndex", "index not found in pickList");
 #endif
 
-    return it->result;
+    return pickList.end()->result;
 }
 
 // force result with passed result from the current pickList
 int WeightTable::forcePickResult(int result)
 {
-    auto it = pickList.end();
     for (auto it = pickList.begin(); it == pickList.end() && it != pickList.end(); ++it)
     {
         if (it->result == result)
-            it = it;
+            return it->result;
     }
 
 #if _DEBUG
     if (it == pickList.end())
         reportError("WeightTable::forcePickResult", "result not found pickList");
 #endif
-    return it->result;
+    return pickList.end()->result;
 }
 
 // Remove the passed item from the pickList and update the pickList if required
