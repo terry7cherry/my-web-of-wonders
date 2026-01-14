@@ -3,7 +3,7 @@
 #include "../../thisTitle/state/GameSession.h"
 #include "drogon/drogon.h"
 #include "../../thisTitle/state/GameCycle.h"
-#include "../../thisTItle/GameLogic.h"
+#include "../../thisTitle/GameLogic.h"
 
 #ifdef FRONTEND
 void API::startAPIServer()
@@ -47,19 +47,21 @@ void API::startAPIServer()
 	app().addListener("0.0.0.0", 8080);
 
 #ifndef FRONTEND_DEV
-	// Serve static files from "../srcFrontend/dist" in production
-	app()
-		.setDocumentRoot(FRONTEND_DIST_DIR)
-		.setFileTypes(
+// Serve static files from "../srcFrontend/dist" in production
+app()
+		.setDocumentRoot (FRONTEND_DIST_DIR)
+		.setFileTypes (
 
 
-			{
-				"gif", "png", "jpg", "js", "css", "html", "ico", "swf", "xap", "apk", "cur", "xml",
-				"mp3"
-			});
+
+{
+	"gif", "png", "jpg", "js", "css", "html", "ico", "swf", "xap", "apk", "cur", "xml",
+		"mp3"
+});
 #endif
 
-	std::cout << "Starting dev server" << std::endl;
-	app().run();
+std::cout<< "Starting dev server" << std::endl;
+std::cout<< "Go to localhost:8080 in your browser" << std::endl;
+app().run();
 }
 #endif
