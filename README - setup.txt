@@ -60,7 +60,7 @@ Windows setup
 
    In the repo root:
 
-       cd frontend
+       cd srcFrontend
        npm install
        npm run build
 
@@ -153,9 +153,11 @@ macOS setup
        git clone https://github.com/<your-username>/cpp-{your-game-name}.git
        cd cpp-{your-game-name}
 
+   (You can use sourcetree if you prefer)
+
 3. Set up the frontend
 
-       cd frontend
+       cd srcFrontend
        npm install
        npm run build
 
@@ -192,7 +194,7 @@ macOS setup
    - To test the frontend:
        - Select `macos-frontend` (or equivalent) and Run.
        - Open your browser at the URL printed by the server
-         (typically `http://localhost:8080`).
+         (typically `http://localhost:5173`).
 
 
 ----------------------------------------------------------------------
