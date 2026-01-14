@@ -176,7 +176,7 @@ std::optional<size_t> UserConfig::getUserCachedConfigChoice(
 
     std::cout << std::left
         << std::setw(4) << " "
-        << std::setw(60) << "File Name"
+        << std::setw(60) << "PAR Sheet File Name"
         << std::setw(15) << "Sim Size (M)"
         << std::setw(5) << "RTP"
         << std::setw(15) << "Bet Type"
