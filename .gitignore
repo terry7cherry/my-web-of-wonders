@@ -9,6 +9,8 @@
 /srcBackend/common/defunct
 # Frontend
 /srcFrontend/node_modules
+# Distributions
+/Distributions/*
 # CMake
 CMakeCache.txt
 CMakeFiles/
