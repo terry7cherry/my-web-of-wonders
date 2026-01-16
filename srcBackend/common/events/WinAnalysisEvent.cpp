@@ -52,6 +52,6 @@ Json::Value WinAnalysisEvent::convertWinToJson(const LineWin& win)
     winAsJson["totalWin"] = win.totalWin;
     winAsJson["direction"] = static_cast<int>(win.direction);
     winAsJson["winType"] = win.winType;
-    if (win.winType == "line") winAsJson["payLine"] = toJsonArray(*win.payLine);
+    if (win.winType == "line") winAsJson["payLine"] = BasicEvent::toJsonArray(*win.payLine);
     return winAsJson;
 }
