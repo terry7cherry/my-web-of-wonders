@@ -298,6 +298,11 @@ public:
                         std::make_shared<TaggedSymbolVector>(taggedRange, row, symbolIndexMap));
                 }
             }
+            else if (taggedRange->type == "symbolMap")
+            {
+                taggedSymbolMaps.push_back(
+                    std::make_shared<TaggedSymbolMap>(taggedRange, symbolIndexMap));
+            }
             else if (taggedRange->type == "symbolWeightTable")
             {
                 taggedSymbolWeightTables.push_back(
@@ -343,6 +348,8 @@ public:
                 addRelevantElementsToConfigForType(taggedBools, gameMathsPtr->bools, rtp, betType);
                 addRelevantElementsToConfigForType(taggedIntMaps, gameMathsPtr->intMaps, rtp, betType);
                 addRelevantElementsToConfigForType(taggedDoubleMaps, gameMathsPtr->doubleMaps, rtp,
+                                                   betType);
+                addRelevantElementsToConfigForType(taggedSymbolMaps, gameMathsPtr->symbolMaps, rtp,
                                                    betType);
                 addRelevantElementsToConfigForType(taggedStringMaps, gameMathsPtr->stringMaps, rtp,
                                                    betType);
@@ -507,6 +514,7 @@ private
     std::vector<std::shared_ptr<TaggedBool>> taggedBools;
     std::vector<std::shared_ptr<TaggedIntMap>> taggedIntMaps;
     std::vector<std::shared_ptr<TaggedDoubleMap>> taggedDoubleMaps;
+    std::vector<std::shared_ptr<TaggedSymbolMap>> taggedSymbolMaps;
     std::vector<std::shared_ptr<TaggedStringMap>> taggedStringMaps;
     std::vector<std::shared_ptr<TaggedBoolMap>> taggedBoolMaps;
     std::vector<std::shared_ptr<TaggedBetTypeMap>> taggedBetTypes;

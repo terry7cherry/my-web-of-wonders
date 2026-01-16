@@ -32,6 +32,7 @@ public:
     TypeConfig<bool> bools{{"bool"}};
     TypeConfig<std::unordered_map<std::string, int>> intMaps{{"intMap"}};
     TypeConfig<std::unordered_map<std::string, double>> doubleMaps{{"doubleMap"}};
+    TypeConfig<std::unordered_map<std::string, Symbol>> symbolMaps{{"symbolMap"}};
     TypeConfig<std::unordered_map<std::string, std::string>> stringMaps{{"stringMap"}};
     TypeConfig<std::unordered_map<std::string, bool>> boolMaps{{"boolMap"}};
     TypeConfig<WeightTable> intWeightTables{{"intWeightTable", "weightTable"}};

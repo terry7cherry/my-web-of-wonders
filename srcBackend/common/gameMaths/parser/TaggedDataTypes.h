@@ -218,6 +218,8 @@ private:
     static bool convertValue(const std::string& valueStr, const std::string& cellLocation);
 };
 
+// (definition moved below after TaggedSymbol to avoid forward-reference issues)
+
 struct TaggedRtpMap : TaggedDataMap<int, double>
 {
     TaggedRtpMap(const TaggedRangePtr& taggedRangePtr)
@@ -435,4 +437,23 @@ protected:
 private:
     static std::vector<Symbol> convertValue(const std::string& valueStr, const std::string& cellLocation,
                                             const std::unordered_map<std::string, Symbol>& symbolIndexMap);
+};
+
+// Map of string keys to Symbol values (defined after TaggedSymbol to use its converter)
+struct TaggedSymbolMap : TaggedDataMap<std::string, Symbol>
+{
+    TaggedSymbolMap(
+        const TaggedRangePtr& taggedRangePtr,
+        const std::unordered_map<std::string, Symbol>& symbolIndexMap)
+        : TaggedDataMap(taggedRangePtr, parseMap(*taggedRangePtr,
+            [](const std::string& key, const std::string& /*cellLocation*/)
+            {
+                return key;
+            },
+            [&symbolIndexMap](const std::string& valueStr, const std::string& cellLocation)
+            {
+                return TaggedSymbol::convertValue(valueStr, cellLocation, symbolIndexMap);
+            }))
+    {
+    }
 };
