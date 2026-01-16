@@ -4,8 +4,6 @@
 #include "./BasicEvent.h"
 #include "../../grids/Grid.h"
 
-static constexpr int GridUpdateMaxReels = 10;
-static constexpr int GridUpdateMaxRows = 10;
 
 template <typename T>
 class GridEventTemplate : public BasicEvent
@@ -16,8 +14,12 @@ public:
           numRows(grid.maxRows)
     {
         for (size_t reelNum = 0; reelNum < numReels; ++reelNum)
+        {
+            std::vector<Symbol> reelSymbols(numRows);
             for (size_t rowNum = 0; rowNum < numRows; ++rowNum)
-                symbols[reelNum * numRows + rowNum] = grid.getReelSymbol(reelNum, rowNum);
+                reelSymbols[rowNum] = grid.getReelSymbol(reelNum, rowNum);
+            symbols.push_back(reelSymbols);
+        }
     }
 
     static void updateMeters(const Grid& grid[[maybe_unused]])
@@ -32,11 +34,7 @@ protected :
         Json::Value symbolsAsJson(Json::arrayValue);
         for (size_t reelNum = 0; reelNum < numReels; ++reelNum)
         {
-            Json::Value reel(Json::arrayValue);
-            for (size_t rowNum = 0; rowNum < numRows; ++rowNum)
-            {
-                reel.append(symbols[reelNum * numRows + rowNum]);
-            }
+            Json::Value reel = BasicEvent::toJsonArray(symbols[reelNum]);
             symbolsAsJson.append(reel);
         }
         eventDetails["reelSymbolArray"] = symbolsAsJson;
@@ -44,7 +42,7 @@ protected :
     };
 
 private :
-    std::array<int, GridUpdateMaxReels * GridUpdateMaxRows> symbols{};
+    std::vector<std::vector<Symbol>> symbols{};
     size_t numReels;
     size_t numRows;
     std::string message;
