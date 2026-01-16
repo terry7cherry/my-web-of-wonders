@@ -11,7 +11,6 @@
 #include "console/Console.h"
 
 // Game includes
-#include "defunct/GameMaths.h"
 #include "../thisTitle/state/GameCycle.h"
 #include "../thisTitle/GameLogic.h"
 #include "../thisTitle/state/GameSession.h"

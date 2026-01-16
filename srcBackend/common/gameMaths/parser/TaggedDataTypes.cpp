@@ -297,12 +297,12 @@ ReelSet TaggedReelSet::parseReelSet(const TaggedRange& taggedRange, const size_t
 }
 
 /******************************************/
-/* ReelSetWeightTable implementation      */
+/* ReelSetWeights implementation      */
 /******************************************/
 
-ReelSetWeightTable TaggedReelSetWeights::parseTable(const TaggedRange& taggedRange,
-                                                    const std::unordered_map<std::string, ReelSet>&
-                                                    reelSetMap)
+ReelSetWeights TaggedReelSetWeights::parseTable(const TaggedRange& taggedRange,
+                                                const std::unordered_map<std::string, ReelSet>&
+                                                reelSetMap)
 {
     std::vector<int> weightVector;
     std::vector<ReelSet> reelSetVect;
@@ -311,7 +311,7 @@ ReelSetWeightTable TaggedReelSetWeights::parseTable(const TaggedRange& taggedRan
         const auto& row = taggedRange.data[rowNum];
         if (!reelSetMap.contains(row[0]))
             throw std::runtime_error(
-                "ReelSetWeightTable '" + taggedRange.name + "' at " + taggedRange.location +
+                "ReelSetWeights '" + taggedRange.name + "' at " + taggedRange.location +
                 " references unknown reelSet '" + row[0] + ". Ensure a reelSet with this name exists."
             );
 
@@ -351,7 +351,7 @@ WeightTable TaggedIntWeightTable::parseWeightTable(const TaggedRange& taggedRang
             throw std::runtime_error(
                 "Error parsing outcome in weightTable '" + taggedRange.name +
                 "'. Note that weightTables have int outcomes by default. "
-                "Use stringWeightTable, doubleWeightTable, or boolWeightTable types where necessary. "
+                "Use stringWeightTable, doubleWeightTable, boolWeightTable, or symbolWeightTable types where necessary. "
                 "Error: " + e.what());
         }
         try
@@ -361,7 +361,7 @@ WeightTable TaggedIntWeightTable::parseWeightTable(const TaggedRange& taggedRang
         catch (std::exception& e)
         {
             throw std::runtime_error(
-                "Error parsing weight in reelSetWeightTable '" + taggedRange.name + ". Error: " + e.what());
+                "Error parsing weight in weightTable '" + taggedRange.name + ". Error: " + e.what());
         }
         weightVector.emplace_back(outcome, weight);
     }
@@ -398,7 +398,7 @@ DoubleWeightTable TaggedDoubleWeightTable::parseWeightTable(const TaggedRange& t
         catch (std::exception& e)
         {
             throw std::runtime_error(
-                "Error parsing weight in reelSetWeightTable '" + taggedRange.name + ". Error: " + e.what());
+                "Error parsing weight in doubleWeightTable '" + taggedRange.name + ". Error: " + e.what());
         }
         weightVector.push_back(weight);
         outcomeVector.push_back(outcome);
@@ -425,12 +425,52 @@ StringWeightTable TaggedStringWeightTable::parseWeightTable(const TaggedRange& t
         catch (std::exception& e)
         {
             throw std::runtime_error(
-                "Error parsing weight in reelSetWeightTable '" + taggedRange.name + ". Error: " + e.what());
+                "Error parsing weight in stringWeightTable '" + taggedRange.name + ". Error: " + e.what());
         }
         weightVector.push_back(weight);
         outcomeVector.push_back(row[0]);
     }
     return StringWeightTable(weightVector, outcomeVector, taggedRange.name);
+}
+
+/******************************************/
+/* StringWeightTable implementation       */
+/******************************************/
+
+SymbolWeightTable TaggedSymbolWeightTable::parseWeightTable(const TaggedRange& taggedRange,
+                                                            const std::unordered_map<std::string, Symbol>&
+                                                            symbolIndexMap)
+{
+    std::vector<int> weightVector;
+    std::vector<Symbol> outcomeVector;
+    for (size_t rowNum = 1; rowNum < taggedRange.data.size(); rowNum++)
+    {
+        const auto& row = taggedRange.data[rowNum];
+        int weight;
+        try
+        {
+            weight = TaggedDataHelpers::stringToInt(row[1], taggedRange.getCellLocationString(rowNum, 1));
+        }
+        catch (std::exception& e)
+        {
+            throw std::runtime_error(
+                "Error parsing weight in symbolWeightTable '" + taggedRange.name + ". Error: " + e.what());
+        }
+        weightVector.push_back(weight);
+        const std::string& valueStr = row[0];
+        const auto intOptional = TaggedDataHelpers::tryStringToInt(valueStr);
+        if (intOptional.has_value()) outcomeVector.push_back(static_cast<Symbol>(intOptional.value()));
+        else
+        {
+            auto it = symbolIndexMap.find(valueStr);
+            if (it != symbolIndexMap.end())
+                outcomeVector.push_back(it->second);
+            else
+                throw std::runtime_error(
+                    "Unknown symbol '" + valueStr + "' at " + taggedRange.getCellLocationString(rowNum, 0));
+        }
+    }
+    return SymbolWeightTable(weightVector, outcomeVector, taggedRange.name);
 }
 
 /******************************************/
@@ -463,7 +503,7 @@ BoolWeightTable TaggedBoolWeightTable::parseWeightTable(const TaggedRange& tagge
         catch (std::exception& e)
         {
             throw std::runtime_error(
-                "Error parsing weight in reelSetWeightTable '" + taggedRange.name + ". Error: " + e.what());
+                "Error parsing weight in boolWeightTable '" + taggedRange.name + ". Error: " + e.what());
         }
         weightVector.push_back(weight);
         outcomeVector.push_back(outcome);

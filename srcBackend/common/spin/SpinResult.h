@@ -51,7 +51,7 @@ struct SpinResult
      * @param weightTablePtr ReelSet weight table to use.
      * @throws std::runtime_error if @p reelSet is null.
      */
-    SpinResult(const ReelSetWeightTable& weightTablePtr)
+    SpinResult(const ReelSetWeights& weightTablePtr)
         : SpinResult(weightTablePtr.pick())
     {
     }
@@ -65,7 +65,7 @@ struct SpinResult
      * @param spinVect Reel indexes to spin.
      * @throws std::runtime_error if @p reelSet is null.
      */
-    SpinResult(const ReelSetWeightTable& weightTablePtr, const std::vector<size_t>& spinVect)
+    SpinResult(const ReelSetWeights& weightTablePtr, const std::vector<size_t>& spinVect)
         : SpinResult(weightTablePtr.pick(), spinVect)
     {
     }
@@ -79,7 +79,7 @@ struct SpinResult
      * @param lockedVect Lock state per reel.
      * @throws std::runtime_error if @p reelSet is null.
      */
-    SpinResult(const ReelSetWeightTable& weightTablePtr, const std::vector<bool>& lockedVect)
+    SpinResult(const ReelSetWeights& weightTablePtr, const std::vector<bool>& lockedVect)
         : SpinResult(weightTablePtr.pick(), lockedVect)
     {
     }

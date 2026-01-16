@@ -247,7 +247,7 @@ struct TaggedReelSet : TaggedDataIndividual<ReelSet>
                                 const std::unordered_map<std::string, Symbol>& symbolIndexMap);
 };
 
-struct TaggedReelSetWeights : TaggedDataIndividual<ReelSetWeightTable>
+struct TaggedReelSetWeights : TaggedDataIndividual<ReelSetWeights>
 {
     TaggedReelSetWeights(const TaggedRangePtr& taggedRangePtr,
                          const std::unordered_map<std::string, ReelSet>& reelSetMap)
@@ -255,8 +255,8 @@ struct TaggedReelSetWeights : TaggedDataIndividual<ReelSetWeightTable>
     {
     }
 
-    static ReelSetWeightTable parseTable(const TaggedRange& taggedRange,
-                                         const std::unordered_map<std::string, ReelSet>& reelSetMap);
+    static ReelSetWeights parseTable(const TaggedRange& taggedRange,
+                                     const std::unordered_map<std::string, ReelSet>& reelSetMap);
 };
 
 struct TaggedIntWeightTable : TaggedDataIndividual<WeightTable>
@@ -287,6 +287,18 @@ struct TaggedStringWeightTable : TaggedDataIndividual<StringWeightTable>
     }
 
     static StringWeightTable parseWeightTable(const TaggedRange& taggedRange);
+};
+
+struct TaggedSymbolWeightTable : TaggedDataIndividual<SymbolWeightTable>
+{
+    TaggedSymbolWeightTable(const TaggedRangePtr& taggedRangePtr,
+                            const std::unordered_map<std::string, Symbol>& symbolIndexMap)
+        : TaggedDataIndividual(taggedRangePtr, parseWeightTable(*taggedRangePtr, symbolIndexMap))
+    {
+    }
+
+    static SymbolWeightTable parseWeightTable(const TaggedRange& taggedRange,
+                                              const std::unordered_map<std::string, Symbol>& symbolIndexMap);
 };
 
 struct TaggedBoolWeightTable : TaggedDataIndividual<BoolWeightTable>

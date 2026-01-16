@@ -39,8 +39,23 @@ public:
         return key > maxKey ? maxValue : values.at(key);
     }
 
+    T at(const unsigned int key) const
+    {
+        return key > maxKey ? maxValue : values.at(key);
+    }
+
+    T operator[](const int key) const
+    {
+        return at(key);
+    }
+
+    T operator[](const unsigned int key) const
+    {
+        return at(key);
+    }
+
 private:
     std::vector<T> values;
-    int maxKey;
+    size_t maxKey;
     T maxValue;
 };

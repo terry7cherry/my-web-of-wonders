@@ -38,9 +38,10 @@ public:
     TypeConfig<WeightTable>& weightTables = intWeightTables;
     TypeConfig<StringWeightTable> stringWeightTables{{"stringWeightTable"}};
     TypeConfig<DoubleWeightTable> doubleWeightTables{{"doubleWeightTable"}};
+    TypeConfig<SymbolWeightTable> symbolWeightTables{{"symbolWeightTable"}};
     TypeConfig<BoolWeightTable> boolWeightTables{{"boolWeightTable"}};
     TypeConfig<ReelSet> reelSets{{"reelSet"}};
-    TypeConfig<ReelSetWeightTable> reelSetWeights{{"reelSetWeights"}};
+    TypeConfig<ReelSetWeights> reelSetWeights{{"reelSetWeights"}};
     TypeConfig<PayTable> payTables{{"payTable"}};
     TypeConfig<PayLines> payLines{{"payLines"}};
     TypeConfig<ThresholdTable<int>> intThresholdTables{{"intThresholdTable", "thresholdTable", "awardTable"}};

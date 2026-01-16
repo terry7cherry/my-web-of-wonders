@@ -54,7 +54,7 @@ namespace GameLogic
         static Symbol fsTriggerSymbol = maths.symbols["fsTriggerSymbol"];
         cycle.baseNumScatters = cycle.grid.getSymbolCount(fsTriggerSymbol);
         auto& fsStartSpins = maths.awards["fsStartSpins"];
-        if ((cycle.fsInitialSpins = fsStartSpins.at(cycle.baseNumScatters)))
+        if ((cycle.fsInitialSpins = fsStartSpins[cycle.baseNumScatters]))
             cycle.fsTrigger = true;
 
         return cycle.baseGameWin;
@@ -97,7 +97,7 @@ namespace GameLogic
         if (scatterCount >= 2)
         {
             auto& retriggerSpinTable = maths.awards["fsRetriggerSpins"];
-            const int retriggerSpins = retriggerSpinTable.at(scatterCount);
+            const int retriggerSpins = retriggerSpinTable[scatterCount];
             cycle.fsRetriggerSpins += retriggerSpins;
             if (retriggerSpins) cycle.recordEvent<FreeSpinsRetriggerEvent>(retriggerSpins);
         }

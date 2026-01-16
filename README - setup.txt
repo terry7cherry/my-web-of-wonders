@@ -83,10 +83,7 @@ Windows setup
    CMake presets:
 
    - Go to: File → Settings → Build, Execution, Deployment → CMake
-   - Ensure the Windows presets you care about are enabled (e.g.
-     `windows-sim-debug`, `windows-sim-release`, `windows-frontend`).
-   - Click the 3 dots in the top right next to the debug button, then edit.
-   - Under "cpp-game" make sure "Emulate terminal in the output console" is ticked.
+   - Ensure all four windows-* presets enabled.
 
 5. Build & run
 
@@ -125,6 +122,9 @@ macOS setup
         brew install ninja
     - Verify with:
         ninja --version
+- pkg-config:
+    - In Terminal:
+        brew install pkg-config
 - CLion 2025.2.5
 - Git
 - vcpkg
@@ -190,10 +190,6 @@ macOS setup
         - File → Settings → Build, Execution, Deployment → CMake
         - Enable all the macos-* presets by ticking the check boxes.
 
-   d) Turn on terminal emulation:
-
-        - Click the 3 dots in the top right next to the debug button, then edit.
-        - Under "cpp-game" make sure "Emulate terminal in the output console" is ticked.
 
 5. Build & run
 

@@ -298,6 +298,11 @@ public:
                         std::make_shared<TaggedSymbolVector>(taggedRange, row, symbolIndexMap));
                 }
             }
+            else if (taggedRange->type == "symbolWeightTable")
+            {
+                taggedSymbolWeightTables.push_back(
+                    std::make_shared<TaggedSymbolWeightTable>(taggedRange, symbolIndexMap));
+            }
         }
     }
 
@@ -352,6 +357,9 @@ public:
                                                    betType);
                 addRelevantElementsToConfigForType(taggedDoubleWeightTables,
                                                    gameMathsPtr->doubleWeightTables,
+                                                   rtp, betType);
+                addRelevantElementsToConfigForType(taggedSymbolWeightTables,
+                                                   gameMathsPtr->symbolWeightTables,
                                                    rtp, betType);
                 addRelevantElementsToConfigForType(taggedBoolWeightTables, gameMathsPtr->boolWeightTables,
                                                    rtp,
@@ -506,6 +514,7 @@ private
     std::vector<std::shared_ptr<TaggedIntWeightTable>> taggedIntWeightTables;
     std::vector<std::shared_ptr<TaggedStringWeightTable>> taggedStringWeightTables;
     std::vector<std::shared_ptr<TaggedDoubleWeightTable>> taggedDoubleWeightTables;
+    std::vector<std::shared_ptr<TaggedSymbolWeightTable>> taggedSymbolWeightTables;
     std::vector<std::shared_ptr<TaggedBoolWeightTable>> taggedBoolWeightTables;
     std::vector<std::shared_ptr<TaggedReelSet>> taggedReelSets;
     std::vector<std::shared_ptr<TaggedPayTable>> taggedPayTables;
