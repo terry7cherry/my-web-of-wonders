@@ -44,17 +44,21 @@ Windows setup
 
 1. Fork the template repo
 
-   - Fork `cpp-frontend-dev` to `cpp-{your-game-name}` on GitHub.
+   - Fork `cpp-frontend-dev` to `cpp-{your-game-name}` on GitLab.
 
 2. Clone your fork
 
-   In a terminal:
+    Clone by HTTP or SSH. On the repo page for your forked repo, click the green "Code" button.
+    Then copy the URI under "Clone with HTTPS" or "Clone with SSH".
 
-       cd C:\Projects
-       git clone https://github.com/<your-username>/cpp-{your-game-name}.git
+   In Terminal:
+
+       cd "$HOME/Projects"    # or wherever you keep code
+       git clone *copied URI*
        cd cpp-{your-game-name}
 
-   (Another projects folder is fine, but this is recommended to avoid problems with long paths.)
+   You can use sourcetree if you prefer.
+   Another projects folder is fine, but this is recommended to avoid problems with long paths.
 
 3. Set up the frontend
 
@@ -143,17 +147,21 @@ macOS setup
 
 1. Fork the template repo
 
-   - Fork `cpp-frontend-dev` to `cpp-{your-game-name}` on GitHub.
+   - Fork `cpp-frontend-dev` to `cpp-{your-game-name}` on GitLab.
 
 2. Clone your fork
+
+    Clone by HTTP or SSH. On the repo page for your forked repo, click the green "Code" button.
+    Then copy the URI under "Clone with HTTPS" or "Clone with SSH".
 
    In Terminal:
 
        cd "$HOME/Projects"    # or wherever you keep code
-       git clone https://github.com/<your-username>/cpp-{your-game-name}.git
+       git clone *copied URI*
        cd cpp-{your-game-name}
 
-   (You can use sourcetree if you prefer)
+   You can use sourcetree if you prefer.
+   Another projects folder is fine, but this is recommended to avoid problems with long paths.
 
 3. Set up the frontend
 
