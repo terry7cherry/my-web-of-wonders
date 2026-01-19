@@ -1,4 +1,8 @@
 #pragma once
+/**
+ * @file TypeConfig.h
+ * @brief Generic typed configuration map with helpful accessors and error reporting.
+ */
 #ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable: 4702)
@@ -11,30 +15,51 @@ template <typename T>
 class TypeConfig
 {
 public:
+    /**
+     * @brief Construct an empty config with no type names.
+     */
     explicit TypeConfig() : TypeConfig({})
     {
     }
 
+    /**
+     * @brief Construct with a list of human-readable type names for messages.
+     * @param typeNames List of type strings the PAR sheet parser supports for this type. Used in errors when keys are not found.
+     */
     explicit TypeConfig(const std::vector<std::string>& typeNames)
         : typeNames(typeNames)
     {
     }
 
+    /**
+     * @brief Reserve capacity for `count` entries.
+     */
     void reserve(size_t count)
     {
         data.reserve(count);
     }
 
+    /**
+     * @brief Insert a key/value pair (moved in when possible).
+     */
     void insert(std::string key, T value)
     {
         data.emplace(std::move(key), std::move(value));
     }
 
+    /**
+     * @brief Insert from an existing pair.
+     */
     void insert(std::pair<std::string, T> pair)
     {
         data.emplace(std::move(pair.first), std::move(pair.second));
     }
 
+    /**
+     * @brief Access value by key with helpful error if missing.
+     * @param key Name of config element (concatenated from "name" parameter and first column value with "." separator for some types.
+     * @throws std::runtime_error if the key is not found.
+     */
     const T& at(const std::string& key) const
     {
         auto it = data.find(key);
@@ -47,12 +72,20 @@ public:
         throw std::runtime_error("Config key " + key + " not found");
     }
 
+    /**
+    * @brief Access value by key with helpful error if missing.
+     * @param key Name of config element (concatenated from "name" parameter and first column value with "." separator for some types.
+     * @throws std::runtime_error if the key is not found.
+     */
     const T& operator[](const std::string& key) const
     {
         return at(key);
     }
 
 private:
+    /**
+     * @brief Get a printable type string (e.g., "int or double").
+     */
     std::string getTypeString() const
     {
         if (typeNames.empty()) return "UNKNOWN";
