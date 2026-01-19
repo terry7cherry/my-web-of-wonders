@@ -1,4 +1,8 @@
 #pragma once
+/**
+ * @file Grid.h
+ * @brief Core grid state and utilities for reel symbols and multipliers.
+ */
 #include <map>
 
 #include "../gameMaths/mathElements/ReelSet.h"
@@ -16,6 +20,9 @@ enum class GridDataTypes
     symbol, multiplier
 };
 
+/**
+ * @brief Mutable grid buffer used to apply spins, locks, and multipliers.
+ */
 class Grid
 {
 protected:
@@ -29,6 +36,7 @@ public:
     /************************************/
 
     size_t reelDataBytes; // how many byte in reelSymbolVect[reel] upto maxRows
+    size_t multiplierDataBytes;
     size_t maxReels, maxRows, maxCells;
     std::vector<size_t> reelHeightVect;
 
@@ -40,34 +48,57 @@ public:
     std::vector<std::vector<Symbol>> reelSymbolVect; // [reel][row]
     std::vector<std::vector<unsigned int>> multiplierVect; // [reel][row]
 
-    // constructor
+    /**
+     * @brief Construct a grid of given dimensions.
+     * @param reels Number of reels (columns).
+     * @param rows Number of rows (visible window height).
+     * @details reels initialised with SYMBOL_NONE (max uint8_t value).
+     */
     Grid(size_t reels, size_t rows);
 
-    // constructor from GameMaths
-    Grid(const GameMaths& maths);
+    /**
+     * @brief Construct a grid sized according to `GameMaths` configuration.
+     * @param maths Maths configuration providing reel/row dimensions as int values numReels and numRows.
+     * @details reels initialised with SYMBOL_NONE (max uint8_t value).
+     */
+    explicit Grid(const GameMaths& maths);
 
     /************************************/
     // Initialise
     /************************************/
 
-    // set all reel heights to maxRows
+    /**
+     * @brief Set all reel heights to `maxRows`.
+     */
     void setReelHeights();
 
-    // set reel heights to values in the passed vector
+    /**
+     * @brief Set reel heights individually.
+     * @param heightVect Per-reel heights; size must equal `maxReels`.
+     */
     void setReelHeights(const std::vector<size_t>& heightVect);
 
-    // if Grid dimensions match, then copies 'reelSymbolVect'
+    /**
+     * @brief Copy symbols (and multipliers) from another grid if dimensions match.
+     * @param sourceGrid Source grid to copy from.
+     */
     void copy(const Grid& sourceGrid);
 
-    // if Grid dimensions match, then copies all occurances of 'symbol' to 'reelSymbolVect'
+    /**
+     * @brief Copy occurrences of a symbol from another grid into this grid.
+     * @param sourceGrid Source grid to read from.
+     * @param symbol Symbol to copy where found.
+     */
     void copySymbol(const Grid& sourceGrid, Symbol symbol);
 
     /************************************/
     // Pre Spin
     /************************************/
 
-    // set all grid symbols to SYMBOL_NONE and multipliers to 1
-    void reset(void)
+    /**
+     * @brief Set all grid symbols to `SYMBOL_NONE` (max uint8_t value).
+     */
+    void reset()
     {
         for (int reel = 0; reel < maxReels; reel++)
         {
@@ -78,8 +109,10 @@ public:
         }
     }
 
-    // set all grid multipliers to 1
-    void resetMultipliers(void)
+    /**
+     * @brief Set all grid multipliers to 1.
+     */
+    void resetMultipliers()
     {
         for (int reel = 0; reel < maxReels; reel++)
         {
@@ -96,30 +129,40 @@ public:
     /**************************************************/
 
     /**
-	 * Sets symbols according to the passed spinResult object.
-	 *
-	 * Note you can pass ReelSet or ReelSetWeights (or other SpinResult constructor parameters), and implicit conversion will perform the spin automatically.
-	 *
-	 * @param spinResult A reference to a SpinResult object that contains the details of the spin to be applied.
-	 * @param getLockedReels Reels marked as locked will remain unchanged unless getLockedReels is set to true.
-	 */
+     * @brief Sets symbols according to the passed spinResult object.
+     * @details Note you can pass ReelSet or ReelSetWeights (or other SpinResult constructor parameters), and implicit conversion will perform the spin automatically.
+     * @param spinResult A reference to a SpinResult object that contains the details of the spin to be applied.
+     * @param getLockedReels Reels marked as locked will remain unchanged unless getLockedReels is set to true.
+     */
     void applySpin(const SpinResult& spinResult, bool getLockedReels = false);
 
+    /**
+     * @brief Set reel symbols using reel set and stop index.
+     * @param reelNum Reel to populate.
+     * @param reelSetPtr Source reel set.
+     * @param reelStop Stop index within the reel band.
+     */
     void setSymbolsForReel(size_t reelNum, const ReelSet* reelSetPtr, size_t reelStop);
 
     /**************************************************/
     // Spin lock
     /**************************************************/
 
-    // Set lockedVect for each reel in noSpinVect.
-    // noSpinVect is a list of reel indexes that are to be locked
+    /**
+     * @brief Lock the passed reels so their symbols will not change on spin.
+     * @param noSpinVect Indices of reels to lock.
+     */
     void setSpinLock(const std::vector<int>& noSpinVect);
 
-    // Set lockedVect = noSpinVect
-    // spinStateVect contains a value for every reel
+    /**
+     * @brief Set lock state for all reels.
+     * @param spinStateVect Boolean per-reel lock state (true = locked).
+     */
     void setSpinLock(const std::vector<bool>& spinStateVect);
 
-    // remove all locked reels
+    /**
+     * @brief Unlock all reels.
+     */
     void clearSpinLock();
 
 
@@ -127,11 +170,16 @@ public:
     // Convert index <-> grid positions
     /**************************************************/
 
-    // returns {reel, row} for the passed grid index e.g.
-    //        Reel 0   1   2   3   4
+    //  Reel     0   1   2   3   4
     //  Row 0    0   1   2   3   4 \
-	//  Row 1    5   6   7   8   9  |< index
+    //  Row 1    5   6   7   8   9  |< index
     //  Row 2   10  11  12  13  14 /
+
+    /**
+     * @brief Convert an int grid index to {reel,row} position.
+     * @param index Linear index in row-major order. (Whole first row numbered first, then second row etc.)
+     * @return Position vector {reel,row}.
+     */
     std::vector<size_t> getGridPosition(const size_t index) const
     {
         size_t row = index / maxReels;
@@ -139,14 +187,22 @@ public:
         return {reel, row};
     }
 
-
-    // returns grid index for passed reel, row
+    /**
+     * @brief Convert {reel,row} to linear grid index.
+     * @param reel reel index.
+     * @param row row index.
+     * @return Linear index in row-major order. (Whole first row numbered first, then second row etc.)
+     */
     size_t getGridIndex(const size_t reel, const size_t row) const
     {
         return (row * maxReels) + reel;
     }
 
-    // returns grid index for passed {reel, row}
+    /**
+     * @brief Convert {reel,row} vector to linear grid index.
+     * @param gridPos {reel, row} vector.
+     * @return Linear index in row-major order. (Whole first row numbered first, then second row etc.)
+     */
     size_t getGridIndex(const std::vector<size_t>& gridPos) const
     {
         return getGridIndex(gridPos[0], gridPos[1]);
@@ -156,22 +212,32 @@ public:
     // Access Symbols
     /**************************************************/
 
-    // return the symbol at the passed reel, row
+    /**
+     * @brief Get symbol at [reel][row].
+     * @param reel Reel index.
+     * @param row Row index.
+     * @return Symbol at position.
+     */
     Symbol getReelSymbol(const size_t reel, const size_t row) const
     {
         return reelSymbolVect[reel][row];
     }
 
-    // return the symbol at the passed {reel, row}
+    /**
+     * @brief Get symbol at grid position {reel,row}.
+     * @param gridPos {reel, row} vector.
+     * @return Symbol at position.
+     */
     Symbol getSymbol(const std::vector<size_t>& gridPos) const
     {
         return reelSymbolVect[gridPos[0]][gridPos[1]];
     }
 
-    // return the symbol at the passed index e.g.
-    //   0,  1,  2,  3,  4,
-    //	 5,  6,  7,  8,  9,
-    //	10, 11, 12, 13, 14
+    /**
+     * @brief Get symbol at linear index.
+     * @param index Linear index in row-major order. (Whole first row numbered first, then second row etc.)
+     * @return Symbol at index.
+     */
     Symbol getSymbol(const size_t index) const
     {
         return getSymbol(getGridPosition(index));
@@ -181,38 +247,59 @@ public:
     // Set Symbols
     /**************************************************/
 
-    // set the symbol at the passed reel, row
+    /**
+     * @brief Set symbol at [reel][row].
+     * @param reel Reel index.
+     * @param row Row index.
+     * @param newSymbol Symbol to set.
+     */
     void setSymbol(const size_t reel, const size_t row, const Symbol newSymbol)
     {
         reelSymbolVect[reel][row] = newSymbol;
     }
 
-    // set the symbol at the passed gridPos {reel, row}
+    /**
+     * @brief Set symbol at grid position {reel,row}.
+     * @param gridPos {reel, row} vector.
+     * @param newSymbol Symbol to set.
+     */
     inline void setSymbol(const std::vector<size_t>& gridPos, const Symbol newSymbol)
     {
         reelSymbolVect[gridPos[0]][gridPos[1]] = newSymbol;
     }
 
-    // return the symbol at the passed index:
-    //		 0,  1,  2,  3,  4,
-    //		 5,  6,  7,  8,  9,
-    //		10, 11, 12, 13, 14
+    /**
+     * @brief Set symbol at linear index.
+     * @param index Linear index in row-major order. (Whole first row numbered first, then second row etc.)
+     * @param newSymbol Symbol to set.
+     */
     void setSymbol(const size_t index, const Symbol newSymbol)
     {
         setSymbol(getGridPosition(index), newSymbol);
     }
 
-    // replace current reel symbols with 'count' of 'newSymbol' from top to bottom
+    /**
+     * @brief Fill the top `count` cells in a reel with a symbol.
+     * @param reel Index of reel on which to set symbols.
+     * @param newSymbol Symbol to set.
+     * @param count num Symbols to set (from top).
+     */
     void setReelSymbols(size_t reel, Symbol newSymbol, int count);
 
-    // fill 'reel' with 'newSymbol'
+    /**
+     * @brief Fill an entire reel with a symbol.
+     * @param reel Index of reel to fill.
+     * @param newSymbol Symbol to fill reel with.
+     */
     void setReelSymbols(size_t reel, Symbol newSymbol);
 
-    // replace current reel symbols with 'newSymbol' for each element in rowVect
-    // rowVect may contain:
-    //		1. An entry for each row position, each non-zero entry is set e.g. { 0,0,1}
-    //		2. The indexes of rows to set e.g. {2}
-    // returns vector of grid indexes that have been set
+    /**
+     * @brief Set symbol on specific rows of a reel.
+     * @param reel Reel index.
+     * @param newSymbol Symbol to set.
+     * @param rowVect Either per-row flags (1 to set symbol) or list of row indices to set.
+     * @return Linear indices that were set.
+     */
     std::vector<size_t> setReelSymbols(size_t reel, Symbol newSymbol,
                                        const std::vector<size_t>& rowVect);
 
@@ -221,22 +308,32 @@ public:
     // Set Multipliers
     /**************************************************/
 
-    // set the multiplier at passed gridPos [reel][row]
+    /**
+     * @brief Set multiplier at [reel][row].
+     * @param reel Reel index.
+     * @param row Row index.
+     * @param val New multiplier value.
+     */
     void setMultiplier(const size_t reel, const size_t row, const int val)
     {
         multiplierVect[reel][row] = val;
     }
 
-    // set the multiplier at the passed gridPos {reel, row}
+    /**
+     * @brief Set multiplier at grid position {reel,row}.
+     * @param gridPos {reel, row} vector.
+     * @param val New multiplier value.
+     */
     void setMultiplier(const std::vector<size_t>& gridPos, const int val)
     {
         setMultiplier(gridPos[0], gridPos[1], val);
     }
 
-    // set the multiplier at the passed index
-    //   0,  1,  2,  3,  4,
-    //   5,  6,  7,  8,  9,
-    //  10, 11, 12, 13, 14
+    /**
+     * @brief Set multiplier at linear index.
+     * @param index Linear index in row-major order. (Whole first row numbered first, then second row etc.)
+     * @param val New multiplier value.
+     */
     void setMultiplier(const size_t index, const int val)
     {
         setMultiplier(getGridPosition(index), val);
@@ -246,23 +343,33 @@ public:
     // Get Multipliers
     /**************************************************/
 
-    // get the multiplier at passed gridPos [reel][row]
-    int getMultiplier(const size_t reel, const size_t row) const
+    /**
+     * @brief Get multiplier at [reel][row].
+     * @param reel Reel index.
+     * @param row Row index.
+     * @return Multiplier.
+     */
+    unsigned int getMultiplier(const size_t reel, const size_t row) const
     {
         return multiplierVect[reel][row];
     }
 
-    // get the multiplier at the passed gridPos {reel, row}
-    int getMultiplier(const std::vector<size_t>& gridPos) const
+    /**
+     * @brief Get multiplier at grid position {reel,row}.
+     * @param gridPos {reel, row} vector.
+     * @return Multiplier.
+     */
+    unsigned int getMultiplier(const std::vector<size_t>& gridPos) const
     {
         return getMultiplier(gridPos[0], gridPos[1]);
     }
 
-    // get the multiplier at the passed index
-    //   0,  1,  2,  3,  4,
-    //   5,  6,  7,  8,  9,
-    //  10, 11, 12, 13, 14
-    inline int getMultiplier(const int index) const
+    /**
+     * @brief Get multiplier at linear index.
+     * @param index Linear index in row-major order. (Whole first row numbered first, then second row etc.)
+     * @return Multiplier.
+     */
+    unsigned int getMultiplier(const int index) const
     {
         return getMultiplier(getGridPosition(index));
     }
@@ -271,19 +378,32 @@ public:
     // Analysis
     /************************************/
 
-    // count number of sym on passed reel
-    // optional parameter matchType
+    /**
+     * @brief Count matching symbols on a specific reel, with multiple match type options.
+     * @param reel Reel index.
+     * @param sym Symbol to match.
+     * @param matchType Comparison mode (exact/greater/etc.).
+     * @return Count of matching cells on the reel.
+     */
     int getReelSymbolCount(size_t reel, Symbol sym,
                            symbolMatchTypes matchType = symbolMatchTypes::exact) const;
 
-    // count number of sym in the grid
-    // optional parameter matchType
-    // returns total count and fills reelSymbolCountVect with individual reel counts
+    /**
+     * @brief Count matching symbols across the entire grid, with multiple match type options.
+     * @param sym Symbol to match.
+     * @param matchType Comparison mode (exact/greater/etc.).
+     * @return Count of matching cells on the grid.
+     */
     int getSymbolCount(Symbol sym, symbolMatchTypes matchType = symbolMatchTypes::exact) const;
 
-    // returns row of passed symbol on passed reel
-    // returns -1 if symbol not found
-    std::optional<size_t> getReelSymbolRow(size_t reel, uint8_t sym,
+    /**
+     * @brief Find the first row containing a symbol on a reel.
+     * @param reel Reel index.
+     * @param sym Symbol to find.
+     * @param matchType Comparison mode (exact/greater/etc.).
+     * @return Row index if found; std::nullopt otherwise.
+     */
+    std::optional<size_t> getReelSymbolRow(size_t reel, Symbol sym,
                                            symbolMatchTypes matchType = symbolMatchTypes::exact)
     const;
 
@@ -291,88 +411,105 @@ public:
     // Grid processing - expand
     /************************************/
 
-    // Look for symbol on reel. If found then expand symbol to fill reel
-    // If optional newSym then expand and replace with newSym
-    // return number of symbol on reel before expanded
-    int expandReelSymbol(size_t reel, uint8_t symbol, uint8_t newSym = SYMBOL_NONE);
+    /**
+     * @brief Expand a symbol to fill an entire reel; optionally replace with another symbol.
+     * @param reel Reel index.
+     * @param symbol Symbol to expand.
+     * @param newSym Different symbol with which to fill reel.
+     * @return Number of occurrences before expansion.
+     */
+    int expandReelSymbol(size_t reel, Symbol symbol, Symbol newSym = SYMBOL_NONE);
 
-    // Look for symbol on all reels. If found then expand symbol to fill reel
-    // Return number of reels expanded
-    int expandSymbol(uint8_t symbol);
+    /**
+     * @brief Expand a symbol to fill any reel where it appears.
+     * @param symbol Symbol to expand.
+     * @return Number of reels expanded.
+     */
+    int expandSymbol(Symbol symbol);
 
-    // Look for symbol on each reel in reelCheckVect parameter can be passed as{ 0, 2, 4 } or as an
-    // If found then expand symbol to fill reel
-    // Return number of reels expanded
-    // The reelCheckVect parameter can be passed as { 0, 2, 4 } or as a defined variable like scatterReelsVect
-    // e.g. std::vector <int> scatterReelsVect = { 0, 2, 4 };
-    int expandSymbol(uint8_t symbol, const std::vector<size_t>& reelCheckVect);
+    /**
+     * @brief Expand symbol if found only on selected reels.
+     * @param symbol Symbol to expand.
+     * @param reelCheckVect Indexes of reels to check/expand.
+     * @return The number of reels expanded.
+     */
+    int expandSymbol(Symbol symbol, const std::vector<size_t>& reelCheckVect);
 
-    // Look for symbol on each reel.
-    // If found then expand symbol to fill reel with newSym
-    // Return number of reels expanded
-    int expandSymbolToNew(uint8_t symbol, uint8_t newSym);
+    /**
+     * @brief If symbol found on reel, fill reel with different symbol.
+     * @param symbol Symbol to search for.
+     * @param newSym Symbol to fill with.
+     * @return The number of reels expanded.
+     */
+    int expandSymbolToNew(Symbol symbol, Symbol newSym);
 
-    // Look for symbol on each reel in reelCheckVect.
-    // If found then expand symbol to fill reel with newSym
-    // Return number of reels expanded
-    int expandSymbolToNew(uint8_t symbol, uint8_t newSym, const std::vector<int>& reelCheckVect);
+    /**
+     * @brief Feel each of selected reels where symbol is found with different symbol.
+     * @param symbol Symbol to search for.
+     * @param newSym Symbol to fill with.
+     * @param reelCheckVect Indexes of reels to check/expand.
+     * @return The number of reels expanded.
+     */
+    int expandSymbolToNew(Symbol symbol, Symbol newSym, const std::vector<int>& reelCheckVect);
 
     /************************************/
     // Grid processing - replace
     /************************************/
 
-    // On passed reel replace all occurances of symOld with symNew
-    // return number of replaced symbols
-    int replaceReelSymbol(size_t reel, uint8_t symOld, uint8_t symNew);
+    /**
+     * @brief Replace all occurrences of a symbol on a reel.
+     * @param reel Reel index.
+     * @param symOld Symbol to find.
+     * @param symNew Replacement symbol.
+     * @return Number of replacements performed.
+     */
+    int replaceReelSymbol(size_t reel, Symbol symOld, Symbol symNew);
 
-    // replace all grid occurances of symOld with symNew
-    // return number reels where symbol was replaced
-    int replaceSymbol(uint8_t symOld, uint8_t symNew);
+    /**
+     * @brief Replace all occurrences of a symbol across the grid.
+     * @param symOld Symbol to find.
+     * @param symNew Replacement symbol.
+     * @return Number of reels where replacements occurred.
+     */
+    int replaceSymbol(Symbol symOld, Symbol symNew);
 
-    // For each reel in reelCheckVect, replace all occurances of symOld with symNew.
-    // return number reels where symbol was replaced
-    // The reelCheckVect parameter can be passed as { 0, 2, 4 } or as a defined variable like scatterReelsVect
-    // e.g. std::vector <int> scatterReelsVect = { 0, 2, 4 };
-    int replaceSymbol(uint8_t symOld, uint8_t symNew, const std::vector<int>& reelCheckVect);
+    /**
+     * @brief Replace symbol occurrences on selected reels.
+     * @param symOld Symbol to find.
+     * @param symNew Replacement symbol.
+     * @param reelCheckVect Reels to process.
+     * @return Number of reels where replacements occurred.
+     */
+    int replaceSymbol(Symbol symOld, Symbol symNew, const std::vector<int>& reelCheckVect);
 
-    // replace count random symbols in the grid with newSymbol (not already newSymbol)
-    std::vector<int> replaceRandomSymbols(uint8_t newSymbol, int count,
-                                          std::vector<int> blockedIndexVect = {});
+    /**
+     * @brief Replace given number of random positions (excluding blocked and already matching) with a new symbol.
+     * @param newSymbol Replacement symbol.
+     * @param count Number of replacements to attempt.
+     * @param blockedIndexVect Linear indices to skip in row-major order. (Whole first row numbered first, then second row etc.)
+     * @return Indices replaced in row-major order. (Whole first row numbered first, then second row etc.)
+     */
+    std::vector<int> replaceRandomSymbols(Symbol newSymbol, int count,
+                                          const std::vector<int>& blockedIndexVect = {});
 
     /************************************/
     // Grid processing - replace not
     /************************************/
 
-    // On passed reel replace all symbols that are NOT symOld with symNew
-    // return number of replaced symbols
-    int replaceReelNotSymbol(int reel, uint8_t symOld, uint8_t symNew);
+    /**
+     * @brief On a reel, replace all symbols that are NOT a given symbol.
+     * @param reel Reel index.
+     * @param excludedSym Symbol to leave as is.
+     * @param symNew Replacement symbol.
+     * @return Number of replacements on the reel.
+     */
+    int replaceReelNotSymbol(int reel, Symbol excludedSym, Symbol symNew);
 
-    // In the whole grid replace all symbols that are NOT symOld with symNew
-    // return number reels where symbol was replaced
-    int replaceNotSymbol(uint8_t symOld, uint8_t symNew);
-
-    /************************************/
-    // Display
-    /************************************/
-
-    void setConsole(Console* console)
-    {
-        lpConsole = console;
-    }
-
-    void setTextMap(const std::map<uint8_t, std::string>& textMap)
-    {
-        mTextMap = textMap;
-    }
-
-    void setColourMap(const std::map<int, short>& colourMap)
-    {
-        mColourMap = colourMap;
-    }
-
-    void showReels(int tabCount) const;
-
-    void showReels(int tabCount, std::vector<int>& highlightVect, unsigned short colour) const;
-
-    std::vector<std::string> getGridTextVect(void);
+    /**
+     * @brief Replace all symbols that are NOT a given symbol across the grid.
+     * @param excludedSym Symbol to leave as is.
+     * @param symNew Replacement symbol.
+     * @return Number of reels where replacements occurred.
+     */
+    int replaceNotSymbol(Symbol excludedSym, Symbol symNew);
 };

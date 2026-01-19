@@ -48,3 +48,8 @@ void SpinResult::setReelStops(const std::vector<size_t>& stopVect)
 {
     stopIndexVect = stopVect;
 }
+
+void SpinResult::setReelStop(const size_t reel, const size_t stop)
+{
+    stopIndexVect[reel] = stop;
+}

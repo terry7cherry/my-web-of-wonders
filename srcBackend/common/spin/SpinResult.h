@@ -1,12 +1,15 @@
 #pragma once
+/**
+ * @file SpinResult.h
+ * @brief Determines reel stops (and optionally reel set) for a spin and stores the result for grid application.
+ */
 
-#include <cstddef>
 #include <vector>
 #include "../gameMaths/mathElements/ReelSet.h"
 #include "../gameMaths/mathElements/WeightTables.h"
 
 /**
- * @brief Determines reelstops for spin and stores the result.
+ * @brief Determines reelstops (and optionally reel set) for spin and stores the result.
  */
 struct SpinResult
 {
@@ -20,26 +23,20 @@ struct SpinResult
      * @brief Spin all reels.
      * @param reelSet ReelSet to use.
      * @param randomSpin Set to false to prevent random stops being set if you plan to set them manually.
-     * @throws std::runtime_error if @p reelSet is null.
      */
     SpinResult(const ReelSet& reelSet, bool randomSpin = true);
 
     /**
      * @brief Spin only the reels listed in @p spinVect.
-     *
-     * Reels not present in @p spinVect have stops set to 0.
-     *
+     * @details Reels not present in @p spinVect have stops set to 0.
      * @param reelSet ReelSet to use for reel lengths and RNG range.
      * @param spinVect Reel indexes to spin.
-     * @throws std::runtime_error if @p reelSet is null.
      */
     SpinResult(const ReelSet& reelSet, const std::vector<size_t>& spinVect);
 
     /**
-     * @brief Spin only the reels not set to true in lockedVect.
-     *
-     * If a reel is locked, it has its stop set to 0.
-     *
+     * @brief Spin only the reels NOT set to true in lockedVect.
+     * @details If a reel is locked, it has its stop set to 0.
      * @param reelSet ReelSet to use for reel lengths and RNG range.
      * @param lockedVect Lock state per reel.
      * @throws std::runtime_error if @p reelSet is null.
@@ -48,48 +45,49 @@ struct SpinResult
 
     /**
      * @brief Choose a reelset, then spin all reels.
-     * @param weightTablePtr ReelSet weight table to use.
+     * @param weightTable ReelSet weight table to use.
      * @throws std::runtime_error if @p reelSet is null.
      */
-    SpinResult(const ReelSetWeights& weightTablePtr)
-        : SpinResult(weightTablePtr.pick())
+    SpinResult(const ReelSetWeights& weightTable)
+        : SpinResult(weightTable.pick())
     {
     }
 
     /**
      * @brief Choose a reelset, then spin only the reels listed in @p spinVect.
-     *
-     * Reels not present in @p spinVect have stops set to 0.
-     *
-     * @param weightTablePtr Reel set weight table to use.
+     * @details Reels not present in @p spinVect have stops set to 0.
+     * @param weightTable Reel set weight table to use.
      * @param spinVect Reel indexes to spin.
      * @throws std::runtime_error if @p reelSet is null.
      */
-    SpinResult(const ReelSetWeights& weightTablePtr, const std::vector<size_t>& spinVect)
-        : SpinResult(weightTablePtr.pick(), spinVect)
+    SpinResult(const ReelSetWeights& weightTable, const std::vector<size_t>& spinVect)
+        : SpinResult(weightTable.pick(), spinVect)
     {
     }
 
     /**
      * @brief Choose a reelset, then spin the reels not set to true in lockedVect.
-     *
-     * If a reel is locked, it has its stop set to 0.
-     *
-     * @param weightTablePtr Reel set weight table to use.
+     * @details If a reel is locked, it has its stop set to 0.
+     * @param weightTable Reel set weight table to use.
      * @param lockedVect Lock state per reel.
      * @throws std::runtime_error if @p reelSet is null.
      */
-    SpinResult(const ReelSetWeights& weightTablePtr, const std::vector<bool>& lockedVect)
-        : SpinResult(weightTablePtr.pick(), lockedVect)
+    SpinResult(const ReelSetWeights& weightTable, const std::vector<bool>& lockedVect)
+        : SpinResult(weightTable.pick(), lockedVect)
     {
     }
 
     /**
      * @brief Sets reel stop positions for all reels.
-     *
-     * Replaces the current reel stops with the provided vector of stop positions.
-     *
+     * @details Replaces the current reel stops with the provided vector of stop positions.
      * @param stopVect Vector containing the stop positions for each reel.
      */
     void setReelStops(const std::vector<size_t>& stopVect);
+
+    /**
+     * @brief Sets reel stop position for reel.
+     * @param reel Reel index.
+     * @param stop Reel stop index.
+     */
+    void setReelStop(size_t reel, size_t stop);
 };

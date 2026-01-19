@@ -1,14 +1,27 @@
 #pragma once
+/**
+ * @file GridEventTemplate.h
+ * @brief Template for events where the frontend needs to receive the grid.
+ */
 
 #include <json/json.h>
 #include "./BasicEvent.h"
 #include "../../grids/Grid.h"
 
 
+/**
+ * @brief Base template for events where the frontend needs to receive the grid.
+ * @attention When extending this class, you MUST pass the child class name as a template parameter to get separate stats. You must also set phaseName (use ReelSpinEvent as a guide).
+ * @tparam T Derived event type providing `phaseName`.
+ */
 template <typename T>
 class GridEventTemplate : public BasicEvent
 {
 public:
+    /**
+     * @brief Capture current grid symbols at construction.
+     * @param grid Grid object from which to get symbols.
+     */
     explicit GridEventTemplate(const Grid& grid)
         : numReels(grid.maxReels),
           numRows(grid.maxRows)
@@ -22,11 +35,18 @@ public:
         }
     }
 
+    /**
+     * @brief Optional metrics hook for derived event types.
+     * @param grid Grid object from which to get symbols.
+     */
     static void updateMeters(const Grid& grid[[maybe_unused]])
     {
     }
 
 protected :
+    /**
+     * @brief Serialize common grid data to JSON for derived events.
+     */
     Json::Value toJson() const override
     {
         Json::Value eventDetails;
