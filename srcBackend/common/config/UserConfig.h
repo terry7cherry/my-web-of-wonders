@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../gameMaths/parser/ParSheet.h"
+#include "../../thisTitle/forces/simForces.h"
 #include "../console/Console.h"
 
 class UserConfig
@@ -8,7 +9,7 @@ class UserConfig
 public:
     UserConfig();
 
-    UserConfig(const std::string& cachedConfig);
+    explicit UserConfig(const std::string& cachedConfig);
     static UserConfig getNewOrCachedConfig();
 
     inline static Console gameConsole;
@@ -17,7 +18,7 @@ public:
     ParSheet parSheet;
     int rtp;
     std::string betType;
-    int force;
+    Forces::SimForce force;
     std::optional<int> seedChoice;
     int seed;
 
@@ -44,9 +45,11 @@ private:
 
     static std::string getUserBetTypeChoice(const ParSheet& parSheet);
 
-    static int getUserForceChoice();
+    static Forces::SimForce getUserForceChoice();
 
     static std::optional<int> getUserSeedChoice();
 
     static uint64_t getUserSimSizeChoice();
+
+    static Forces::SimForce stringToForce(const std::string& stringValue);
 };

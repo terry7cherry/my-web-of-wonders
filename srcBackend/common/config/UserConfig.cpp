@@ -24,17 +24,29 @@ UserConfig::UserConfig(const std::string& cachedConfig)
       parSheet(split(cachedConfig).at(0)),
       rtp(std::stoi(split(cachedConfig).at(2))),
       betType(split(cachedConfig).at(3)),
-      force(std::stoi(split(cachedConfig).at(4))),
-      seedChoice(split(cachedConfig).at(5) == "RAND"
+      force(stringToForce(split(cachedConfig).at(4))),
+      seedChoice(split
+                 (cachedConfig)
+                 .
+                 at(
+                     5
+                 )
+                 ==
+                 "RAND"
                      ? std::nullopt
-                     : std::optional<int>(std::stoi(split(cachedConfig).at(6)))),
-      seed(seedChoice.value_or(std::rand()))
+                     : std::optional<int>(std::stoi(split(cachedConfig).at(6)))
+      )
+      ,
+      seed(seedChoice
+          .
+          value_or(std::rand())
+      )
 {
     saveOrUpdateCache();
     headerText += " - " + parSheet.gameTitle;
     headerText += " - " + (rtp > 0 ? " RTP" + std::to_string(rtp) : " All RTPs");
     headerText += " - " + betType;
-    if (force) headerText += " - " + SimForces::forceNames.at(force);
+    if (force) headerText += " - " + Forces::simForceNames.at(force);
 }
 
 UserConfig UserConfig::getNewOrCachedConfig()
@@ -55,7 +67,7 @@ UserConfig UserConfig::getNewOrCachedConfig()
         choice.emplace_back(std::to_string(std::stoi(elements.at(1)) / MILLION));
         choice.emplace_back(elements.at(2));
         choice.emplace_back(elements.at(3));
-        choice.emplace_back(SimForces::forceNames.at(std::stoi(elements.at(4))));
+        choice.emplace_back(Forces::simForceNames.at(std::stoi(elements.at(4))));
         choice.emplace_back(elements.at(5));
         choice.emplace_back(elements.at(6));
         configChoices.emplace_back(choice);
@@ -176,7 +188,7 @@ std::optional<size_t> UserConfig::getUserCachedConfigChoice(
 
     std::cout << std::left
         << std::setw(4) << " "
-        << std::setw(60) << "PAR Sheet File Name"
+        << std::setw(40) << "PAR Sheet File Name"
         << std::setw(15) << "Sim Size (M)"
         << std::setw(5) << "RTP"
         << std::setw(15) << "Bet Type"
@@ -191,13 +203,13 @@ std::optional<size_t> UserConfig::getUserCachedConfigChoice(
     for (const auto& choice : choices)
         std::cout << std::left
             << std::setw(4) << std::to_string(choiceNum++) + ")"
-            << std::setw(60) << choice.at(0)
+            << std::setw(40) << choice.at(0)
             << std::setw(15) << choice.at(1)
             << std::setw(5) << choice.at(2)
             << std::setw(15) << choice.at(3)
             << std::setw(15) << choice.at(4)
             << std::setw(40) << choice.at(6) + (choice.at(5) == "RAND"
-                                                    ? " (randomly chosen - new random seed will be chosen)"
+                                                    ? " (random - new seed will be chosen)"
                                                     : "")
             << '\n';
 
@@ -300,11 +312,14 @@ std::string UserConfig::getUserBetTypeChoice(const ParSheet& parSheet)
     return betType;
 }
 
-int UserConfig::getUserForceChoice()
+Forces::SimForce UserConfig::getUserForceChoice()
 {
-    const size_t userChoice = getUserChoiceFromList(SimForces::forceNames, "Select Game Force").value_or(0);
-    if (userChoice > 0) headerText += " - " + SimForces::forceNames.at(userChoice);
-    return static_cast<int>(userChoice);
+    if (Forces::simForceNames.size() != Forces::NumForces)
+        throw std::runtime_error(
+            "Number of forces does not match number of force names in simForces.h");
+    const size_t userChoice = getUserChoiceFromList(Forces::simForceNames, "Select Game Force").value_or(0);
+    if (userChoice > 0) headerText += " - " + Forces::simForceNames.at(userChoice);
+    return static_cast<Forces::SimForce>(userChoice);
 }
 
 std::optional<int> UserConfig::getUserSeedChoice()
@@ -317,4 +332,17 @@ uint64_t UserConfig::getUserSimSizeChoice()
     return getUserInputAsInt("SET SIM SIZE",
                              "Enter number of games to simulate. (press Enter for 1b)"
     ).value_or(1000) * MILLION;
+}
+
+Forces::SimForce UserConfig::stringToForce(const std::string& stringValue)
+{
+    const int intValue = std::stoi(stringValue);
+    if (intValue >= Forces::NumForces)
+        throw std::runtime_error(
+            "Invalid Force value from cached user config. It may be you have removed forces from simForces since running this config.");
+    if (intValue < 0)
+        throw
+            std::runtime_error("Force value from cached config is negative. That's weird yo.");
+
+    return static_cast<Forces::SimForce>(intValue);
 }
