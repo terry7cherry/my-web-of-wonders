@@ -1,7 +1,6 @@
 #pragma once
 
 #include "GameLogic.h"
-#include "state/GameSession.h"
 #include "state/GameCycle.h"
 #include "forces/simForces.h"
 #include "../common/spin/SpinResult.h"
@@ -17,109 +16,131 @@
 
 namespace GameLogic
 {
-    unsigned int playGame(const GameMaths& maths, GameSession& session, GameCycle& cycle, const int force)
+    unsigned int playGame(const GameMaths& maths, GameCycle& cycle)
     {
-        if (force == SimForces::ForceFreeSpins)
-        {
-            cycle.fsInitialSpins = 10;
-            cycle.fsTrigger = true;
-        }
-        else
-            cycle.totalWin += doBaseGame(maths, session, cycle);
-        cycle.recordEvent<BaseGameCompleteEvent>(cycle.baseGameWin);
-
-        if (cycle.fsTrigger)
-        {
-            cycle.totalWin += doFreeSpins(maths, session, cycle);
-            cycle.recordEvent<FreeSpinsCompleteEvent>(cycle.freeSpinsWin,
-                                                      cycle.fsInitialSpins,
-                                                      cycle.fsTotalSpinsPlayed);
-        }
+        doBaseGame(maths, cycle);
+        doFreeSpinsIfTriggered(maths, cycle);
 
         cycle.recordEvent<GameCycleCompleteEvent>(cycle.totalWin);
         return cycle.totalWin;
     }
 
-    unsigned int doBaseGame(const GameMaths& maths, GameSession& session, GameCycle& cycle)
+    void doBaseGame(const GameMaths& maths, GameCycle& cycle)
     {
-        cycle.grid.applySpin(maths.reelSetWeights["baseGame"]);
+        if (cycle.session.simForce == Forces::ForceFreeSpins)
+            skipBaseGameAndForceFreeSpins(maths, cycle);
+        else
+            doRandomBaseGameAndCheckFreeSpinsTrigger(maths, cycle);
 
-        cycle.recordEvent<ReelSpinEvent>(cycle.grid);
+        cycle.totalWin += cycle.baseGameWin;
+        cycle.recordEvent<BaseGameCompleteEvent>(cycle.baseGameWin);
+    }
 
-        const unsigned int spinWin = cycle.grid.evaluateWins(session.betMultiplier, false);
-        cycle.baseGameWin += spinWin;
 
+    void doFreeSpinsIfTriggered(const GameMaths& maths, GameCycle& cycle)
+    {
+        if (!cycle.fsTrigger) return;
+
+        cycle.recordEvent<FreeSpinsTriggerEvent>(cycle.fsInitialSpins);
+        cycle.totalWin += doFreeSpins(maths, cycle);
+        cycle.recordEvent<FreeSpinsCompleteEvent>(cycle);
+    }
+
+    unsigned int skipBaseGameAndForceFreeSpins(const GameMaths& maths, GameCycle& cycle)
+    {
+        cycle.baseNumScatters = 3;
+        cycle.fsInitialSpins = 10;
+        cycle.fsTrigger = true;
+        return 0;
+    }
+
+    unsigned int doRandomBaseGameAndCheckFreeSpinsTrigger(const GameMaths& maths, GameCycle& cycle)
+    {
+        spinReels(maths, cycle, "baseGame");
+
+        cycle.baseGameWin += cycle.grid.evaluateWins(cycle.session.betMultiplier, false);
         cycle.recordEvent<WinAnalysisEvent>(cycle.grid, "base game");
 
-        static Symbol fsTriggerSymbol = maths.symbols["fsTriggerSymbol"];
-        cycle.baseNumScatters = cycle.grid.getSymbolCount(fsTriggerSymbol);
-        auto& fsStartSpins = maths.awards["fsStartSpins"];
-        if ((cycle.fsInitialSpins = fsStartSpins[cycle.baseNumScatters]))
-            cycle.fsTrigger = true;
-
+        checkForFreeSpinsTrigger(maths, cycle);
         return cycle.baseGameWin;
     }
 
-    unsigned int doFreeSpins(const GameMaths& maths, GameSession& session, GameCycle& cycle)
+    unsigned int doFreeSpins(const GameMaths& maths, GameCycle& cycle)
     {
-        cycle.recordEvent<FreeSpinsTriggerEvent>(cycle.fsInitialSpins);
-
-        for (cycle.fsTotalSpinsPlayed = 0;
-             cycle.fsTotalSpinsPlayed < cycle.fsInitialSpins + cycle.fsRetriggerSpins;
-             cycle.fsTotalSpinsPlayed++
+        for (cycle.fsSpinsPlayed = 0;
+             cycle.fsSpinsPlayed < cycle.fsInitialSpins + cycle.fsRetriggerSpins;
+             cycle.fsSpinsPlayed++
         )
-            cycle.freeSpinsWin += doOneFreeSpin(maths, session, cycle);
+            cycle.freeSpinsWin += doOneFreeSpin(maths, cycle);
 
         return cycle.freeSpinsWin;
     }
 
-    unsigned int doOneFreeSpin(const GameMaths& maths, GameSession& session, GameCycle& cycle)
+    void spinReels(const GameMaths& maths, GameCycle& cycle, const std::string& weightTableName)
     {
-        cycle.grid.gridMultiplier = maths.weightTables["fsMultiplierWeights"].pick();
-        cycle.recordEvent<NewFreeSpinEvent>(cycle.grid.gridMultiplier);
-
-        cycle.grid.applySpin(maths.reelSetWeights["freeSpins"]);
+        cycle.grid.applySpin(maths.reelSetWeights[weightTableName]);
         cycle.recordEvent<ReelSpinEvent>(cycle.grid);
+    }
 
-        //doExpandingWilds(maths, cycle);
+    void checkForFreeSpinsTrigger(const GameMaths& maths, GameCycle& cycle)
+    {
+        cycle.baseNumScatters = countBaseScatters(maths, cycle);
+        cycle.fsInitialSpins = maths.awards["fsStartSpins"][cycle.baseNumScatters];
+        if (cycle.fsInitialSpins) cycle.fsTrigger = true;
+    }
 
-        unsigned int spinWin = cycle.grid.evaluateWins(session.betMultiplier, true);
-        if (spinWin)
-        {
-            if (cycle.grid.gridMultiplier > 1)
-                spinWin = cycle.grid.applyGridMultiplier(MultipliersCombineType::add);
-        }
-        cycle.recordEvent<WinAnalysisEvent>(cycle.grid, "free spin");
+    unsigned int doOneFreeSpin(const GameMaths& maths, GameCycle& cycle)
+    {
+        setMultiplierAndRecordNewSpinEvent(maths, cycle);
 
-        static Symbol fsTriggerSymbol = maths.symbols["fsTriggerSymbol"];
-        const int scatterCount = cycle.grid.getSymbolCount(fsTriggerSymbol);
+        spinReels(maths, cycle, "freeSpins");
+        //expandWilds(maths, cycle);
 
-        if (scatterCount >= 2)
-        {
-            auto& retriggerSpinTable = maths.awards["fsRetriggerSpins"];
-            const int retriggerSpins = retriggerSpinTable[scatterCount];
-            cycle.fsRetriggerSpins += retriggerSpins;
-            if (retriggerSpins) cycle.recordEvent<FreeSpinsRetriggerEvent>(retriggerSpins);
-        }
+        const unsigned int spinWin = evaluateWinsWithMultiplier(maths, cycle);
+        awardRetriggers(maths, cycle);
 
         return spinWin;
     }
 
-    void doExpandingWilds(const GameMaths& maths [[maybe_unused]], GameCycle& cycle)
+    unsigned int countBaseScatters(const GameMaths& maths, const GameCycle& cycle)
     {
-        //FIX
-        constexpr int wildSymbol = 0;
+        static Symbol fsTriggerSymbol = maths.symbols["fsTriggerSymbol"];
+        return cycle.grid.getSymbolCount(fsTriggerSymbol);
+    }
 
-        unsigned int numWildReelsExpanded = 0;
-        for (size_t reelNum = 0; reelNum < cycle.grid.maxReels; ++reelNum)
-            if (cycle.grid.getReelSymbolCount(reelNum, wildSymbol))
-            {
-                numWildReelsExpanded++;
-                cycle.grid.setReelSymbols(reelNum, wildSymbol);
-            }
+    void setMultiplierAndRecordNewSpinEvent(const GameMaths& maths, GameCycle& cycle)
+    {
+        cycle.grid.gridMultiplier = maths.weightTables["fsMultiplierWeights"].pick();
+        cycle.recordEvent<NewFreeSpinEvent>(cycle.grid.gridMultiplier);
+    }
 
-        if (numWildReelsExpanded)
+    void expandWilds(const GameMaths& maths, GameCycle& cycle)
+    {
+        const int numWildReelsExpanded = cycle.grid.expandSymbol(maths.symbols["wild"]);
+
+        if (numWildReelsExpanded > 0)
             cycle.recordEvent<GridUpdateEvent>(
                 cycle.grid, numWildReelsExpanded > 1 ? "Wilds expanded!" : "Wild expanded!");
+    }
+
+    unsigned int evaluateWinsWithMultiplier(const GameMaths& maths, GameCycle& cycle)
+    {
+        unsigned int spinWin = cycle.grid.evaluateWins(cycle.session.betMultiplier, true);
+
+        if (spinWin && cycle.grid.gridMultiplier > 1)
+            spinWin = cycle.grid.applyGridMultiplier(MultipliersCombineType::add);
+
+        cycle.recordEvent<WinAnalysisEvent>(cycle.grid, "free spin");
+        return spinWin;
+    }
+
+    void awardRetriggers(const GameMaths& maths, GameCycle& cycle)
+    {
+        const int scatterCount = cycle.grid.getSymbolCount(maths.symbols["fsTriggerSymbol"]);
+
+        const int retriggerSpins = maths.awards["fsRetriggerSpins"][scatterCount];
+        cycle.fsRetriggerSpins += retriggerSpins;
+
+        if (retriggerSpins) cycle.recordEvent<FreeSpinsRetriggerEvent>(retriggerSpins);
     }
 }
