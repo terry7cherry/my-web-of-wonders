@@ -3,7 +3,7 @@
 WinAnalysisEvent::WinAnalysisEvent(const LineGrid& grid, const std::string& analysisStage)
     : analysisStage(analysisStage)
 {
-    const std::vector<LineWin>& sourceWins = grid.winVector;
+    const std::vector<Win>& sourceWins = grid.winVector;
     numWins = sourceWins.size();
 
     for (const auto& win : sourceWins)
@@ -33,7 +33,7 @@ Json::Value WinAnalysisEvent::getWinsAsJson() const
 
     if (numWins > WinAnalysisEventBufferSize)
     {
-        for (const LineWin& win : excessWins)
+        for (const Win& win : excessWins)
         {
             winsAsJson.append(convertWinToJson(win));
         }
@@ -41,7 +41,7 @@ Json::Value WinAnalysisEvent::getWinsAsJson() const
     return winsAsJson;
 }
 
-Json::Value WinAnalysisEvent::convertWinToJson(const LineWin& win)
+Json::Value WinAnalysisEvent::convertWinToJson(const Win& win)
 {
     Json::Value winAsJson;
     winAsJson["symbol"] = win.symbol;

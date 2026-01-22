@@ -54,12 +54,12 @@ private:
 	/**
 	 * @brief Convert a single win to JSON.
 	 */
-	static Json::Value convertWinToJson(const LineWin& win);
+	static Json::Value convertWinToJson(const Win& win);
 
 	unsigned int totalWin = 0; // total of all wins in this analysis stage
 	unsigned int gridMultiplier = 1;
-	std::array<LineWin, WinAnalysisEventBufferSize> bufferedWins;
-	std::vector<LineWin> excessWins;
+	std::array<Win, WinAnalysisEventBufferSize> bufferedWins;
+	std::vector<Win> excessWins;
 	std::string analysisStage; // e.g., "preMultiplier", "postMultiplier"
 	size_t numWins;
 };
