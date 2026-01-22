@@ -565,7 +565,7 @@ PayTable TaggedPayTable::parsePayTable(const TaggedRange& taggedRange)
                 }
             }
         payTableVect.push_back(symbolVect);
-        const Symbol symbolId = static_cast<uint8_t>(rowNum) - 1;
+        const Symbol symbolId = static_cast<Symbol>(rowNum) - 1;
         const std::string& payType = row[1];
         if (payType == "line")
             paySymVect.push_back(symbolId);
