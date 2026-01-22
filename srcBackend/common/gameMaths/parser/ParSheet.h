@@ -1,4 +1,12 @@
 #pragma once
+/**
+ * @file ParSheet.h
+ * @brief Parses a spreadsheet par sheet into tagged ranges and typed game maths structures.
+ *
+ * `ParSheet` loads an Excel workbook, discovers tagged ranges (see `TaggedRange`), sorts them by
+ * specificity, converts them into typed structures (see `TaggedDataTypes.h`), and finally assembles
+ * `GameMaths` variants per bet type and RTP.
+ */
 #include <xlnt/xlnt.hpp>
 #include <algorithm>
 #include <ranges>
@@ -15,6 +23,9 @@
 //using TypeConfig = std::unordered_map<std::string, T>;
 
 
+/**
+ * @brief High-level parser that builds `GameMaths` variants from a par sheet workbook.
+ */
 class ParSheet
 {
 public:
@@ -25,6 +36,11 @@ public:
     std::string gameTitle;
     std::string gameVersion;
 
+    /**
+     * @brief Construct and parse the specified par sheet file from the project's parSheets folder.
+     * @param parSheetName Filename of the par sheet (e.g., `Example.xlsx`), which must be stored
+     * in srcBackend/thisTitle/parSheets.
+     */
     ParSheet(const std::string& parSheetName)
         : fileName(parSheetName)
     {
@@ -40,6 +56,11 @@ public:
         timer.outputMilli();
     }
 
+    /**
+     * @brief Discover tagged ranges across all worksheets.
+     *
+     * A tagged range is identified by a merged single-row header that contains a JSON object.
+     */
     void extractTaggedRanges(const xlnt::workbook& wb)
     {
         const size_t numSheets = wb.sheet_count();
@@ -71,17 +92,26 @@ public:
         }
     }
 
+    /**
+     * @brief Sort helper: order ranges by descending specificity (betTypes/rtps present first).
+     */
     static bool compareSpecificity(const std::shared_ptr<TaggedRange>& i,
                                    const std::shared_ptr<TaggedRange>& j)
     {
         return (i->specificity > j->specificity);
     }
 
+    /**
+     * @brief Sort internal tagged ranges by descending specificity.
+     */
     void sortTaggedRangesByDescendingSpecificity()
     {
         std::ranges::sort(taggedRanges, compareSpecificity);
     }
 
+    /**
+     * @brief Populate typed tagged-data collections from discovered ranges.
+     */
     void createAndCategoriseTaggedData()
     {
         createSimpleTaggedData();
@@ -90,6 +120,10 @@ public:
         createReelSetWeights();
     }
 
+    /**
+     * @brief Extract simple scalar and map data (metadata, betTypes, rtps, ints, doubles, etc.).
+     * @throws std::runtime_error if required metadata (title/version) or uniqueness constraints fail.
+     */
     void createSimpleTaggedData()
     {
         bool foundTitle = false;
@@ -243,6 +277,10 @@ public:
                 "No gameVersion found in metadata. Par sheet must include a tagged range with type \"metadata\" and two values: gameTitle and gameVersion.");
     }
 
+    /**
+     * @brief Build `ReelSet` objects from corresponding ranges.
+     * @throws std::runtime_error if specificity constraints or name collisions are violated.
+     */
     void createReelSets()
     {
         const size_t windowHeight = getWindowHeight();
@@ -275,6 +313,9 @@ public:
         }
     }
 
+    /**
+     * @brief Parse symbol definitions, symbol vectors, maps, and symbol weight tables.
+     */
     void createSymbols()
     {
         const std::unordered_map<std::string, Symbol> symbolIndexMap = taggedPayTables[0]->value.
@@ -311,6 +352,9 @@ public:
         }
     }
 
+    /**
+     * @brief Parse reel set weight tables.
+     */
     void createReelSetWeights()
     {
         for (const std::shared_ptr<TaggedRange>& taggedRange : taggedRanges)
@@ -326,6 +370,10 @@ public:
         }
     }
 
+    /**
+     * @brief Assemble `GameMaths` variants for each bet type and RTP, selecting the most specific
+     *        tagged values available per item.
+     */
     void createGameMaths()
     {
         for (const auto& betType : taggedBetTypes[0]->value | std::views::keys)
@@ -383,9 +431,19 @@ public:
     }
 
     template
-    <
-        typename T, typename VectorType>
+    <typename T, typename VectorType>
 
+    /**
+     * @brief Insert the most specific elements for the given betType/RTP into a destination map.
+     * @tparam T Value type stored in the destination `TypeConfig`.
+     * @tparam VectorType Container of shared_ptr<TaggedData<T>>-like elements with `fullName`,
+     *         `value`, and `taggedRangePtr`.
+     * @param sourceElements Candidate elements with varying specificity.
+     * @param destinationMap Output map keyed by `fullName`.
+     * @param rtp Target RTP.
+     * @param betType Target bet type.
+     * @throws std::runtime_error on specificity tie for the same key.
+     */
     void addRelevantElementsToConfigForType(const VectorType& sourceElements,
                                             TypeConfig<T>& destinationMap,
                                             const int rtp,
@@ -435,6 +493,10 @@ public:
     }
 
 
+    /**
+     * @brief Get `numRows` from tagged ints, used as the window height for reel sets.
+     * @throws std::runtime_error if `numRows` is not provided.
+     */
     size_t getWindowHeight()
     {
         const auto it = std::ranges::max_element(taggedInts,
@@ -463,6 +525,9 @@ public:
         return (*it)->value;
     }
 
+    /**
+     * @brief Parse a JSON object string. Returns null JSON value on failure.
+     */
     static Json::Value parseJsonObjectOrReturnNull(const std::string& input)
     {
         static const std::unique_ptr<Json::CharReader> reader([]
@@ -491,6 +556,10 @@ public:
         return root;
     }
 
+    /**
+     * @brief Validate that `cost * minBet` is an integer.
+     * @throws std::runtime_error if the constraint is violated.
+     */
     static void validateBetTypeCost(const double cost, const int minBet)
     {
         // Check if cost * minbet is integer.
