@@ -1,4 +1,8 @@
 #pragma once
+/**
+ * @file PayTable.h
+ * @brief Symbol properties and payout lookup table.
+ */
 
 #include <absl/container/flat_hash_map.h>
 #include "../../statistics/MeterFile.h"
@@ -25,6 +29,9 @@ typedef struct
     std::string name;
 } SymbolData;
 
+/**
+ * @brief Holds symbol metadata and pay values; provides win lookup helpers.
+ */
 class PayTable
 {
 public:
@@ -47,6 +54,15 @@ public:
     //std::vector<MeterMap*> symbolHitMeterVect;
 
 
+    /**
+     * @brief Construct a pay table and initialize symbol metadata.
+     * @param payData 2D pay values indexed by symbol then of-a-kind count. Pay values are in coins (in other words, the actual payout when bet is minBet).
+     * @param paySymVect Symbols that pay on lines/ways.
+     * @param scatterSymVect Symbols that pay as scatters.
+     * @param wildSymVect Symbols that act as wilds.
+     * @param wildNoSubstVect Symbols that wilds do not substitute for.
+     * @param symbolNames Human-readable names per symbol index.
+     */
     PayTable(
         const std::vector<std::vector<unsigned int>>& payData,
         const std::vector<Symbol>& paySymVect,
@@ -58,8 +74,19 @@ public:
 
     ~PayTable() = default;
 
+    /**
+     * @brief Initialize symbol structures and masks.
+     * @param symbolCount Total number of distinct symbols.
+     */
     void symbolsInit(unsigned int symbolCount);
 
+    /**
+     * @brief Get the payout for a symbol with a given of-a-kind count.
+     * @param symbolIndex Symbol index.
+     * @param symbolCount Number of symbols in the win (of-a-kind).
+     * @param checkLimits If true, bounds-checks and may clamp invalid counts.
+     * @return Win amount for that combination.
+     */
     unsigned int getWin(Symbol symbolIndex, unsigned int symbolCount, bool checkLimits = false) const;
 
     bool isWild(const Symbol symbolId) const
