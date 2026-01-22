@@ -1,16 +1,19 @@
 #pragma once
 #include <string>
 
-namespace SimForces
+namespace Forces
 {
-    enum Force
+    enum SimForce
     {
         ForceNone,
         ForceFreeSpins,
+        // Add additional forces here.
+        NumForces,
     };
 
-    inline std::vector<std::string> forceNames{
+    inline std::vector<std::string> simForceNames{
         "None",
         "Free Spins"
+        // Add names of additional forces here.
     };
 }

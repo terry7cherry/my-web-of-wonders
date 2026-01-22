@@ -4,6 +4,9 @@
  * @brief Backend API server entry points, compiled only for FRONTEND builds.
  */
 
+#include "../../thisTitle/state/GameCycle.h"
+#include "../../thisTitle/state/GameSession.h"
+
 namespace API
 {
 #ifdef FRONTEND
@@ -11,5 +14,14 @@ namespace API
      * @brief Start the HTTP API server for the frontend to communicate with.
      */
     void startAPIServer();
+
+    GameCycle playNaturalGame(const GameMaths& maths,
+                              GameCycleReused& reused,
+                              GameSession& session);
+
+    GameCycle playForcedGame(const GameMaths& maths,
+                             GameCycleReused& reused,
+                             GameSession& session,
+                             const std::string& forceString);
 #endif
 }

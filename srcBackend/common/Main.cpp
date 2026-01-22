@@ -59,12 +59,12 @@ void threadWorker(const std::stop_token& st,
 
 		mathRng.setSeed(static_cast<int>(config.seed + batch));
 
-		GameSession gameSession(bet, gameMaths);
+		GameSession session(bet, gameMaths, config.force);
 
 		for (int i = 0; i < batchSize; i++)
 		{
-			GameCycle gameCycle(reused);
-			GameLogic::playGame(gameMaths, gameSession, gameCycle, config.force);
+			GameCycle gameCycle(session, reused);
+			GameLogic::playGame(gameMaths, gameCycle);
 		}
 		MeterUpdate::triggerUpdate();
 	}
@@ -123,7 +123,7 @@ void doMonteCarloStd(const GameMaths& gameMaths, const int bet, const UserConfig
 	GameCycleReused reused(gameMaths);
 
 
-	GameSession gameSession(bet, gameMaths);
+	GameSession session(bet, gameMaths, config.force);
 
 	reportCount = reportAtCount = MILLION / 10;
 	Timer simTimer("Monte Carlo");
@@ -133,8 +133,8 @@ void doMonteCarloStd(const GameMaths& gameMaths, const int bet, const UserConfig
 
 	for (; gameCount < config.simSize; gameCount++)
 	{
-		GameCycle gameCycle(reused);
-		GameLogic::playGame(gameMaths, gameSession, gameCycle, config.force);
+		GameCycle gameCycle(session, reused);
+		GameLogic::playGame(gameMaths, gameCycle);
 
 		// Print progress every reportCount plays
 		if (--reportCount == 0)
@@ -202,9 +202,9 @@ int simulatorMain()
 		GameMaths& gameMaths = *parSheet.gameMathsVariants[config.betType][config.rtp];
 		const int bet = static_cast<int>(gameMaths.ints.at("minBet") * gameMaths.betTypeCost);
 #ifdef SINGLETHREAD
-		doMonteCarloStd(gameMaths, bet, config);
+	doMonteCarloStd(gameMaths, bet, config);
 #else
-		doMonteCarloStdMultiThread(gameMaths, bet, config);
+	doMonteCarloStdMultiThread(gameMaths, bet, config);
 #endif
 	}
 #endif

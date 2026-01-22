@@ -1,4 +1,8 @@
 #pragma once
+/**
+ * @file GameMaths.h
+ * @brief Aggregated configuration for a single maths variant (betType, RTP).
+ */
 #ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable: 4702)
@@ -16,6 +20,9 @@
 //using TypeConfig = absl::flat_hash_map<std::string, T>;
 //using TypeConfig = std::unordered_map<std::string, T>;
 
+/**
+ * @brief Holds typed config maps (ints, doubles, symbols, reels, tables) for a maths variant.
+ */
 class GameMaths
 {
 public:
