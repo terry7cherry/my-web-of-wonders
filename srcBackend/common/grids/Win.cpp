@@ -1,8 +1,8 @@
 #include "../headers/pch.h"
-#include "LineWin.h"
+#include "Win.h"
 
-unsigned int LineWin::applyMultiplier(const unsigned int newMultiplier,
-                                      const MultipliersCombineType combineType)
+unsigned int Win::applyMultiplier(const unsigned int newMultiplier,
+                                  const MultipliersCombineType combineType)
 {
     if (newMultiplier <= 0)
         reportError("Win.applyMultiplier", "Passed multiplier <= 0");
@@ -22,7 +22,7 @@ unsigned int LineWin::applyMultiplier(const unsigned int newMultiplier,
     return totalWin;
 }
 
-std::string LineWin::getWinText(std::string szSymbol, const bool showDirection) const
+std::string Win::getWinText(std::string szSymbol, const bool showDirection) const
 {
     char buffer[MAX_LINE_TEXT_LEN];
 
@@ -90,7 +90,7 @@ std::string LineWin::getWinText(std::string szSymbol, const bool showDirection) 
     return std::string(buffer, size);
 }
 
-std::string LineWin::getWinText(const std::map<Symbol, std::string>& symbolMap,
+std::string Win::getWinText(const std::map<Symbol, std::string>& symbolMap,
                                 const bool showDirection) const
 {
     const std::string szSymbol = symbolMap.at(symbol);

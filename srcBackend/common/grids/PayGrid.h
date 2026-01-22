@@ -1,12 +1,13 @@
 #pragma once
+/**
+ * @file PayGrid.h
+ * @brief Grid with pay evaluation context (pay table, quick-win checks, multipliers).
+ */
 
-// cpp-dev-library
 #include "../gameMaths/mathElements/PayTable.h"
-#include "../headers/pch.h"
 #include "../console/Console.h"
 #include "Grid.h"
 
-// game globals
 extern Console gameConsole;
 
 
@@ -20,6 +21,9 @@ enum class MultipliersCombineType
 	none, add, multiply
 };
 
+/**
+ * @brief Grid that stores paytable pointer and performs win analysis with efficient quick win checks.
+ */
 class PayGrid : public Grid
 {
 protected:
@@ -31,6 +35,12 @@ public:
 	std::vector<int> winIndexVect; // undefined size, populate with index of winning positions
 	int gridMultiplier = 1;
 
+	/**
+	 * @brief Construct a grid and store pointer to paytable.
+	 * @param reels Number of reels.
+	 * @param rows Number of rows.
+	 * @param payTable Pay table to use with this grid.
+	 */
 	PayGrid(const size_t reels, const size_t rows, const PayTable& payTable)
 		: Grid(reels, rows),
 		  lpPayTable(&payTable)
@@ -38,11 +48,18 @@ public:
 		isWinVect.resize(maxReels);
 	}
 
-	PayGrid(const GameMaths& maths)
+	/**
+	 * @brief Construct from maths config (uses "default" pay table).
+	 * @param maths GameMaths object.
+	 */
+	explicit PayGrid(const GameMaths& maths)
 		: PayGrid(maths.ints["numReels"], maths.ints["numRows"], maths.payTables["default"])
 	{
 	}
 
+	/**
+	 * @brief Reset symbols in parent Grid and
+	 */
 	void reset()
 	{
 		Grid::reset();
@@ -57,6 +74,10 @@ public:
 	/************************************/
 
 
+	/**
+	 * @brief Quick pre-check: compute symbol pay-mask across first N reels.
+	 * @return Bitmask of symbols that can still form wins given current grid state.
+	 */
 	uint32_t quickWinCheck()
 	{
 		quickWinMask = 0xFFFFFFFF;
