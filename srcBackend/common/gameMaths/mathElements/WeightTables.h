@@ -1,4 +1,8 @@
 #pragma once
+/**
+ * @file WeightTables.h
+ * @brief Weighted random selection tables for ints, doubles, bools, strings, symbols, and reel sets.
+ */
 #include "ReelSet.h"
 #include "../../headers/pch.h"
 
@@ -6,6 +10,9 @@
 // The First 2 items are required:
 //		int result, int weight
 // 3rd item is needed for advanced WeightTable and for PopTable
+/**
+ * @brief One entry in a weight table.
+ */
 struct WeightData
 {
     int result; // required: result if this item is picked
@@ -17,6 +24,9 @@ struct WeightData
 };
 
 
+/**
+ * @brief Base weighted table supporting limits and removable items.
+ */
 class WeightTable
 {
 public:
@@ -28,69 +38,106 @@ public:
     int minVal = -1;
     int maxVal = -1;
 
-    // default constructor
+    /**
+     * @brief Default constructor.
+     */
     WeightTable()
     {
     }
 
-    // sourceVector items must contain fields: result, weight
+    /**
+     * @brief Construct from vector of WeightData.
+     */
     WeightTable(std::vector<WeightData> vector, std::string sz = "");
 
-    // sourceVector contains weights
-    // The result fields of the WeightTable are the vector index of each weight
+    /**
+     * @brief Construct from vector of int weights; result becomes the index.
+     */
     WeightTable(std::vector<int> vector, std::string sz = "");
 
     ~WeightTable();
 
-    // sourceVector items should contain fields: result, weight
-    // create a local weightVector from sourceVector and add index fields
-    // Update the pickList
+    /**
+     * @brief Replace table entries with WeightData and rebuild pick list.
+     */
     void setWeightVector(std::vector<WeightData> sourceVector);
 
-    // sourceVector contains weights
-    // create a local weightVector and add fields: index, result (= index)
-    // Update the pickList
+    /**
+     * @brief Replace table entries from weights; result becomes index; rebuild pick list.
+     */
     void setWeightVector(std::vector<int> sourceVector);
 
-    // Re-create pickList from the original weightVector
+    /**
+     * @brief Reset pick list from original weight vector (undo removals/limits).
+     */
     void reset(void);
 
-    // calculate the pick data for the current pickList
+    /**
+     * @brief Recalculate cumulative ranges for current pick list.
+     */
     void updateList(void);
 
-    // get a result from the current pickList with optional debug output
+    /**
+     * @brief Randomly pick a result according to weights.
+     * @param debugOutput If true, write details to console/file as configured.
+     * @return Picked result value.
+     */
     int pick(bool debugOutput = false) const;
 
-    // force result with passed index in the current pickList
+    /**
+     * @brief Force-pick by active-item index in the current pick list.
+     * @return Result value of the chosen item.
+     */
     int forcePickIndex(int index);
 
-    // force result with passed result from the current pickList
+    /**
+     * @brief Force-pick an item with the specified result value from the current pick list.
+     * @return Result value if successful; implementation-defined if not found.
+     */
     int forcePickResult(int result);
 
-    // get size of current pick list
+    /**
+     * @brief Get number of active items in the current pick list.
+     */
     inline int getActiveCount(void)
     {
         return (int)pickList.size();
     }
 
+    /**
+     * @brief Get the result value for the original item at `index`.
+     */
     inline int getResultAtIndex(int index)
     {
         return weightVector[index].result;
     }
 
 
-    // Remove the passed item from the pickList and update the pickList if required
+    /**
+     * @brief Remove a specific iterator from the pick list and optionally update ranges.
+     */
     void removeItem(auto it, bool blnUpdateList = true);
 
-    // Remove item with the passed result from the pickList and update the pickList data
-    // return (item with passed result is found ? true : false)
+    /**
+     * @brief Remove an item with a given result from the pick list.
+     * @return true if removed; false if not found.
+     */
     bool removeResult(int result, bool blnUpdateList = true);
 
+    /**
+     * @brief Monte Carlo test and optional console output of frequencies.
+     */
     void test(uint64_t samples, bool blnConsole);
 
+    /**
+     * @brief Dump current table to stdout.
+     */
     void cout(void) const;
 };
 
+/**
+ * @brief Weight table mapping to double results.
+ */
 class DoubleWeightTable : public WeightTable
 {
 public:
@@ -110,9 +157,15 @@ public:
     {
     }
 
+    /**
+     * @brief Pick a double value using weights.
+     */
     double pick() const { return doubleVect[WeightTable::pick()]; }
 };
 
+/**
+ * @brief Weight table mapping to boolean results.
+ */
 class BoolWeightTable : public WeightTable
 {
 public:
@@ -132,9 +185,15 @@ public:
     {
     }
 
+    /**
+     * @brief Pick a bool value using weights.
+     */
     bool pick() const { return boolVect[WeightTable::pick()]; }
 };
 
+/**
+ * @brief Weight table mapping to `ReelSet` results.
+ */
 class ReelSetWeights : public WeightTable
 {
 public:
@@ -155,9 +214,15 @@ public:
     {
     }
 
+    /**
+     * @brief Pick a `ReelSet` using weights.
+     */
     const ReelSet& pick() const { return reelSetVect[WeightTable::pick()]; }
 };
 
+/**
+ * @brief Weight table mapping to std::string results.
+ */
 class StringWeightTable : public WeightTable
 {
 public:
@@ -177,9 +242,15 @@ public:
     {
     }
 
+    /**
+     * @brief Pick a string using weights.
+     */
     std::string pick() const { return stringVect[WeightTable::pick()]; }
 };
 
+/**
+ * @brief Weight table mapping to `Symbol` results.
+ */
 class SymbolWeightTable : public WeightTable
 {
 public:
@@ -199,5 +270,8 @@ public:
     {
     }
 
+    /**
+     * @brief Pick a symbol using weights.
+     */
     Symbol pick() const { return symbolVect[WeightTable::pick()]; }
 };
