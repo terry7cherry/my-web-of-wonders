@@ -5,6 +5,7 @@
  */
 
 #include "./eventTemplates/SpinsCompleteTemplate.h"
+#include "../../thisTitle/state/GameCycle.h"
 
 /**
  * @brief Phase completion event for Free Spins.
@@ -13,6 +14,15 @@
 class FreeSpinsCompleteEvent : public SpinsCompleteTemplate<FreeSpinsCompleteEvent>
 {
 public:
+	/**
+	 * @param cycle Game cycle event including totalWin, fsInitialSpins, and fsSpinsPlayed properties.
+	 */
+	explicit FreeSpinsCompleteEvent(
+		const GameCycle& cycle)
+		: FreeSpinsCompleteEvent(cycle.totalWin, cycle.fsInitialSpins, cycle.fsSpinsPlayed)
+	{
+	}
+
 	/**
 	 * @param totalWin Win from free spins.
 	 * @param initialSpins Free spins awarded from base game.
@@ -24,6 +34,12 @@ public:
 		const int finalSpins
 	) : SpinsCompleteTemplate(totalWin, initialSpins, finalSpins)
 	{
+	}
+
+	static void updateMeters(const GameCycle& cycle)
+	{
+		SpinsCompleteTemplate::updateMeters(
+			cycle.totalWin, cycle.fsInitialSpins, cycle.fsSpinsPlayed);
 	}
 
 	/** @brief Name used for stats output. **/
