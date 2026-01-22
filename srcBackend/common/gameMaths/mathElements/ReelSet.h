@@ -1,4 +1,8 @@
 #pragma once
+/**
+ * @file ReelSet.h
+ * @brief Represents a set of reels and provides band wrapping and access utilities.
+ */
 
 #include "../../headers/pch.h"
 
@@ -18,10 +22,18 @@ public:
 	// constructors
 	/**********************************************/
 
-	// uses maxWindow to create wrapped bands
+	/**
+	 * @brief Construct with source bands and create wrapped bands using window height.
+	 * @param szName Name of this reel set.
+	 * @param maxReelWindowHeight Visible window height used to wrap.
+	 * @param bandsVect Source bands per reel.
+	 */
 	ReelSet(const std::string& szName, size_t maxReelWindowHeight,
 	        const std::vector<std::vector<Symbol>>& bandsVect);
 
+	/**
+	 * @brief Construct with source bands only; wrapping can be done later.
+	 */
 	ReelSet(const std::string& szName, const std::vector<std::vector<Symbol>>& bandsVect);
 
 
@@ -29,24 +41,35 @@ public:
 	// destructor
 	/**********************************************/
 
-	// frees memory in vectors
+	/**
+	 * @brief Destructor.
+	 */
 	~ReelSet();
 
 	/**********************************************/
 	// Debug methods
 	/**********************************************/
 
-	// Pass true to show stop index pick details in file sequence.txt
+	/**
+	 * @brief Enable/disable debug output of stop picks to sequence.txt.
+	 */
 	void setDebugOutput(bool doDebugOutput) { mDebugOutput = doDebugOutput; }
 
 	/**********************************************/
 	// Initialise methods
 	/**********************************************/
-	// Call for each ReelSet during initialisation
-	// Creates bands with wrap-around of "maxHeight" symbols
+	/**
+	 * @brief Create wrapped bands, duplicating top symbols to allow simple fetching of grid symbols.
+	 * @param maxHeight Number of rows in the visible window.
+	 */
 	void createWrappedBands(size_t maxHeight);
 
-	// copy source to dest and add wrap-around of "maxHeight" symbols in dest
+	/**
+	 * @brief Create wrapped bands in place.
+	 * @param dest Destination band to write.
+	 * @param source Source band to copy from.
+	 * @param maxHeight Visible window height used for wrap size.
+	 */
 	static void createWrappedBand(std::vector<Symbol>& dest, const std::vector<Symbol>& source,
 	                              size_t maxHeight);
 
@@ -55,34 +78,31 @@ public:
 	// Functional methods
 	/**********************************************/
 
-	// Returns the symbol at step 'index' on the passed 'reel'
-	// If 'index' < 0 or > reel length then the value is "looped" into the reel band range
+	/**
+	 * @brief Get the symbol at a stop index for a given reel, wrapping indices as needed.
+	 * @param reel Reel index.
+	 * @param index Stop position (wraps within the band).
+	 * @return Symbol index at that position.
+	 */
 	int getSymbol(size_t reel, size_t index) const;
 
 
 	/**********************************************/
 	// Non-maths, non-game methods
 	/**********************************************/
-	// creates a file containing the reel symbol text in columns, 1st col = reel 1 etc
+	/**
+	 * @brief Output reel symbols to a CSV-like file, columns per reel.
+	 * @param symbolMap Map from symbol to text for output.
+	 */
 	void fileOutput(std::map<int, std::string> symbolMap) const;
 
-	// scan the reels for blocks of the same symbol
-	// Parameters
-	//		maxBlock - report to screen any symbol blocks greater than passed maxBlock
-	//		noCheckSymbol -  a symbol that can be ignored during checking (-1 if no symbols can be ignored
-	//		lpSymbolVect - optional pointer to a vector of string that describe the symbols ("H1","H2", "A", "K", "Q" etc.)
+	/**
+	 * @brief Scan reels for contiguous blocks of the same symbol and report exceeding a threshold.
+	 * @param maxBlock Max contiguous length before reporting.
+	 * @param noCheckSymbol Symbol to ignore (-1 for none).
+	 * @param lpSymbolVect Optional names for symbols.
+	 * @return Number of blocks found/examined.
+	 */
 	int checkSymbolBlocks(int maxBlock, int noCheckSymbol,
 	                      std::vector<std::string>* lpSymbolVect = nullptr) const;
-
-	/**********************************************/
-	// Game Display
-	/**********************************************/
-
-	// if showName then "Reelset: Name\t\tStops = [0,1,2,3,4...]"
-	// else "ReelStops = [0,1,2,3,4...]"
-	void showName(const int tabCount) const
-	{
-		showTabs(tabCount > 0 ? tabCount - 1 : 0, false);
-		printf("%sReelset: %-20s\n", "\n", mSzName.c_str());
-	}
 };
