@@ -1,28 +1,47 @@
 #pragma once
+/**
+ * @file PhaseCompleteTemplate.h
+ * @brief Template for phase-completion events with shared meters and reporting.
+ */
 
 #include <string>
+#include <filesystem>
+
 #include "BasicEvent.h"
 #include "../threadSafeMeters/IntSumMeter.h"
 #include "../threadSafeMeters/DistributionMeter.h"
 #include "../threadSafeMeters/IntMaxMeter.h"
 
+/**
+ * @brief Base for Events signalling end of phase (base game, bonus, free spins, whole game).
+ * @attention When extending this class, you MUST pass the child class name as a template parameter to get separate stats. You must also set phaseName (use GameCycleCompleteEvent as a guide).
+ * @tparam T Derived event type providing `phaseName`.
+ */
 template <typename T>
 class PhaseCompleteTemplate : public BasicEvent
 {
 public:
-    explicit PhaseCompleteTemplate(const int totalWin) : totalWin(totalWin)
+    /**
+     * @param phaseWin Win for the completed phase.
+     */
+    explicit PhaseCompleteTemplate(const int phaseWin) : totalWin(phaseWin)
     {
     }
 
-    static void updateMeters(const int totalWin)
+    /**
+     * @brief Update aggregate meters for the phase.
+     * @param phaseWin Win for the completed phase.
+     */
+    static void updateMeters(const int phaseWin)
     {
         ++eventTotalHits;
-        eventWinDistribution.add(totalWin);
-        if (totalWin)
+        //eventWinDistribution.add(totalWin);
+        eventWinDistribution[phaseWin]++;
+        if (phaseWin)
         {
-            eventTotalWin += totalWin;
+            eventTotalWin += phaseWin;
             ++eventTotalWinningHits;
-            maxWinMeter.update(totalWin);
+            maxWinMeter.update(phaseWin);
         }
     }
 
@@ -32,18 +51,29 @@ public:
     inline static IntSumMeter eventTotalWinningHits{};
     inline static IntMaxMeter maxWinMeter{};
 
+    /**
+     * @brief Write the phase win distribution to a CSV file.
+     * @param betType Bet type (for filename).
+     * @param rtp RTP variant (for filename).
+     * @param bet Bet amount (for filename).
+     * @param descendingOrder Sort order for distribution output.
+     * @param doConsoleProgress Print progress messages to console?
+     */
     static void outputDistribution(const std::string& betType,
                                    const int rtp,
                                    const int bet,
                                    const bool descendingOrder,
                                    const bool doConsoleProgress)
     {
-        std::ofstream outfile;
         // remove spaces from phaseName
         std::string fileName = T::phaseName;
         std::erase(fileName, ' ');
+        // add bet type to file name if not "default"
         if (betType != "default") fileName += "_" + betType;
+        // add RTP and bet to file name.
         fileName += "_" + std::to_string(rtp) + "_" + std::to_string(bet) + ".csv";
+
+        std::ofstream outfile;
         const std::filesystem::path filePath = std::filesystem::path(GAME_SOURCE_DIR) / "Distributions" /
             fileName;
 
@@ -71,6 +101,11 @@ public:
             std::cout << "Done\r\n";
     }
 
+    /**
+     * @brief Print a final summary report of RTP and hit/win statistics.
+     * @param plays Number of plays simulated.
+     * @param betAmount Bet amount per play.
+     */
     static void finalReport(const uint64_t plays, const int betAmount)
     {
         const uint64_t hitCount = eventTotalHits.global();
@@ -88,6 +123,11 @@ public:
         std::printf("%12.2f\n", winCount ? static_cast<double>(hitCount) / winCount : 0); // WinRate
     }
 
+    /**
+     * @brief Print the maximum win and frequencies.
+     * @param plays Number of plays simulated.
+     * @param betAmount Bet amount per play.
+     */
     static void maxWinReport(const uint64_t plays, const int betAmount)
     {
         const uint64_t hitCount = eventTotalHits.global();
@@ -103,6 +143,7 @@ public:
     }
 
 protected :
+    /** @brief Name used for output to console and file. */
     inline static std::string phaseName = "Template";
 
 private :
