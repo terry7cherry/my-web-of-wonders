@@ -93,7 +93,7 @@ public:
 
 	// remember the new string and show it
 	// default action is to clear screen then show header
-	void setHeader(std::string text, bool show = true, bool cls = true)
+	void setHeader(std::string text, const bool show = true, const bool cls = true)
 	{
 		szHeader = std::move(text);
 		if (show)
@@ -154,7 +154,7 @@ public:
 
 	static void hideCursor();
 
-	void clearScreen(void);
+	static void clearScreen();
 
 	void setCursorPos(int row, int col = 0);
 
@@ -162,7 +162,7 @@ public:
 	void setStyle(unsigned short style);
 
 	// Keyboard Input Methods
-	char waitAnyKey(void);
+	char waitAnyKey();
 
 	void waitKeyPress(char waitChar);
 

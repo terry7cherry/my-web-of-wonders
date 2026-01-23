@@ -330,7 +330,7 @@ std::optional<int> UserConfig::getUserSeedChoice()
 uint64_t UserConfig::getUserSimSizeChoice()
 {
     return getUserInputAsInt("SET SIM SIZE",
-                             "Enter number of games to simulate. (press Enter for 1b)"
+                             "Enter number of games to simulate in millions. (press Enter for 1b)"
     ).value_or(1000) * MILLION;
 }
 
