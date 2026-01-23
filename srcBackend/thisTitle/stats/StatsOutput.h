@@ -29,8 +29,9 @@ namespace Stats
   * @param betType Bet type label (e.g., "default").
   * @param rtp RTP value (e.g., 96).
   * @param bet Bet amount per game (in coins, same unit as minBet and paytable payouts).
+  * @param simGames Number of game cycles run in simulation.
   */
- void outputFileStats(const std::string& betType, int rtp, int bet);
+ void outputFileStats(const std::string& betType, int rtp, int bet, uint64_t simGames);
 
  /**
   * @brief Print a general (RTP, hit rates, averages) report to the console.
@@ -52,4 +53,6 @@ namespace Stats
   * @param bet Bet amount per game (in coins, same unit as minBet and paytable payouts).
   */
  void outputSpinsReport(uint64_t simGames, int bet);
+
+ std::filesystem::path createOutputFolder(const std::string& betType, int rtp, int bet, uint64_t simGames);
 }

@@ -59,12 +59,15 @@ public:
      * @param bet Bet amount (for filename).
      * @param descendingOrder Sort order for distribution output.
      * @param doConsoleProgress Print progress messages to console?
+     * @param outputFolder Folder to store file.
      */
     static void outputDistribution(const std::string& betType,
                                    const int rtp,
                                    const int bet,
                                    const bool descendingOrder,
-                                   const bool doConsoleProgress)
+                                   const bool doConsoleProgress,
+                                   const std::filesystem::path& outputFolder
+    )
     {
         // remove spaces from phaseName
         std::string fileName = T::phaseName;
@@ -75,8 +78,7 @@ public:
         fileName += "_" + std::to_string(rtp) + "_" + std::to_string(bet) + ".csv";
 
         std::ofstream outfile;
-        const std::filesystem::path filePath = std::filesystem::path(GAME_SOURCE_DIR) / "Distributions" /
-            fileName;
+        const std::filesystem::path filePath = outputFolder / fileName;
 
         outfile.open(filePath);
         if (!outfile.is_open())
@@ -136,7 +138,8 @@ public:
         const uint64_t maxWinCount = maxWinMeter.globalCount;
         std::printf("%20s,", T::phaseName.c_str()); // Event
         std::printf("%12.2f,", static_cast<long double>(maxWin) / betAmount); // MaxWin
-        std::printf("%12" PRIu64 ",", maxWinCount ? static_cast<uint64_t>(plays / maxWinCount) : static_cast<uint64_t>(0));
+        std::printf("%12" PRIu64 ",",
+                    maxWinCount ? static_cast<uint64_t>(plays / maxWinCount) : static_cast<uint64_t>(0));
         // HitRate
         std::printf("%12" PRIu64 "\n",
                     maxWinCount ? static_cast<uint64_t>(hitCount / maxWinCount) : static_cast<uint64_t>(0));

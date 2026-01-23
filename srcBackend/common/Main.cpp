@@ -156,7 +156,7 @@ void doMonteCarloStd(const GameMaths& gameMaths, const int bet, const UserConfig
 
 	printf("\n");
 	simTimer.outputTime();
-	GameCycleCompleteEvent::outputDistribution(gameMaths.betType, gameMaths.rtp, bet, false, true);
+	Stats::outputStats(config.simSize, gameMaths.betType, gameMaths.rtp, bet);
 }
 
 int frontendMain()
@@ -202,9 +202,9 @@ int simulatorMain()
 		GameMaths& gameMaths = *parSheet.gameMathsVariants[config.betType][config.rtp];
 		const int bet = static_cast<int>(gameMaths.ints.at("minBet") * gameMaths.betTypeCost);
 #ifdef SINGLETHREAD
-	doMonteCarloStd(gameMaths, bet, config);
+		doMonteCarloStd(gameMaths, bet, config);
 #else
-	doMonteCarloStdMultiThread(gameMaths, bet, config);
+		doMonteCarloStdMultiThread(gameMaths, bet, config);
 #endif
 	}
 #endif
