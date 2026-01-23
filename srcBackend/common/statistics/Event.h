@@ -4,6 +4,7 @@
 #include <string>
 #include <cstdint>
 #include <cstdio>
+#include <inttypes.h>
 #include <map>
 #include <iostream>
 
@@ -213,9 +214,9 @@ public:
 
         uint64_t bet = totBet / plays;
         std::printf("%20s,", szName.c_str()); // Event
-        std::printf("%12llu,", static_cast<unsigned long long>(maxWin / bet)); // MaxWin
-        std::printf("%12llu,", maxWinCount ? static_cast<unsigned long long>(plays / maxWinCount) : 0ULL); // HitRate
-        std::printf("%12llu\n", maxWinCount ? static_cast<unsigned long long>(hitCount / maxWinCount) : 0ULL); // EventRate
+        std::printf("%12" PRIu64 ",", static_cast<uint64_t>(maxWin / bet)); // MaxWin
+        std::printf("%12" PRIu64 ",", maxWinCount ? static_cast<uint64_t>(plays / maxWinCount) : static_cast<uint64_t>(0)); // HitRate
+        std::printf("%12" PRIu64 "\n", maxWinCount ? static_cast<uint64_t>(hitCount / maxWinCount) : static_cast<uint64_t>(0)); // EventRate
     }
 
     //  Show stats to screen: "Event", "InitilSpins", "FinalSpins"
@@ -244,9 +245,9 @@ public:
             std::printf("%20s, %10s, %10s\n", meterMap.szName.c_str(), "Hits", "Splits");
             for (it = meterMap.intMap.begin(); it != meterMap.intMap.end(); ++it)
             {
-                std::printf("%20d, %10llu, %9.2f%%\n",
+                std::printf("%20d, %10" PRIu64 ", %9.2f%%\n",
                     it->first,
-                    static_cast<unsigned long long>(it->second),
+                    static_cast<uint64_t>(it->second),
                     mapTotal ? (double)it->second * 100.0 / mapTotal : 0.0);
             }
         }
@@ -255,9 +256,9 @@ public:
             std::printf("%20s, %10s\n", meterMap.szName.c_str(), "Hits");
             for (it = meterMap.intMap.begin(); it != meterMap.intMap.end(); ++it)
             {
-                std::printf("%20d, %10llu\n",
+                std::printf("%20d, %10" PRIu64 "\n",
                     it->first,
-                    static_cast<unsigned long long>(it->second));
+                    static_cast<uint64_t>(it->second));
             }
         }
     }
@@ -278,11 +279,11 @@ public:
                 itHits != hitMap.intMap.end() && itWins != winMap.intMap.end();
                 ++itHits, ++itWins)
             {
-                std::printf("%20d, %10llu, %9.2f%%, %10llu, %9.2f%%\n",
+                std::printf("%20d, %10" PRIu64 ", %9.2f%%, %10" PRIu64 ", %9.2f%%\n",
                     itHits->first,
-                    static_cast<unsigned long long>(itHits->second),
+                    static_cast<uint64_t>(itHits->second),
                     mapTotal ? (double)itHits->second * 100.0 / mapTotal : 0.0,
-                    static_cast<unsigned long long>(itWins->second),
+                    static_cast<uint64_t>(itWins->second),
                     totBet ? (double)itWins->second * 100.0 / totBet : 0.0);
             }
         }
@@ -294,10 +295,10 @@ public:
                 itHits != hitMap.intMap.end() && itWins != winMap.intMap.end();
                 ++itHits, ++itWins)
             {
-                std::printf("%20d, %10llu, %10llu, %9.2f%%\n",
+                std::printf("%20d, %10" PRIu64 ", %10" PRIu64 ", %9.2f%%\n",
                     itHits->first,
-                    static_cast<unsigned long long>(itHits->second),
-                    static_cast<unsigned long long>(itWins->second),
+                    static_cast<uint64_t>(itHits->second),
+                    static_cast<uint64_t>(itWins->second),
                     totBet ? (double)itWins->second * 100.0 / totBet : 0.0);
             }
         }

@@ -5,6 +5,7 @@
  */
 
 #include "./PhaseCompleteTemplate.h"
+#include <inttypes.h>
 
 /**
  * @brief Completion event base for phases involving a number of awarded spins that may or may not be retriggered.
@@ -78,11 +79,11 @@ public:
              ++itHits, ++itWins
         )
         {
-            std::printf("%30d, %10llu, %9.2f%%, %10llu, %9.2f%%\n",
+            std::printf("%30d, %10" PRIu64 ", %9.2f%%, %10" PRIu64 ", %9.2f%%\n",
                         itHits->first,
-                        static_cast<unsigned long long>(itHits->second),
+                        static_cast<uint64_t>(itHits->second),
                         mapTotal > 0 ? static_cast<long double>(itHits->second) * 100.0 / mapTotal : 0.0,
-                        static_cast<unsigned long long>(itWins->second),
+                        static_cast<uint64_t>(itWins->second),
                         totBet > 0 ? static_cast<long double>(itWins->second) * 100.0 / totBet : 0.0);
         }
     }

@@ -3,6 +3,7 @@
 #include "../rng/MathsRng.h"
 #include "../rng/RngData.h"
 #include "../console/Console.h"
+#include <inttypes.h>
 
 namespace fs = std::filesystem;
 
@@ -81,11 +82,11 @@ void showVector(std::string szTitle, std::vector<uint64_t>& showVector, bool sho
 	{
 		printf("%s  = ", szTitle.c_str());
 		int lastIndex = (int)showVector.size() - 1;
-		for (size_t i = 0; i < showVector.size(); i++)
-		{
-			printf("%8lld%s", showVector[i], (i == lastIndex) ? "" : ", ");
-			totalCount += showVector[i];
-		}
+  for (size_t i = 0; i < showVector.size(); i++)
+  {
+      printf("%8" PRIu64 "%s", static_cast<uint64_t>(showVector[i]), (i == lastIndex) ? "" : ", ");
+      totalCount += showVector[i];
+  }
 		printf("\r\n");
 
 		if (showPercents && totalCount)

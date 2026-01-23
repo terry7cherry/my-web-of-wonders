@@ -5,6 +5,7 @@
  */
 
 #include <string>
+#include <inttypes.h>
 #include <filesystem>
 
 #include "BasicEvent.h"
@@ -135,10 +136,10 @@ public:
         const uint64_t maxWinCount = maxWinMeter.globalCount;
         std::printf("%20s,", T::phaseName.c_str()); // Event
         std::printf("%12.2f,", static_cast<long double>(maxWin) / betAmount); // MaxWin
-        std::printf("%12llu,", maxWinCount ? static_cast<unsigned long long>(plays / maxWinCount) : 0ULL);
+        std::printf("%12" PRIu64 ",", maxWinCount ? static_cast<uint64_t>(plays / maxWinCount) : static_cast<uint64_t>(0));
         // HitRate
-        std::printf("%12llu\n",
-                    maxWinCount ? static_cast<unsigned long long>(hitCount / maxWinCount) : 0ULL);
+        std::printf("%12" PRIu64 "\n",
+                    maxWinCount ? static_cast<uint64_t>(hitCount / maxWinCount) : static_cast<uint64_t>(0));
         // EventRate
     }
 

@@ -1,6 +1,7 @@
 // cpp-dev-library
 #include "../headers/pch.h"
 #include "MeterMap.h"
+#include <inttypes.h>
 
 // counts occurrences of unspecified integer values
 MeterMap::MeterMap(std::string szSetName)
@@ -72,13 +73,13 @@ void MeterMap::consoleOutV(bool hiLo)
 	std::cout << szName << std::endl;
 	if (hiLo)
 	{
-		for (std::map<int, uint64_t>::iterator it = intMap.end(); it != intMap.begin(); --it)
-			printf("%8d,%8lld\n", it->first, it->second);
+  for (std::map<int, uint64_t>::iterator it = intMap.end(); it != intMap.begin(); --it)
+            printf("%8d,%8" PRIu64 "\n", it->first, static_cast<uint64_t>(it->second));
 	}
 	else
 	{
-		for (std::map<int, uint64_t>::iterator it = intMap.begin(); it != intMap.end(); ++it)
-			printf("%8d,%8lld\n", it->first, it->second);
+  for (std::map<int, uint64_t>::iterator it = intMap.begin(); it != intMap.end(); ++it)
+            printf("%8d,%8" PRIu64 "\n", it->first, static_cast<uint64_t>(it->second));
 	}
 }
 
@@ -96,8 +97,8 @@ void MeterMap::consoleOutH(bool showPercent)
 		printf("%8d,", it->first);
 
 	std::cout << std::endl << "Hits,";
-	for (it = intMap.begin(); it != intMap.end(); ++it)
-		printf("%8lld,", it->second);
+ for (it = intMap.begin(); it != intMap.end(); ++it)
+        printf("%8" PRIu64 ",", static_cast<uint64_t>(it->second));
 
 	if (showPercent) {
 		std::cout << std::endl << "Hit %,";
