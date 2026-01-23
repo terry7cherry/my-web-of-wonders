@@ -140,7 +140,7 @@ public:
      * @param showDirection If true, include direction arrows.
      * @return Vector of text lines.
      */
-    std::vector<std::string> getWinTextVect(std::map<int, std::string>& symbolMap,
+    std::vector<std::string> getWinTextVect(const std::map<Symbol, std::string>& symbolMap,
                                             bool showDirection = false) const;
 
 

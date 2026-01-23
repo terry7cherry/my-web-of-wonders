@@ -44,6 +44,44 @@ Grid::Grid(const size_t reels, const size_t rows)
 	// prep analysis
 }
 
+// Set all grid symbols to SYMBOL_NONE
+void Grid::reset()
+{
+    for (int reel = 0; reel < static_cast<int>(maxReels); reel++)
+    {
+        for (int row = 0; row < static_cast<int>(maxRows); row++)
+        {
+            reelSymbolVect[reel][row] = SYMBOL_NONE;
+        }
+    }
+}
+
+// Set all multipliers to 1
+void Grid::resetMultipliers()
+{
+    for (int reel = 0; reel < static_cast<int>(maxReels); reel++)
+    {
+        for (int row = 0; row < static_cast<int>(maxRows); row++)
+        {
+            multiplierVect[reel][row] = 1;
+        }
+    }
+}
+
+// Convert linear index to {reel,row}
+std::vector<size_t> Grid::getGridPosition(size_t index) const
+{
+    size_t row = index / maxReels;
+    size_t reel = index - (row * maxReels);
+    return {reel, row};
+}
+
+// Convert {reel,row} to linear index
+size_t Grid::getGridIndex(size_t reel, size_t row) const
+{
+    return (row * maxReels) + reel;
+}
+
 Grid::Grid(const GameMaths& maths)
 	: Grid(maths.ints["numReels"], maths.ints["numRows"])
 {

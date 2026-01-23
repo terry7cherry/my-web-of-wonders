@@ -93,50 +93,36 @@ public:
 
 	// remember the new string and show it
 	// default action is to clear screen then show header
-	void setHeader(std::string text, const bool show = true, const bool cls = true)
-	{
-		szHeader = std::move(text);
-		if (show)
-			showHeader(cls);
-	}
+	void setHeader(std::string text, bool show = true, bool cls = true);
 
 	// show the saved header at the top of the console
 	// default is to clear screen and show in highlight text, CONSOLE_INVERT
-	void showHeader(bool cls = true, bool invert = true)
-	{
-		if (cls)
-			clearScreen();
-		//setCursorPos(0);
-		if (invert)
-			coutStyle(szHeader, CONSOLE_INVERT);
-		else
-			std::cout << szHeader;
-	}
+	void showHeader(bool cls = true, bool invert = true) const;
 
 	void setClearLineText(int lineLength);
 
 	// Clear the line and re-set cursor to start of line
 	// Optionally do not re-set cursor
-	void clearLine(int line, bool setToStart = true);
+	void clearLine(int line, bool setToStart = true) const;
 
-	void flashText(std::string text, int line, int col, int msSpeed, int repeat,
-	               bool endInvert = false);
+	static void flashText(const std::string& text, int line, int col, int msSpeed, int repeat,
+	                      bool endInvert = false);
 
-	int coutStyle(const std::string& text, unsigned short style, bool revert = true);
+	static int coutStyle(const std::string& text, unsigned short style, bool revert = true);
 
 	// Displays "PRESS [SPACE BAR] " + text
-	void showPressText(std::string text, int stringLimit, int row = -1, int col = 0);
+	void showPressText(const std::string& text, int stringLimit, int row = -1, int col = 0);
 
 	// Displays "PRESS [ANY KEY] " + text
 	// Waits for a key press
-	void waitAnyKeyText(std::string text, int stringLimit, int row = -1, int col = 0);
+	static void waitAnyKeyText(const std::string& text, int stringLimit, int row = -1, int col = 0);
 
 	// sets the font size to the passed value
 	void setFontSize(short size);
 
 	// Set the font size.
 	// Optionally ensure console is minCharWidth characters wide, by reducing font size
-	void newFontSize(short size, int minCharWidth = 0);
+	void newFontSize(short size);
 
 	// Set the font size.
 	// Ensure, by reducing font size, that console has minCharWidth x minCharHeight characters
@@ -146,36 +132,32 @@ public:
 	// Easy interfaces to std / Windows methods
 	/*********************************************************/
 
-	static void pause(const int msTimer)
-	{
-		// Sleep() is Windows-only; std::this_thread::sleep_for is portable.
-		std::this_thread::sleep_for(std::chrono::milliseconds(msTimer));
-	}
+	static void pause(int msTimer);
 
 	static void hideCursor();
 
 	static void clearScreen();
 
-	void setCursorPos(int row, int col = 0);
+	static void setCursorPos(int row, int col = 0);
 
 	// apply a text/background colour style
-	void setStyle(unsigned short style);
+	static void setStyle(unsigned short style);
 
 	// Keyboard Input Methods
-	char waitAnyKey();
+	static char waitAnyKey();
 
 	void waitKeyPress(char waitChar);
 
-	bool confirmYesNo(std::string szText);
+	static bool confirmYesNo(const std::string& szText);
 
-	bool confirmYesNo(std::string szText, int row, int col = 0);
+	static bool confirmYesNo(const std::string& szText, int row, int col = 0);
 
-	void clearBuffer(void);
+	static void clearBuffer();
 
 	// Create and return a string of length, width.
 	// Original string, szIn, is centred within the new string
 	// Optinally pass padAfter = false to create a shorter string with no white space at the end
-	std::string centreString(std::string szIn, int width, bool padAfter = true);
+	static std::string centreString(const std::string& szIn, int width, bool padAfter = true);
 
 protected:
 	// On Windows these are real handles; on other platforms they're just placeholders.

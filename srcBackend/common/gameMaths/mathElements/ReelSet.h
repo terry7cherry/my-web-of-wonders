@@ -104,5 +104,5 @@ public:
 	 * @return Number of blocks found/examined.
 	 */
 	int checkSymbolBlocks(int maxBlock, int noCheckSymbol,
-	                      std::vector<std::string>* lpSymbolVect = nullptr) const;
+	                      const std::vector<std::string>* lpSymbolVect = nullptr) const;
 };

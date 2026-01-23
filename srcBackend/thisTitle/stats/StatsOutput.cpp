@@ -84,13 +84,12 @@ namespace Stats
 #endif
 
         std::ostringstream oss;
-        oss << std::put_time(&tm, "%Y-%m-%d_%H-%M"); // sortable: YYYYMMDD_HHMMSS
+        oss << std::put_time(&tm, "%Y-%m-%d_%H.%M");
 
-
-        if (simGames > 1000)
-            oss << "_" << simGames / MILLION << "b";
+        if (simGames > BILLION)
+            oss << "_" << simGames / BILLION << "b";
         else
-            oss << "_" << simGames / 1000 << "m";
+            oss << "_" << simGames / MILLION << "m";
 
         oss << "_RTP" << rtp << "_bet" << bet;
 

@@ -348,14 +348,14 @@ int LineGrid::showWins(int startRow, const int col, const bool showTitle,
 
 
 std::vector<std::string> LineGrid::getWinTextVect(
-    std::map<int, std::string>& symbolMap, bool showDirection) const
+    const std::map<Symbol, std::string>& symbolMap, bool showDirection) const
 {
     std::vector<std::string> winTextVect;
-    if (!mTextMap.size())
+    if (mTextMap.empty())
         reportError("LineGrid::getWinTextVect",
                     "Call 'Grid::setTextMap()' before using this method");
     else
-        for (auto win : winVector)
-            winTextVect.push_back(win.getWinText(mTextMap));
+        for (const auto& win : winVector)
+            winTextVect.push_back(win.getWinText(symbolMap, showDirection));
     return winTextVect;
 }

@@ -98,30 +98,12 @@ public:
     /**
      * @brief Set all grid symbols to `SYMBOL_NONE` (max uint8_t value).
      */
-    void reset()
-    {
-        for (int reel = 0; reel < maxReels; reel++)
-        {
-            for (int row = 0; row < maxRows; row++)
-            {
-                reelSymbolVect[reel][row] = SYMBOL_NONE;
-            }
-        }
-    }
+    void reset();
 
     /**
      * @brief Set all grid multipliers to 1.
      */
-    void resetMultipliers()
-    {
-        for (int reel = 0; reel < maxReels; reel++)
-        {
-            for (int row = 0; row < maxRows; row++)
-            {
-                multiplierVect[reel][row] = 1;
-            }
-        }
-    }
+    void resetMultipliers();
 
 
     /**************************************************/
@@ -180,12 +162,7 @@ public:
      * @param index Linear index in row-major order. (Whole first row numbered first, then second row etc.)
      * @return Position vector {reel,row}.
      */
-    std::vector<size_t> getGridPosition(const size_t index) const
-    {
-        size_t row = index / maxReels;
-        size_t reel = index - (row * maxReels);
-        return {reel, row};
-    }
+    std::vector<size_t> getGridPosition(size_t index) const;
 
     /**
      * @brief Convert {reel,row} to linear grid index.
@@ -193,10 +170,7 @@ public:
      * @param row row index.
      * @return Linear index in row-major order. (Whole first row numbered first, then second row etc.)
      */
-    size_t getGridIndex(const size_t reel, const size_t row) const
-    {
-        return (row * maxReels) + reel;
-    }
+    size_t getGridIndex(size_t reel, size_t row) const;
 
     /**
      * @brief Convert {reel,row} vector to linear grid index.

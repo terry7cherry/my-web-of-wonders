@@ -1,11 +1,9 @@
-#include "../../headers/pch.h"
-
 #include "ReelSet.h"
 #include "../../rng/MathsRng.h"
 #include "../../grids/Grid.h"
 
 #ifdef _WIN32
-#define MEMCPY_SAFE(dest, destsz, src, count) memcpy_s(dest, destsz, src, count)
+#define MEMCPY_SAFE(dest, destSz, src, count) memcpy_s(dest, destSz, src, count)
 #else
 #define MEMCPY_SAFE(dest, destsz, src, count)                                  \
 do {                                                                       \
@@ -133,7 +131,7 @@ void ReelSet::fileOutput(std::map<int, std::string> symbolMap) const
 			for (std::vector<Symbol> reel : mSourceReelsVect)
 				ss << ((i < reel.size()) ? symbolMap[reel[i]] : "") << ",";
 			outfile << ss.str() << std::endl;
-			//fprintf_s(fp, "%s\n", ss.str().c_str());
+			//printf_s(fp, "%s\n", ss.str().c_str());
 		}
 	}
 	else
@@ -148,20 +146,14 @@ void ReelSet::fileOutput(std::map<int, std::string> symbolMap) const
 				ss << ",";
 			}
 			outfile << ss.str() << std::endl;
-			//fprintf_s(fp, "%s\n", ss.str().c_str());
+			//printf_s(fp, "%s\n", ss.str().c_str());
 		}
 	}
 	outfile.close();
 }
 
-
-// scan the reels for blocks of the same symbol
-// Parameters
-//		maxBlock - report to screen any symbol blocks greater than passed maxBlock
-//		noCheckSymbol -  a symbol that can be ignored during checking (-1 if no symbols can be ignored
-//		lpSymbolVect - optional pointer to a vector of string that describe the symbols ("H1","H2", "A", "K", "Q" etc.)
 int ReelSet::checkSymbolBlocks(const int maxBlock, const int noCheckSymbol,
-                               std::vector<std::string>* lpSymbolVect) const
+                               const std::vector<std::string>* lpSymbolVect) const
 {
 	struct blockError
 	{
@@ -189,7 +181,10 @@ int ReelSet::checkSymbolBlocks(const int maxBlock, const int noCheckSymbol,
 			}
 			if (sym != noCheckSymbol && block > maxBlock)
 			{
-				errVect.push_back({static_cast<int>(rl), i, block, sym, ""});
+				errVect.push_back({
+					static_cast<int>(rl), i, block, sym,
+					(lpSymbolVect && lpSymbolVect->size() > sym) ? lpSymbolVect->at(sym) : ""
+				});
 				i += block;
 			}
 			else

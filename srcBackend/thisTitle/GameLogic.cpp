@@ -46,7 +46,7 @@ namespace GameLogic
         cycle.recordEvent<FreeSpinsCompleteEvent>(cycle);
     }
 
-    unsigned int skipBaseGameAndForceFreeSpins(const GameMaths& maths, GameCycle& cycle)
+    unsigned int skipBaseGameAndForceFreeSpins(const GameMaths& maths [[maybe_unused]], GameCycle& cycle)
     {
         cycle.baseNumScatters = 3;
         cycle.fsInitialSpins = 10;
@@ -123,7 +123,7 @@ namespace GameLogic
                 cycle.grid, numWildReelsExpanded > 1 ? "Wilds expanded!" : "Wild expanded!");
     }
 
-    unsigned int evaluateWinsWithMultiplier(const GameMaths& maths, GameCycle& cycle)
+    unsigned int evaluateWinsWithMultiplier(const GameMaths& maths [[maybe_unused]], GameCycle& cycle)
     {
         unsigned int spinWin = cycle.grid.evaluateWins(cycle.session.betMultiplier, true);
 

@@ -5,7 +5,7 @@
 using PICKLIST_IT = std::vector<WeightData>::iterator;
 
 // sourceVector items should contain fields: { result, weight }
-WeightTable::WeightTable(std::vector<WeightData> sourceVector, std::string sz)
+WeightTable::WeightTable(const std::vector<WeightData>& sourceVector, const std::string& sz)
 {
     szPicker = sz;
     setWeightVector(sourceVector);
@@ -13,7 +13,7 @@ WeightTable::WeightTable(std::vector<WeightData> sourceVector, std::string sz)
 
 // sourceVector contains weights
 // The result fields of the WeightTable are the vector index of each weight
-WeightTable::WeightTable(std::vector<int> sourceVector, std::string sz)
+WeightTable::WeightTable(const std::vector<int>& sourceVector, const std::string& sz)
 {
     szPicker = sz;
     setWeightVector(sourceVector);
@@ -27,7 +27,7 @@ WeightTable::~WeightTable()
 // sourceVector items should contain fields: result, weight
 // create a local weightVector from sourceVector and add index fields
 // Update the pickList
-void WeightTable::setWeightVector(std::vector<WeightData> sourceVector)
+void WeightTable::setWeightVector(const std::vector<WeightData>& sourceVector)
 {
     weightVector = sourceVector;
 
@@ -84,7 +84,7 @@ void WeightTable::updateList(void)
 }
 
 // get a result from the current pickList
-int WeightTable::pick(bool debugOutput) const
+int WeightTable::pick() const
 {
     auto it = pickList.end();
     if (pickList.size() == 0)
@@ -95,7 +95,7 @@ int WeightTable::pick(bool debugOutput) const
     }
     else
     {
-        int32 rand = mathRng.getInt(range, szPicker.c_str());
+        const int32 rand = mathRng.getInt(range, szPicker.c_str());
         for (it = pickList.begin(); it != pickList.end(); ++it)
         {
             if (rand < it->range)
@@ -174,21 +174,20 @@ bool WeightTable::removeResult(int result, bool blnUpdateList)
     return false;
 }
 
-
-void WeightTable::test(uint64_t samples, bool blnConsole)
+void WeightTable::test(const uint64_t samples, const bool blnConsole)
 {
     std::vector<long long> results;
     results.assign(weightVector.size(), 0);
     for (uint64_t i = 0; i < samples; i++)
-        pick(); // test 'samples' outcomes
+        results[pick()]++; // test 'samples' outcomes
 
     if (blnConsole)
     {
         printf("%8s\t%8s\t%8s\t%8s\r\n", "Item", "Weight", "Count", "P(Item)");
         for (auto it = weightVector.begin(); it != weightVector.end(); ++it)
         {
-            long long pickCount = results[it->index];
-            float chance = (float)100 * pickCount / samples;
+            const long long pickCount = results[it->index];
+            const float chance = static_cast<float>(100) * pickCount / samples;
             printf("%8d\t%8d\t%8lld\t%6.3f\r\n", it->result, it->weight, pickCount, chance);
         }
     }

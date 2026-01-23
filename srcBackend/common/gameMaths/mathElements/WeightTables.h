@@ -48,19 +48,19 @@ public:
     /**
      * @brief Construct from vector of WeightData.
      */
-    WeightTable(std::vector<WeightData> vector, std::string sz = "");
+    explicit WeightTable(const std::vector<WeightData>& sourceVector, const std::string& sz = "");
 
     /**
      * @brief Construct from vector of int weights; result becomes the index.
      */
-    WeightTable(std::vector<int> vector, std::string sz = "");
+    explicit WeightTable(const std::vector<int>& sourceVector, const std::string& sz = "");
 
     ~WeightTable();
 
     /**
      * @brief Replace table entries with WeightData and rebuild pick list.
      */
-    void setWeightVector(std::vector<WeightData> sourceVector);
+    void setWeightVector(const std::vector<WeightData>& sourceVector);
 
     /**
      * @brief Replace table entries from weights; result becomes index; rebuild pick list.
@@ -70,19 +70,18 @@ public:
     /**
      * @brief Reset pick list from original weight vector (undo removals/limits).
      */
-    void reset(void);
+    void reset();
 
     /**
      * @brief Recalculate cumulative ranges for current pick list.
      */
-    void updateList(void);
+    void updateList();
 
     /**
      * @brief Randomly pick a result according to weights.
-     * @param debugOutput If true, write details to console/file as configured.
      * @return Picked result value.
      */
-    int pick(bool debugOutput = false) const;
+    int pick() const;
 
     /**
      * @brief Force-pick by active-item index in the current pick list.
@@ -99,15 +98,15 @@ public:
     /**
      * @brief Get number of active items in the current pick list.
      */
-    inline int getActiveCount(void)
+    size_t getActiveCount() const
     {
-        return (int)pickList.size();
+        return pickList.size();
     }
 
     /**
      * @brief Get the result value for the original item at `index`.
      */
-    inline int getResultAtIndex(int index)
+    int getResultAtIndex(const int index) const
     {
         return weightVector[index].result;
     }
@@ -132,7 +131,7 @@ public:
     /**
      * @brief Dump current table to stdout.
      */
-    void cout(void) const;
+    void cout() const;
 };
 
 /**

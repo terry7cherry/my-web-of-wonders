@@ -5,11 +5,28 @@
 
 #include "Console.h"
 
-void Console::clearScreen(void)
+void Console::clearScreen()
 {
     std::cout << "\033[2J\033[H\033[3J" << std::flush;
 }
 
+void Console::setHeader(std::string text, const bool show, const bool cls)
+{
+    szHeader = std::move(text);
+    if (show)
+        showHeader(cls);
+}
+
+void Console::showHeader(const bool cls, const bool invert) const
+{
+    if (cls)
+        clearScreen();
+    //setCursorPos(0);
+    if (invert)
+        coutStyle(szHeader, CONSOLE_INVERT);
+    else
+        std::cout << szHeader;
+}
 
 // Set the font size - not supported in generic terminals; no-op
 void Console::setFontSize(const short size)
@@ -18,7 +35,7 @@ void Console::setFontSize(const short size)
 }
 
 // Optionally ensure console is minCharWidth characters wide, by reducing font size (not supported)
-void Console::newFontSize(const short size, const int /*minCharWidth*/)
+void Console::newFontSize(const short size)
 {
     fontSize = size;
 }
@@ -39,7 +56,7 @@ int Console::coutStyle(const std::string& text, const unsigned short style, cons
 }
 
 // Displays "PRESS [SPACE BAR] " + text
-void Console::showPressText(std::string text, int stringLimit, int row, int col)
+void Console::showPressText(const std::string& text, const int stringLimit, int row, int col)
 {
     if (row != -1)
     {
@@ -59,7 +76,7 @@ void Console::showPressText(std::string text, int stringLimit, int row, int col)
 }
 
 // Displays "PRESS [ANY KEY] " + text and waits for a key
-void Console::waitAnyKeyText(std::string text, int stringLimit, int row, int col)
+void Console::waitAnyKeyText(const std::string& text, const int stringLimit, int row, int col)
 {
     std::string clrLine(stringLimit, ' ');
     if (row != -1)
@@ -91,7 +108,7 @@ void Console::setClearLineText(int lineLength)
 
 // Clear the line and re-set cursor to start of line
 // Optionally do not re-set cursor
-void Console::clearLine(int line, bool setToStart)
+void Console::clearLine(const int line, const bool setToStart) const
 {
     setCursorPos(line);
     std::printf(szClrLine, " ");
@@ -99,8 +116,9 @@ void Console::clearLine(int line, bool setToStart)
         setCursorPos(line);
 }
 
-void Console::flashText(std::string text, int line, int col, int msSpeed, int repeat,
-                        bool endInvert)
+void Console::flashText(const std::string& text, const int line, const int col, const int msSpeed,
+                        const int repeat,
+                        const bool endInvert)
 {
     for (int i = 0; i < repeat; ++i)
     {
@@ -119,7 +137,13 @@ void Console::flashText(std::string text, int line, int col, int msSpeed, int re
     }
 }
 
-void Console::hideCursor(void)
+void Console::pause(const int msTimer)
+{
+    // Sleep() is Windows-only; std::this_thread::sleep_for is portable.
+    std::this_thread::sleep_for(std::chrono::milliseconds(msTimer));
+}
+
+void Console::hideCursor()
 {
     std::cout << "\033[?25l" << std::flush;
 }
@@ -162,7 +186,7 @@ void Console::waitKeyPress(char waitChar)
     blnWaitPress = false;
 }
 
-char Console::waitAnyKey(void)
+char Console::waitAnyKey()
 {
     int ch = std::getchar();
     if (ch == EOF) ch = 0;
@@ -172,24 +196,24 @@ char Console::waitAnyKey(void)
 
 // szText is a question that has a y/n answer
 // szText is displayed at left edge of screen on current line
-// method asks the question, waits for a Y/N key press and returns true/false
-bool Console::confirmYesNo(std::string szText)
+// method asks question, waits for a Y/N key press and returns true/false
+bool Console::confirmYesNo(const std::string& szText)
 {
-    int ch;
+    char ch;
     do
     {
         std::cout << "\r" << szText << " (y or n) > " << std::flush;
         ch = waitAnyKey();
-        std::cout << static_cast<char>(ch) << std::flush;
-        ch = toupper(ch);
+        std::cout << ch << std::flush;
+        ch = static_cast<char>(std::toupper(ch));
     }
     while (ch != 'Y' && ch != 'N');
     return (ch == 'Y');
 }
 
 // szText is positioned at the passed row and col
-// method asks the question, waits for a Y/N key press and returns true/false
-bool Console::confirmYesNo(std::string szText, int row, int col)
+// method asks question, waits for a Y/N key press and returns true/false
+bool Console::confirmYesNo(const std::string& szText, const int row, const int col)
 {
     int ch;
     do
@@ -204,7 +228,7 @@ bool Console::confirmYesNo(std::string szText, int row, int col)
     return (ch == 'Y');
 }
 
-void Console::clearBuffer(void)
+void Console::clearBuffer()
 {
     // Drain any buffered input (best-effort, cross-platform)
     while (std::cin.rdbuf()->in_avail() > 0)
@@ -214,7 +238,7 @@ void Console::clearBuffer(void)
 // Create and return a string of length, width.
 // Original string, szIn, is centred within the new string
 // Optionally pass padAfter = false to create a shorter string with no white space at the end
-std::string Console::centreString(std::string szIn, int width, bool padAfter)
+std::string Console::centreString(const std::string& szIn, const int width, const bool padAfter)
 {
     std::string newString((std::max(0, width - static_cast<int>(szIn.length()))) / 2, ' ');
     newString += szIn;
