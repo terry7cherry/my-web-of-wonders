@@ -3,6 +3,7 @@
 
 #include <csignal>
 #include <filesystem>
+#include <cinttypes>
 #include <drogon/drogon.h>
 #include "rng/MathsRng.h"
 #include "utils/Timer.h"
@@ -32,7 +33,7 @@ int reportCount = reportAtCount;
 
 void showRtpReport(const uint64_t gamesPlayed, const uint64_t totalBet)
 {
-	std::printf("\033[1A\r%s%10I64d spins. RTP ", "\n", gamesPlayed);
+	std::printf("\033[1A\r%s%10" PRIu64 " spins. RTP ", "\n", gamesPlayed);
 	const long double percent = static_cast<long double>(GameCycleCompleteEvent::eventTotalWin.global()) * 100
 		/ static_cast<double>(totalBet);
 	std::printf(": %s=%6.2Lf%%", "total", percent);
