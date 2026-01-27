@@ -7,62 +7,54 @@
 #include "../gameMaths/mathElements/PayTable.h"
 #include "../console/Console.h"
 #include "Grid.h"
+#include "Win.h"
 
 extern Console gameConsole;
 
 
-enum class WinDirections
-{
-    none, left_right, right_left, both
-};
-
-enum class MultipliersCombineType
-{
-    none, add, multiply
-};
-
 /**
- * @brief Grid that stores paytable pointer and performs win analysis with efficient quick win checks.
+ * @brief Grid that stores payTable pointer and performs win analysis with efficient quick win checks.
  */
 class PayGrid : public Grid
 {
 protected:
-    const PayTable* lpPayTable;
+	const PayTable* lpPayTable;
 
 public:
-    uint32_t quickWinMask = UINT32_MAX;
-    std::vector<std::vector<bool>> isWinVect; // [reel][row]
-    std::vector<int> winIndexVect; // undefined size, populate with index of winning positions
-    int gridMultiplier = 1;
+	uint32_t quickWinMask = UINT32_MAX;
+	std::vector<std::vector<bool>> isWinVect; // [reel][row]
+	std::vector<int> winIndexVect; // undefined size, populate with index of winning positions
+	std::vector<Win> winVector;
+	int gridMultiplier = 1;
 
-    /**
-	 * @brief Construct a grid and store pointer to paytable.
+	/**
+	 * @brief Construct a grid and store pointer to payTable.
 	 * @param reels Number of reels.
 	 * @param rows Number of rows.
 	 * @param payTable Pay table to use with this grid.
 	 */
-    PayGrid(const size_t reels, const size_t rows, const PayTable& payTable);
+	PayGrid(const size_t reels, const size_t rows, const PayTable& payTable);
 
-    /**
+	/**
 	 * @brief Construct from maths config (uses "default" pay table).
 	 * @param maths GameMaths object.
 	 */
-    explicit PayGrid(const GameMaths& maths);
+	explicit PayGrid(const GameMaths& maths);
 
-    /**
+	/**
 	 * @brief Reset symbols in parent Grid and
 	 */
-    void reset();
+	void reset();
 
 
-    /************************************/
-    // Win Analysis
-    /************************************/
+	/************************************/
+	// Win Analysis
+	/************************************/
 
 
-    /**
+	/**
 	 * @brief Quick pre-check: compute symbol pay-mask across first N reels.
 	 * @return Bitmask of symbols that can still form wins given current grid state.
 	 */
-    uint32_t quickWinCheck();
+	uint32_t quickWinCheck();
 };

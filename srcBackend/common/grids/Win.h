@@ -1,15 +1,23 @@
 #pragma once
 /**
- * @file LineWin.h
+ * @file Win.h
  * @brief Represents a single payline win with metadata and formatting helpers.
  */
 #include <map>
 #include <string>
 #include <vector>
 
-#include "PayGrid.h"
-
 #define MAX_LINE_TEXT_LEN 45
+
+enum class WinDirections
+{
+    none, left_right, right_left, both
+};
+
+enum class MultipliersCombineType
+{
+    none, add, multiply
+};
 
 /**
  * @brief Encapsulates a line win (symbol, of-a-kind, multipliers, direction, and text helpers).
@@ -65,7 +73,7 @@ public:
 
     /**
      * @brief Format the win as text.
-     * @return For example: "Line 7 L-R: 3 H1 = 40 (x2) = 80".
+     * @return For example, "Line 7 L-R: 3 H1 = 40 (x2) = 80".
      */
     std::string getWinText(std::string szSymbol, bool showDirection = true) const;
 

@@ -21,7 +21,6 @@ protected:
     const PayLines* lpPayLines = nullptr;
 
 public:
-    std::vector<Win> winVector;
     std::string szBlankWin;
 
     /**
@@ -48,7 +47,7 @@ public:
 
     /**
      * @brief Construct from maths config using default pay table and paylines.
-     * @param maths GameMaths from which to get numReels, numRows, payTable and payLines.
+     * @param maths GameMaths from which to get numReels, numRows, payTable, and payLines.
      */
     explicit LineGrid(const GameMaths& maths)
         : LineGrid(maths.ints["numReels"],
@@ -103,7 +102,7 @@ public:
     int countActiveWinMultipliers();
 
     /**
-     * @brief Apply a gridMultiplier (or other multiplier) to all wins.
+     * @brief Apply a gridMultiplier (or another multiplier) to all wins.
      * @param combineType How to combine with existing win-level multipliers.
      * @param specialMultiplier Optional override multiplier. (Omit to use gridMultiplier)
      * @return New total win after application.
