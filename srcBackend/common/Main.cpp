@@ -64,7 +64,7 @@ void threadWorker(const std::stop_token& st,
 
 		for (int i = 0; i < batchSize; i++)
 		{
-			GameCycle gameCycle(session, reused);
+			GameCycle gameCycle(session, reused, gameMaths);
 			GameLogic::playGame(gameMaths, gameCycle);
 		}
 		MeterUpdate::triggerUpdate();
@@ -134,7 +134,7 @@ void doMonteCarloStd(const GameMaths& gameMaths, const int bet, const UserConfig
 
 	for (; gameCount < config.simSize; gameCount++)
 	{
-		GameCycle gameCycle(session, reused);
+		GameCycle gameCycle(session, reused, gameMaths);
 		GameLogic::playGame(gameMaths, gameCycle);
 
 		// Print progress every reportCount plays

@@ -68,7 +68,7 @@ GameCycle API::playNaturalGame(const GameMaths& maths,
                                GameCycleReused& reused,
                                GameSession& session)
 {
-	GameCycle cycle(session, reused);
+	GameCycle cycle(session, reused, maths);
 	GameLogic::playGame(maths, cycle);
 	return cycle;
 }
@@ -89,7 +89,7 @@ GameCycle API::playForcedGame(const GameMaths& maths,
 	uint64_t attempts = 0;
 	do
 	{
-		GameCycle cycle(session, reused);
+		GameCycle cycle(session, reused, maths);
 		GameLogic::playGame(maths, cycle);
 		if (condition(cycle)) return cycle;
 		attempts++;

@@ -38,11 +38,12 @@ struct GameCycle : GameCycleBase
     unsigned int baseNumScatters = 0;
     bool fsTrigger = false;
 
-    explicit GameCycle(GameSession& session, GameCycleReused& reused)
+    explicit GameCycle(GameSession& session, GameCycleReused& reused, const GameMaths& maths [[maybe_unused]])
         : GameCycleBase(session),
           grid(reused.grid)
     {
         reused.reset();
+        // Use maths to initialise member variables if necessary.
     }
 };
 
