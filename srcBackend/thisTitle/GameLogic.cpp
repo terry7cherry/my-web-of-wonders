@@ -125,7 +125,7 @@ namespace GameLogic
 
     unsigned int evaluateWinsWithMultiplier(const GameMaths& maths [[maybe_unused]], GameCycle& cycle)
     {
-        unsigned int spinWin = cycle.grid.evaluateWins(cycle.session.betMultiplier, true);
+        unsigned int spinWin = cycle.grid.evaluateWins(cycle.session.betMultiplier);
 
         if (spinWin && cycle.grid.gridMultiplier > 1)
             spinWin = cycle.grid.applyGridMultiplier(MultipliersCombineType::add);

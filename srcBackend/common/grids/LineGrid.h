@@ -78,7 +78,7 @@ public:
      * @param useDebugLine If true, enable extra debug on a specific line.
      * @return Total win for all lines.
      */
-    unsigned int evaluateWins(unsigned int betMultiplier, [[maybe_unused]] bool doMeters,
+    unsigned int evaluateWins(unsigned int betMultiplier, [[maybe_unused]] bool doMeters = true,
                               [[maybe_unused]] bool useDebugLine = false);
 
 
