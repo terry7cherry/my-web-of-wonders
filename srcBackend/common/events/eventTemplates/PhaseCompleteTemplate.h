@@ -117,13 +117,15 @@ public:
         const uint64_t totalBet = plays * betAmount;
 
         std::printf("%20s,", T::phaseName.c_str()); // Event
-        std::printf("%11.2f%%,", static_cast<double>(totalWin) * 100.0 / totalBet); // RTP
-        std::printf("%12.2f,", static_cast<double>(plays) / (hitCount ? hitCount : 1)); // HitRate
-        std::printf("%12.2f,", hitCount ? static_cast<double>(totalWin) / hitCount / betAmount : 0); // AvgPay
-        std::printf("%12.2f,", winCount ? static_cast<double>(totalWin) / winCount / betAmount : 0); // AvgWin
-        std::printf("%11.2f%%,", hitCount ? static_cast<double>(winCount) * 100.0 / hitCount : 0);
+        std::printf("%11.2f%%,", static_cast<long double>(totalWin) * 100.0 / totalBet); // RTP
+        std::printf("%12.2f,", static_cast<long double>(plays) / (hitCount ? hitCount : 1)); // HitRate
+        std::printf("%12.2f,", hitCount ? static_cast<long double>(totalWin) / hitCount / betAmount : 0);
+        // AvgPay
+        std::printf("%12.2f,", winCount ? static_cast<long double>(totalWin) / winCount / betAmount : 0);
+        // AvgWin
+        std::printf("%11.2f%%,", hitCount ? static_cast<long double>(winCount) * 100.0 / hitCount : 0);
         // WinChance
-        std::printf("%12.2f\n", winCount ? static_cast<double>(hitCount) / winCount : 0); // WinRate
+        std::printf("%12.2f\n", winCount ? static_cast<long double>(hitCount) / winCount : 0); // WinRate
     }
 
     /**
