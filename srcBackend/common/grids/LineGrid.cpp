@@ -1,7 +1,6 @@
 #include "LineGrid.h"
 
-unsigned int LineGrid::evaluateWins(const unsigned int betMultiplier, [[maybe_unused]] bool doMeters,
-                                    [[maybe_unused]] bool useDebugLine)
+unsigned int LineGrid::evaluateWins(const unsigned int betMultiplier)
 {
     unsigned int totalWin = 0;
 
@@ -92,10 +91,6 @@ unsigned int LineGrid::evaluateWins(const unsigned int betMultiplier, [[maybe_un
                 if (win)
                 {
                     totalWin += static_cast<unsigned int>(win * lineMultiplier);
-                    //if (doMeters)
-                    //	lpPayTable->meterWin(symbolToMatch, number);
-
-                    // add additional line win data - possibly only needed for playable
 
                     Win lineWin;
                     lineWin.payLine = this->getPayLine(line);
@@ -128,8 +123,6 @@ unsigned int LineGrid::evaluateWins(const unsigned int betMultiplier, [[maybe_un
             getWin(scatterSymbol, symbolCount))
         {
             totalWin += win;
-            //if (doMeters)
-            //	lpPayTable->meterWin(scatterSymbol, symbolCount);
 
             Win scatterWin;
             scatterWin.win = scatterWin.totalWin = win;

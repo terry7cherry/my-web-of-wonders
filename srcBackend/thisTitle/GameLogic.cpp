@@ -58,7 +58,7 @@ namespace GameLogic
     {
         spinReels(maths, cycle, "baseGame");
 
-        cycle.baseGameWin += cycle.grid.evaluateWins(cycle.session.betMultiplier, false);
+        cycle.baseGameWin += cycle.grid.evaluateWins(cycle.session.betMultiplier);
         cycle.recordEvent<WinAnalysisEvent>(cycle.grid, "base game");
 
         checkForFreeSpinsTrigger(maths, cycle);

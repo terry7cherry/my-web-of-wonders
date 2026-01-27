@@ -50,7 +50,7 @@ public:
 		winVector.clear();
 	}
 
-	int evaluateWins(PayTable* lpPayTable, int betMultiplier, bool doMeters)
+	int evaluateWins(PayTable* lpPayTable, const int betMultiplier)
 	{
 		std::map<int, WaysWin*> winMap;
 		winVectorReset();
@@ -144,8 +144,6 @@ public:
 			{
 				spinWin += winVal;
 				winVector.push_back(it->second);
-				//if (doMeters)
-				//	lpPayTable->meterWin(it->second->symbol, it->second->oak, it->second->winWays);
 			}
 			else
 			{

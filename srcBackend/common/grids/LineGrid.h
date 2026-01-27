@@ -73,12 +73,9 @@ public:
     /**
      * @brief Reset win buffer, evaluate line wins, and apply line multipliers.
      * @param betMultiplier Line bet multiplier.
-     * @param doMeters If true, update meters.
-     * @param useDebugLine If true, enable extra debug on a specific line.
      * @return Total win for all lines.
      */
-    unsigned int evaluateWins(unsigned int betMultiplier, [[maybe_unused]] bool doMeters = true,
-                              [[maybe_unused]] bool useDebugLine = false);
+    unsigned int evaluateWins(unsigned int betMultiplier);
 
 
     /**

@@ -140,10 +140,6 @@ public:
 				if (const int win = betMultiplier * lpPayTable->getWin(symbolToMatch, number))
 				{
 					totalWin += (win * lineMultiplier);
-					//if (doMeters)
-					//	lpPayTable->meterWin(symbolToMatch, number);
-
-					// add additional line win data - possibly only needed for playable
 					Win lineWin;
 					lineWin.payLineNum = line;
 					lineWin.payLine = getPayLine(line);
@@ -243,13 +239,9 @@ public:
 					}
 				}
 
-				if (int win = betMultiplier * lpPayTable->getWin(symbolToMatch, number))
+				if (const int win = betMultiplier * lpPayTable->getWin(symbolToMatch, number))
 				{
 					totalWin += (win * lineMultiplier);
-					//if (doMeters)
-					//	lpPayTable->meterWin(symbolToMatch, number);
-
-					// add additional line win data - possibly only needed for playable
 					Win lineWin;
 					lineWin.payLine = &lpPayLines->lineVect[line];
 					lineWin.win = lineWin.totalWin = win;
