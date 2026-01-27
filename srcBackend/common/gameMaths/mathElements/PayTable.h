@@ -55,7 +55,7 @@ public:
 
 
     /**
-     * @brief Construct a pay table and initialize symbol metadata.
+     * @brief Construct a pay table and initialise symbol metadata.
      * @param payData 2D pay values indexed by symbol then of-a-kind count. Pay values are in coins (in other words, the actual payout when bet is minBet).
      * @param paySymVect Symbols that pay on lines/ways.
      * @param scatterSymVect Symbols that pay as scatters.
@@ -75,7 +75,7 @@ public:
     ~PayTable() = default;
 
     /**
-     * @brief Initialize symbol structures and masks.
+     * @brief Initialise symbol structures and masks.
      * @param symbolCount Total number of distinct symbols.
      */
     void symbolsInit(unsigned int symbolCount);
@@ -154,4 +154,3 @@ public:
     }
     */
 };
-

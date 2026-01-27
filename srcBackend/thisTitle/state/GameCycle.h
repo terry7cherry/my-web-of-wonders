@@ -12,7 +12,7 @@ struct GameCycleReused
     // Add other members here that are very costly to initialise.
     // Initialise them once either in the GameCycleReused initializer list or in the constructor body.
     // Reset them in the reset() method (called before each game cycle).
-    // Add a reference to them as a member in the GameCycle struct and add to the initializer list.
+    // Add a reference to them as a member in the GameCycle struct and add to the initialiser list.
     // (Follow how this is done with the grid member.)
 
     explicit GameCycleReused(const GameMaths& gameMaths) :
@@ -28,7 +28,7 @@ struct GameCycleReused
 
 struct GameCycle : GameCycleBase
 {
-    LineGrid& grid;
+    LineGrid& grid; // Also update if using a different Grid class.
     unsigned int totalWin = 0;
     unsigned int baseGameWin = 0;
     unsigned int freeSpinsWin = 0;
@@ -37,6 +37,7 @@ struct GameCycle : GameCycleBase
     unsigned int fsSpinsPlayed = 0;
     unsigned int baseNumScatters = 0;
     bool fsTrigger = false;
+    // Add other game state variables here.
 
     explicit GameCycle(GameSession& session, GameCycleReused& reused, const GameMaths& maths [[maybe_unused]])
         : GameCycleBase(session),

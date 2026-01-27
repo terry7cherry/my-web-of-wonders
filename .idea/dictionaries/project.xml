@@ -2,6 +2,7 @@
   <dictionary name="project">
     <words>
       <w>drogon</w>
+      <w>initialiser</w>
       <w>jsoncpp</w>
       <w>memcpy</w>
       <w>rtps</w>
