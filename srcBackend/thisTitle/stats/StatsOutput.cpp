@@ -3,18 +3,22 @@
 #include "../../common/events/BaseGameCompleteEvent.h"
 #include "../../common/events/GameCycleCompleteEvent.h"
 #include "../../common/events/FreeSpinsCompleteEvent.h"
+#include "../../common/events/WinAnalysisEvent.h"
 
 namespace Stats
 {
-    void outputStats(const uint64_t simGames, const std::string& betType, const int rtp, const int bet)
+    void outputStats(const uint64_t simGames, const std::string& betType, const int rtp, const int bet,
+                     const std::vector<std::string>& symbolNames)
     {
-        outputConsoleStats(simGames, bet);
+        outputConsoleStats(simGames, bet, symbolNames);
         outputFileStats(betType, rtp, bet, simGames);
     }
 
-    void outputConsoleStats(const uint64_t simGames, const int bet)
+    void outputConsoleStats(const uint64_t simGames, const int bet,
+                            const std::vector<std::string>& symbolNames)
     {
         outputGeneralStatsReport(simGames, bet);
+        outputPayTableRTPReport(simGames, bet, symbolNames);
         outputMaxWinReport(simGames, bet);
         outputSpinsReport(simGames, bet);
     }
@@ -25,6 +29,11 @@ namespace Stats
         GameCycleCompleteEvent::outputDistribution(betType, rtp, bet, false, true, outputFolder);
         BaseGameCompleteEvent::outputDistribution(betType, rtp, bet, false, true, outputFolder);
         FreeSpinsCompleteEvent::outputDistribution(betType, rtp, bet, false, true, outputFolder);
+        // You can add other phases (features/bonuses etc) here to output distribution files for them.
+        // Ensure you have created an event for your phase derived from the PhaseCompleteEvent class.
+        // (Copy from common/events/BaseGameCompleteEvent.h, for example).
+        // Make sure you call cycle.recordEvent<YourPhaseCompleteEvent>(phaseWinnings) in your GameLogic.
+        // Call outputDistribution on the new event above.
     }
 
     void outputGeneralStatsReport(const uint64_t simGames, const int bet)
@@ -42,6 +51,11 @@ namespace Stats
         // Call finalReport on the new event above.
     };
 
+    void outputPayTableRTPReport(const uint64_t simGames, const int bet,
+                                 const std::vector<std::string>& symbolNames)
+    {
+        WinAnalysisEvent::consoleReportRTP(simGames, bet, symbolNames);
+    }
 
     void outputMaxWinReport(const uint64_t simGames, const int bet)
     {

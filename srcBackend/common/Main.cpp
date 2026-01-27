@@ -113,7 +113,8 @@ void doMonteCarloStdMultiThread(const GameMaths& gameMaths, const int bet, const
 	}
 	std::cout << std::endl;
 	simTimer.outputTime();
-	Stats::outputStats(config.simSize, gameMaths.betType, gameMaths.rtp, bet);
+	Stats::outputStats(config.simSize, gameMaths.betType, gameMaths.rtp, bet,
+	                   gameMaths.payTables["default"].symbolNames);
 }
 
 void doMonteCarloStd(const GameMaths& gameMaths, const int bet, const UserConfig& config)
@@ -157,7 +158,8 @@ void doMonteCarloStd(const GameMaths& gameMaths, const int bet, const UserConfig
 
 	printf("\n");
 	simTimer.outputTime();
-	Stats::outputStats(config.simSize, gameMaths.betType, gameMaths.rtp, bet);
+	Stats::outputStats(config.simSize, gameMaths.betType, gameMaths.rtp, bet,
+	                   gameMaths.payTables["default"].symbolNames);
 }
 
 int frontendMain()

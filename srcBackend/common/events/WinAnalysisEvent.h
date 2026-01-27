@@ -4,13 +4,12 @@
  * @brief Event that captures line/ways wins for analysis/visualization.
  */
 
-#include "eventTemplates/BasicEvent.h"
 
 #include <vector>
 
-#include "../grids/LineGrid.h"
-
-static constexpr int WinAnalysisEventBufferSize = 4;
+#include "eventTemplates/BasicEvent.h"
+#include "../grids/PayGrid.h"
+#include "threadSafeMeters/PayTableMeter.h"
 
 /**
  * @brief Serializes a subset of line wins along with totals for UI/debug output.
@@ -22,7 +21,7 @@ public:
 	 * @param grid Grid from which to take wins.
 	 * @param analysisStage Name of analysis stage, for display in frontend ticker.
 	 */
-	explicit WinAnalysisEvent(const LineGrid& grid, const std::string& analysisStage);
+	explicit WinAnalysisEvent(const PayGrid& grid, const std::string& analysisStage);
 
 	/**
 	 * @brief Optional metrics hook.
@@ -30,21 +29,16 @@ public:
 	 * @param grid Grid from which to take wins.
 	 * @param analysisStage Name of analysis stage, for display in frontend ticker.
 	 */
-	static void updateMeters(const LineGrid& grid [[maybe_unused]],
-	                         std::string analysisStage [[maybe_unused]])
-	{
-	}
+	static void updateMeters(const PayGrid& grid [[maybe_unused]],
+	                         std::string analysisStage [[maybe_unused]]);
+
+	static void consoleReportRTP(uint64_t simGames, int bet, const std::vector<std::string>& symbolNames);
+
+	inline static PayTableMeter payTableHits;
+	inline static PayTableMeter payTableWinnings;
 
 protected:
-	Json::Value toJson() const override
-	{
-		Json::Value eventDetails;
-		eventDetails["eventType"] = "winAnalysis";
-		eventDetails["totalWin"] = totalWin;
-		eventDetails["analysisStage"] = std::string(analysisStage);
-		eventDetails["wins"] = getWinsAsJson();
-		return eventDetails;
-	}
+	Json::Value toJson() const override;
 
 private:
 	/**
@@ -58,8 +52,6 @@ private:
 
 	unsigned int totalWin = 0; // total of all wins in this analysis stage
 	unsigned int gridMultiplier = 1;
-	std::array<Win, WinAnalysisEventBufferSize> bufferedWins;
-	std::vector<Win> excessWins;
+	std::vector<Win> wins;
 	std::string analysisStage; // e.g., "preMultiplier", "postMultiplier"
-	size_t numWins;
 };
