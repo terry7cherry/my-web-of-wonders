@@ -109,7 +109,7 @@ private:
      */
     std::unordered_map<int, uint64_t>* tls()
     {
-        thread_local std::unordered_map<int, uint64_t> tls[10] = {};
+        thread_local std::unordered_map<int, uint64_t> tls[100] = {};
         thread_local bool registered[100] = {};
         if (!registered[_id]) [[unlikely]]
         {
