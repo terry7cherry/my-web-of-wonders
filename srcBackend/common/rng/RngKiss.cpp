@@ -10,9 +10,14 @@ void RngKiss::setSeed(const uint32 newSeed)
     kiss_j = ((kiss_i + kiss_k) % 2580) + 1;
 }
 
-uint32 RngKiss::randInt(const uint32 range, [[maybe_unused]] std::string sz)
+uint32 RngKiss::randInt(const uint32 range, [[maybe_unused]] const std::string& sz)
 {
     return static_cast<uint32>((static_cast<uint64>(algorithm()) * range) >> 32);
+}
+
+uint32 RngKiss::randInt(const uint32 range)
+{
+    return randInt(range, "");
 }
 
 uint32 RngKiss::algorithm()

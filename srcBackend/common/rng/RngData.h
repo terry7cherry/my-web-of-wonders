@@ -6,7 +6,8 @@
 
 ;
 
-class RngData : public Rng {
+class RngData : public Rng
+{
 private:
 	int mDataIndex = 0;
 	CSVRow mDataRow;
@@ -31,7 +32,13 @@ public:
 	bool matchRandoms = false;
 	CSVIterator mRngDataCSVIt;
 
-	uint32 randInt(uint32 range, std::string sz = "") override;
+	void setSeed(const uint32 newSeed [[maybe_unused]]) override
+	{
+	}
+
+	uint32 randInt(uint32 range, const std::string& sz) override;
+
+	uint32 randInt(uint32 range) override;
 
 	/***************************************************************/
 	// Input sequence methods
@@ -48,12 +55,14 @@ public:
 	// returns the 1st entry from the sequence, game number
 	int startGameSequence(int debugGame);
 
-	inline void printGame(void) {
+	inline void printGame(void)
+	{
 		if (rnStreamOutput)
 			std::cout << mDataGame;
 	}
 
-	inline void printStream(void) {
+	inline void printStream(void)
+	{
 		if (rnStreamOutput)
 			mDataRow.print("RNstream", 4);
 	}
@@ -64,7 +73,8 @@ public:
 	// returns -1 if passed the end of the current sequence
 	double getDoubleFromSequence(void);
 
-	inline int getFromSequenceGame(void) {
+	inline int getFromSequenceGame(void)
+	{
 		return mDataGame;
 	}
 
@@ -76,11 +86,9 @@ public:
 	// pass game bet and mathsWin as cash
 	bool endGameSequence(int bet, int mathsWin);
 
-	inline int getGameCount(void) {
+	int getGameCount() const
+	{
 		return mDataGame;
 	}
 };
-
-extern RngData rnStream;
-
 

@@ -20,7 +20,7 @@ struct FailStruct
 
 enum class RngOptions
 {
-	stdC, kiss, data, count
+	kiss, data, count
 };
 
 class MathsRng
@@ -36,14 +36,13 @@ public:
 		setRng(RngOptions::kiss);
 	}
 
-	void setRng(RngOptions option)
+	void setRng(const RngOptions option)
 	{
 		if (option == RngOptions::kiss)
 			lpRng = new RngKiss();
 		else if (option == RngOptions::data)
-			lpRng = &rnStream;
-		else
-			lpRng = new Rng();
+			lpRng = new RngData();
+		else throw std::invalid_argument("MathsRng.setRng() - invalid option.");
 	}
 
 	uint32 setSeed(void)
@@ -71,6 +70,13 @@ public:
 
 	// returns integer in [low,high] for low >= 0, high < 2^32
 	uint32 getInt(const uint32 low, const uint32 high)
+	{
+		const uint32 range = high + 1 - low;
+		return low + randInt(range);
+	}
+
+	// returns integer in [low,high] for low >= 0, high < 2^32
+	uint32 randInt(const uint32 low, const uint32 high)
 	{
 		const uint32 range = high + 1 - low;
 		return low + randInt(range);
