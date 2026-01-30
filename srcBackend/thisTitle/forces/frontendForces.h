@@ -5,7 +5,7 @@
 
 namespace Forces
 {
-    const std::vector<FrontendForce> frontendForces = {
+    const std::vector frontendForces = {
         FrontendForce(
             "Free Spins",
             [](const GameCycle& cycle)
@@ -25,7 +25,9 @@ namespace Forces
             [](const GameCycle& cycle)
             {
                 return cycle.totalWin >= 25000;
-            }
+            },
+            {"bonusBuy"}
         )
+
     };
 }

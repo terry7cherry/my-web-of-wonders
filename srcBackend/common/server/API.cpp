@@ -13,37 +13,55 @@ void API::startAPIServer()
 	const GameMaths& maths = *parSheet.gameMathsVariants["default"][96];
 	GameSession session(maths.ints["minBet"], maths);
 	using namespace drogon;
-	// Register REST endpoint
-	app().registerHandler("/api/spin",
-	                      [&session, &maths](const HttpRequestPtr& request,
-	                                         std::function<void(const HttpResponsePtr&)>&&
-	                                         callback)
+	app().registerHandler("/api/options",
+	                      [&parSheet](const HttpRequestPtr& request,
+	                                  std::function<void(const HttpResponsePtr&)>&&
+	                                  callback)
 	                      {
-		                      GameCycleReused reused(maths);
-		                      const std::string force = request->getParameter("force");
-
-		                      const GameCycle cycle = force.empty()
-			                                              ? playNaturalGame(maths, reused, session)
-			                                              : playForcedGame(maths, reused, session, force);
-		                      Json::Value result;
-		                      Json::Value eventsArray(Json::arrayValue);
-		                      for (Json::ArrayIndex i = 0; i < cycle.events.size(); ++i)
+		                      try
 		                      {
-			                      if (!cycle.events[i])
-			                      {
-				                      std::cerr << "[/api/spin] null event pointer at index "
-					                      << i << std::endl;
-				                      continue;
-			                      }
-			                      Json::Value eventJson = cycle.events[i]->toJson();
-			                      if (!eventJson.isNull())
-				                      eventsArray.append(cycle.events[i]->toJson());
+			                      handleOptionsRequest(std::move(callback), parSheet);
 		                      }
-		                      result["events"] = eventsArray;
-
-		                      auto resp = drogon::HttpResponse::newHttpJsonResponse(result);
-		                      callback(resp);
+		                      catch (const std::exception& e)
+		                      {
+			                      callback(getBadRequestError(e.what()));
+		                      }
 	                      }
+	);
+	app().registerHandler("/api/newSession",
+
+	                      [&parSheet](const HttpRequestPtr& request,
+	                                  std::function<void(const HttpResponsePtr&)>&&
+	                                  callback)
+	                      {
+		                      try
+		                      {
+			                      handleNewSessionRequest(
+				                      request, std::move(callback), parSheet);
+		                      }
+		                      catch (const std::exception& e)
+		                      {
+			                      callback(getBadRequestError(e.what()));
+		                      }
+	                      },
+	                      {Post}
+	);
+	app().registerHandler("/api/spin",
+	                      [&parSheet](const HttpRequestPtr& request,
+	                                  std::function<void(
+		                                  const HttpResponsePtr&)>&&
+	                                  callback)
+	                      {
+		                      try
+		                      {
+			                      handleSpinRequest(request, std::move(callback), parSheet);
+		                      }
+		                      catch (const std::exception& e)
+		                      {
+			                      callback(getBadRequestError(e.what()));
+		                      }
+	                      },
+	                      {Post}
 
 	);
 	app().addListener("0.0.0.0", 8080);
@@ -53,7 +71,8 @@ void API::startAPIServer()
 	app()
 		.setDocumentRoot(FRONTEND_DIST_DIR)
 		.setFileTypes({
-			"gif", "png", "jpg", "js", "css", "html", "ico", "swf", "xap", "apk", "cur", "xml",
+			"gif", "png", "jpg", "js", "css", "html", "ico", "swf", "xap", "apk",
+			"cur", "xml",
 			"mp3"
 
 		});
@@ -63,6 +82,137 @@ void API::startAPIServer()
 
 	app().run();
 }
+
+
+void API::handleSpinRequest(const drogon::HttpRequestPtr& request,
+                            std::function<void(const drogon::HttpResponsePtr&)>&& callback,
+                            const ParSheet& parSheet)
+{
+	const auto requestJson = getJsonFromRequest(request);
+	if (requestJson["session"].isNull()) throw std::runtime_error("session is missing from request.");
+	GameSession session(requestJson["session"]);
+	const GameMaths& maths = *parSheet.gameMathsVariants.at(session.betType).at(session.rtp);
+
+	GameCycleReused reused(maths);
+
+	const GameCycle cycle = session.frontendForceIndex == -1
+		                        ? playNaturalGame(maths, reused, session)
+		                        : playForcedGame(maths, reused, session, session.frontendForceIndex);
+	Json::Value result;
+	Json::Value eventsArray(Json::arrayValue);
+	for (Json::ArrayIndex i = 0; i < cycle.events.size(); ++i)
+	{
+		if (!cycle.events[i])
+		{
+			std::cerr << "[/api/spin] null event pointer at index "
+				<< i << std::endl;
+			continue;
+		}
+		Json::Value eventJson = cycle.events[i]->toJson();
+		if (!eventJson.isNull())
+			eventsArray.append(cycle.events[i]->toJson());
+	}
+	result["events"] = eventsArray;
+	result["session"] = session.toJson();
+
+	auto resp = drogon::HttpResponse::newHttpJsonResponse(result);
+	callback(resp);
+}
+
+void API::handleNewSessionRequest(const drogon::HttpRequestPtr& request,
+                                  std::function<void(const drogon::HttpResponsePtr&)>&& callback,
+                                  const ParSheet& parSheet)
+{
+	const auto requestJson = getJsonFromRequest(request);
+	if (requestJson["bet"].isNull()) throw std::runtime_error("bet is missing from request.");
+	if (requestJson["betType"].isNull())
+		throw std::runtime_error("betType is missing from request.");
+	if (requestJson["rtp"].isNull()) throw std::runtime_error("rtp is missing from request.");
+
+	const GameMaths& maths = *parSheet.gameMathsVariants
+	                                  .at(requestJson["betType"].asString())
+	                                  .at(requestJson["rtp"].asInt());
+
+	const int bet = requestJson["bet"].asInt();
+
+	const GameSession newSession = requestJson["session"].isNull()
+		                               ? GameSession(bet, maths)
+		                               : GameSession(bet, maths, requestJson["session"]);
+
+	Json::Value jsonResponse;
+	jsonResponse["session"] = newSession.toJson();
+	jsonResponse["maths"] = maths.toJson();
+	jsonResponse["forceOptions"] = getForceOptionsForBetType(maths.betType);
+	const auto resp = drogon::HttpResponse::newHttpJsonResponse(jsonResponse);
+	callback(resp);
+}
+
+Json::Value API::getForceOptionsForBetType(const std::string& betType)
+{
+	Json::Value forceOptions(Json::arrayValue);
+	int forceNum = 0;
+	for (const FrontendForce& force : Forces::frontendForces)
+	{
+		const bool validForBetType =
+			force.betTypes.empty()
+			|| std::ranges::find(force.betTypes, betType) != force.betTypes.end();
+		if (validForBetType)
+		{
+			Json::Value forceJson;
+			forceJson["name"] = force.name;
+			forceJson["index"] = forceNum;
+			forceOptions.append(forceJson);
+		}
+		forceNum++;
+	}
+	return forceOptions;
+}
+
+
+Json::Value API::getJsonFromRequest(const drogon::HttpRequestPtr& request)
+{
+	const auto jsonPtr = request->getJsonObject();
+	if (!jsonPtr)
+		throw std::runtime_error("Request is missing JSON.");
+	return *jsonPtr;
+}
+
+drogon::HttpResponsePtr API::getBadRequestError(const std::string& error)
+{
+	const auto resp = drogon::HttpResponse::newHttpResponse();
+	resp->setStatusCode(drogon::k400BadRequest);
+	resp->setContentTypeCode(drogon::CT_APPLICATION_JSON);
+	Json::Value err;
+	err["error"] = error;
+	resp->setBody(err.toStyledString());
+	return resp;
+}
+
+void API::handleOptionsRequest(std::function<void(const drogon::HttpResponsePtr&)>&& callback,
+                               const ParSheet& parSheet)
+{
+	Json::Value optionsJson;
+	optionsJson["betTypes"] = Json::Value{};
+	for (size_t i = 0; i < parSheet.betTypes.size(); ++i)
+		optionsJson["betTypes"][parSheet.betTypes[i]] = std::round(parSheet.betTypeCosts[i] * 100.0) /
+			100.0;
+	optionsJson["rtps"] = Json::Value(Json::arrayValue);
+	for (const int rtp : parSheet.rtps) optionsJson["rtps"].append(rtp);
+	optionsJson["gameTitle"] = parSheet.gameTitle;
+
+	// Serialize with a writer configured for decimal precision for this endpoint only.
+	Json::StreamWriterBuilder builder;
+	builder["indentation"] = ""; // compact JSON
+	builder["precisionType"] = "decimal"; // digits after decimal point
+	builder["precision"] = 2; // e.g. 1.60 (JSON may still display as 1.6 depending on writer behavior)
+
+	const auto resp = drogon::HttpResponse::newHttpResponse();
+	resp->setStatusCode(drogon::k200OK);
+	resp->setContentTypeCode(drogon::CT_APPLICATION_JSON);
+	resp->setBody(Json::writeString(builder, optionsJson));
+	callback(resp);
+}
+
 
 GameCycle API::playNaturalGame(const GameMaths& maths,
                                GameCycleReused& reused,
@@ -76,16 +226,18 @@ GameCycle API::playNaturalGame(const GameMaths& maths,
 GameCycle API::playForcedGame(const GameMaths& maths,
                               GameCycleReused& reused,
                               GameSession& session,
-                              const std::string& forceString)
+                              const int forceIndex)
 {
-	for (const char& c : forceString)
-		if (!isdigit(c)) throw std::runtime_error("Invalid force. Must be an integer.");
-	const int forceInt = std::stoi(forceString);
-	if (forceInt >= Forces::frontendForces.size())
+	if (forceIndex >= Forces::frontendForces.size())
 		throw std::runtime_error(
-			"Force " + std::to_string(forceInt) + " does not exist.");
+			"Force " + std::to_string(forceIndex) + " does not exist.");
 
-	const auto& [name, condition] = Forces::frontendForces[forceInt];
+	const auto& [name, condition, betTypes]
+		= Forces::frontendForces[forceIndex];
+
+	if (!betTypes.empty() && std::ranges::find(betTypes, session.betType) == betTypes.end())
+		throw std::runtime_error("Selected force is not available for this bet type.");
+
 	uint64_t attempts = 0;
 	do
 	{
@@ -95,7 +247,7 @@ GameCycle API::playForcedGame(const GameMaths& maths,
 		attempts++;
 	}
 	while (attempts < 100'000'000);
-	throw std::runtime_error("Force " + std::to_string(forceInt) + " failed after 1b runs.");
+	throw std::runtime_error("Force " + std::to_string(forceIndex) + " failed after 1b runs.");
 }
 
 

@@ -32,6 +32,7 @@ public:
     std::unordered_map<std::string, std::unordered_map<int, std::unique_ptr<GameMaths>>> gameMathsVariants;
     std::vector<int> rtps;
     std::vector<std::string> betTypes;
+    std::vector<double> betTypeCosts;
     std::string fileName;
     std::string gameTitle;
     std::string gameVersion;
@@ -163,7 +164,10 @@ public:
                 {
                     taggedBetTypes.push_back(std::make_shared<TaggedBetTypeMap>(taggedRange));
                     for (const auto& betType : taggedBetTypes[0]->value | std::views::keys)
+                    {
                         betTypes.push_back(betType);
+                        betTypeCosts.push_back(taggedBetTypes[0]->value.at(betType));
+                    }
                 }
                 else
                     throw std::runtime_error(

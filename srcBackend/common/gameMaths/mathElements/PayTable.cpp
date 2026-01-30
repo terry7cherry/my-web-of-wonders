@@ -1,6 +1,5 @@
 #include <absl/container/flat_hash_map.h>
 #include "PayTable.h"
-//#include "../../statistics/MeterFile.h"
 
 
 PayTable::PayTable(
@@ -117,3 +116,14 @@ unsigned int PayTable::getWin(const Symbol symbolIndex, const unsigned int symbo
     return payData[symbolIndex][symbolCount];
 }
 
+Json::Value PayTable::toJson() const
+{
+    Json::Value json;
+    for (size_t i = 0; i < payData.size(); i++)
+    {
+        json[symbolNames[i]] = Json::Value(Json::arrayValue);
+        for (const unsigned int award : payData[i])
+            json[symbolNames[i]].append(award);
+    }
+    return json;
+}

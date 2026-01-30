@@ -5,5 +5,6 @@
 struct FrontendForce
 {
     const std::string name;
-    std::function<bool(const GameCycle&)> condition;
+    const std::function<bool(const GameCycle&)> condition;
+    const std::vector<std::string> betTypes;
 };

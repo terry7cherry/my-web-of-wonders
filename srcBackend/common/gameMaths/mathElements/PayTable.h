@@ -5,6 +5,7 @@
  */
 
 #include <absl/container/flat_hash_map.h>
+#include <json/value.h>
 //#include "../../statistics/MeterFile.h"
 
 
@@ -98,4 +99,6 @@ public:
     {
         return symbolVect[symbolId].substWild;
     }
+
+    Json::Value toJson() const;
 };

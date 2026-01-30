@@ -9,6 +9,7 @@
 #endif
 #include <string>
 #include <unordered_map>
+#include <json/json.h>
 #include "mathElements/WeightTables.h"
 #include "./mathElements/PayLines.h"
 #include "./mathElements/PayTable.h"
@@ -56,4 +57,6 @@ public:
     TypeConfig<ThresholdTable<int>>& thresholdTables = intThresholdTables;
     TypeConfig<ThresholdTable<int>>& awardTables = intThresholdTables;
     TypeConfig<ThresholdTable<int>>& awards = intThresholdTables;
+
+    Json::Value toJson() const;
 };

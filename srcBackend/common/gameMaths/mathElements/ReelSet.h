@@ -5,6 +5,7 @@
  */
 
 #include "../../headers/pch.h"
+#include "json/json.h"
 
 // Create a vector of this structure to initialise all instances of class ReelSet
 class ReelSet
@@ -105,4 +106,6 @@ public:
 	 */
 	int checkSymbolBlocks(int maxBlock, int noCheckSymbol,
 	                      const std::vector<std::string>* lpSymbolVect = nullptr) const;
+
+	Json::Value toJson() const;
 };

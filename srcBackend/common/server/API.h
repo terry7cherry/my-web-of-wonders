@@ -4,8 +4,12 @@
  * @brief Backend API server entry points, compiled only for FRONTEND builds.
  */
 
+#include <drogon/HttpRequest.h>
+#include <drogon/HttpResponse.h>
+
 #include "../../thisTitle/state/GameCycle.h"
 #include "../../thisTitle/state/GameSession.h"
+#include "../gameMaths/parser/ParSheet.h"
 
 namespace API
 {
@@ -15,6 +19,17 @@ namespace API
      */
     void startAPIServer();
 
+    void handleSpinRequest(const drogon::HttpRequestPtr& request,
+                           std::function<void(const drogon::HttpResponsePtr&)>&& callback,
+                           const ParSheet& parSheet);
+
+    void handleNewSessionRequest(const drogon::HttpRequestPtr& request,
+                                 std::function<void(const drogon::HttpResponsePtr&)>&& callback,
+                                 const ParSheet& parSheet);
+
+    void handleOptionsRequest(std::function<void(const drogon::HttpResponsePtr&)>&& callback,
+                              const ParSheet& parSheet);
+
     GameCycle playNaturalGame(const GameMaths& maths,
                               GameCycleReused& reused,
                               GameSession& session);
@@ -22,6 +37,12 @@ namespace API
     GameCycle playForcedGame(const GameMaths& maths,
                              GameCycleReused& reused,
                              GameSession& session,
-                             const std::string& forceString);
+                             int forceIndex);
+
+    Json::Value getJsonFromRequest(const drogon::HttpRequestPtr& request);
+
+    Json::Value getForceOptionsForBetType(const std::string& betType);
+
+    drogon::HttpResponsePtr getBadRequestError(const std::string& error);
 #endif
 }

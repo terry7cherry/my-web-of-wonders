@@ -69,7 +69,8 @@ public:
             << "Note that for int, double, string, and bool types, the name is the 'name' property in the JSON tag, concatenated with the string in the left column of the table.\n"
             << "Ensure this config element is specified for the current rtp and betType or that it is covered by a more general definition."
             << std::endl;
-        throw std::runtime_error("Config key " + key + " not found");
+        throw std::runtime_error(
+            "Config with name '" + key + "' and type " + getTypeString() + " not found.\n");
     }
 
     /**

@@ -6,5 +6,7 @@ Json::Value GameMaths::toJson() const
     config["gameTitle"] = gameTitle;
     config["numRow"] = ints["numRows"];
     config["numReels"] = ints["numReels"];
+    config["payTable"] = payTables["default"].toJson();
+    config["displayReelSet"] = reelSets["reelSet1"].toJson();
     return config;
 }
