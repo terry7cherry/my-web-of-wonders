@@ -12,22 +12,23 @@
  * \brief Title-specific game session state.
  *
  * Extends \c GameSessionBase with any persistent variables that should survive
- * across spins for this title. Values here are typically initialized from
- * \c GameMaths, may be updated by game logic, and are serialized via \c toJson().
+ * across spins for this title. Values here are typically initialised from
+ * \c GameMaths, and updated by game logic. Persistent values are bet-, rtp- and betType-locked by default.
+ * They wil reset when any of these is changed.
  */
 struct GameSession : GameSessionBase
 {
+    // Add persistent variables here. E.g:
     // int jackpotValue;
     // int consecutiveLosingSpins;
 
     /**
      * \brief Construct a new session for a given bet and maths configuration.
      *
-     * Initializes all persistent values from the provided \c GameMaths and
-     * optional simulation force.
+     * Initialises persistent values from the provided \c GameMaths.
      *
-     * \param bet The current wager/bet value (bet-locked base state).
-     * \param maths Reference to the game maths configuration for initialization.
+     * \param bet The current wager/bet value.
+     * \param maths Reference to the game maths configuration for initialisation.
      * \param simForce Optional simulation force used for deterministic testing.
      */
     GameSession(const int bet,
@@ -42,22 +43,26 @@ struct GameSession : GameSessionBase
     }
 
     /**
-     * \brief Construct a new session for a different bet using an existing session.
+     * \brief Construct a new session using an existing session. Called whenever bet, betType, or rtp changes.
      *
-     * Creates a new session (e.g., after a bet change) while copying only the
+     * Creates a new session, explicitly copying only the
      * persistent state that should NOT be bet-locked from \p oldSession.
      *
      * \param bet The new wager/bet value.
      * \param maths Game maths for the new session.
-     * \param oldSession The previous session to copy non bet-locked values from.
+     * \param oldSession The previous session to copy non-bet-locked values from.
      */
     GameSession(const int bet,
                 const GameMaths& maths,
-                const GameSession oldSession)
+                const GameSession oldSession [[maybe_unused]])
         : GameSession(bet, maths, Forces::ForceNone)
     {
         // Copy any persistent data that SHOULD NOT BE bet locked from the oldSession. E.g.
         // consecutiveLosingSpins = oldSession.consecutiveLosingSpins;
+        // You can also copy values depending on what has changed from the oldSession. E.g.
+        // if (rtp == oldSession.rtp && betMultiplier == oldSession.betMultiplier)
+        //     jackpotValue = oldSession.jackpotValue;
+        // (Here, jackpots persist if the player switches to bonusBuy without changing their base bet.)
     }
 
     /**
@@ -75,8 +80,6 @@ struct GameSession : GameSessionBase
 
     /**
      * \brief Serialize the session to JSON.
-     *
-     * Includes base-session fields and all title-specific persistent values.
      *
      * \return JSON object representing the full session state.
      */
