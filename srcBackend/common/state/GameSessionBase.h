@@ -16,7 +16,6 @@ struct GameSessionBase
     const int rtp; // RTP variant (e.g., 92, 94, 96)
     const std::string betType; // e.g., "default" or product-defined type
     const Forces::SimForce simForce;
-    const int frontendForceIndex = -1;
     const unsigned int betMultiplier; // computed from bet, minBet, and betTypeCost
 
     /**
@@ -54,5 +53,4 @@ struct GameSessionBase
     static std::string getBetTypeFromJson(const Json::Value& jsonSession);
     static unsigned int getBetMultiplierFromJson(const Json::Value& jsonSession);
     static Forces::SimForce getSimForceFromJson(const Json::Value& jsonSession);
-    static int getFrontendForceIndexFromJson(const Json::Value& jsonSession);
 };

@@ -19,8 +19,7 @@ GameSessionBase::GameSessionBase(const Json::Value& jsonSession)
       rtp(getRtpFromJson(jsonSession)),
       betType(getBetTypeFromJson(jsonSession)),
       simForce(Forces::ForceNone),
-      betMultiplier(getBetMultiplierFromJson(jsonSession)),
-      frontendForceIndex(getFrontendForceIndexFromJson(jsonSession))
+      betMultiplier(getBetMultiplierFromJson(jsonSession))
 {
 }
 
@@ -46,7 +45,6 @@ Json::Value GameSessionBase::toJson() const
     json["rtp"] = rtp;
     json["betType"] = betType;
     json["simForce"] = simForce;
-    json["frontendForceIndex"] = frontendForceIndex;
     return json;
 }
 
@@ -87,15 +85,3 @@ Forces::SimForce GameSessionBase::getSimForceFromJson(const Json::Value& jsonSes
             "Invalid simForce value.");
     return static_cast<Forces::SimForce>(simForce.asInt());
 }
-
-int GameSessionBase::getFrontendForceIndexFromJson(const Json::Value& jsonSession)
-{
-    const Json::Value frontendForceIndex = jsonSession["frontendForceIndex"];
-    if (frontendForceIndex.isNull()) return -1;
-    if (frontendForceIndex.asInt() < -1 || frontendForceIndex.asInt() >= Forces::frontendForces.size())
-        throw
-            std::runtime_error("Invalid frontendForceIndex value.");
-    return frontendForceIndex.asInt();
-}
-
-

@@ -95,9 +95,11 @@ void API::handleSpinRequest(const drogon::HttpRequestPtr& request,
 
 	GameCycleReused reused(maths);
 
-	const GameCycle cycle = session.frontendForceIndex == -1
+	Json::Value forceIndexJson = requestJson["forceIndex"];
+
+	const GameCycle cycle = forceIndexJson.isNull()
 		                        ? playNaturalGame(maths, reused, session)
-		                        : playForcedGame(maths, reused, session, session.frontendForceIndex);
+		                        : playForcedGame(maths, reused, session, forceIndexJson.asInt());
 	Json::Value result;
 	Json::Value eventsArray(Json::arrayValue);
 	for (Json::ArrayIndex i = 0; i < cycle.events.size(); ++i)
@@ -114,6 +116,12 @@ void API::handleSpinRequest(const drogon::HttpRequestPtr& request,
 	}
 	result["events"] = eventsArray;
 	result["session"] = session.toJson();
+	if (!forceIndexJson.isNull())
+	{
+		int forceIndex = forceIndexJson.asInt();
+		result["forceIndex"] = forceIndex;
+		result["forceName"] = Forces::frontendForces[forceIndex].name;
+	}
 
 	auto resp = drogon::HttpResponse::newHttpJsonResponse(result);
 	callback(resp);
