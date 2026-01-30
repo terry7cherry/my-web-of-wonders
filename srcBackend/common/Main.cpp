@@ -58,7 +58,7 @@ void threadWorker(const std::stop_token& st,
 			break;
 		}
 
-		mathRng.setSeed(static_cast<int>(config.seed + batch));
+		mathsRng.setSeed(static_cast<int>(config.seed + batch));
 
 		GameSession session(bet, gameMaths, config.force);
 

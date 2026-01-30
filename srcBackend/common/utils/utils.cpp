@@ -11,7 +11,7 @@ VERSION_DATA gameVersion;
 
 // global Class instances need to be declared in ".c"
 // end externed in the Class definition, "*.h" files
-MathsRng thread_local mathRng;
+MathsRng thread_local mathsRng;
 
 // Display a formatted error message to the console
 // "szErrorType: szFunction() - szMessage"

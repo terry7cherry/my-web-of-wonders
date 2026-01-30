@@ -525,7 +525,7 @@ std::vector<int> Grid::replaceRandomSymbols(const Symbol newSymbol, const int co
 	// pick and replace symbols at count positions in grid
 	for (int i = 0; i < count; i++)
 	{
-		const uint32 index = mathRng.getInt(static_cast<uint32_t>(gridPosOptions.size()),
+		const uint32 index = mathsRng.getInt(static_cast<uint32_t>(gridPosOptions.size()),
 		                                    "replaceRandomSymbolsIndex");
 		int gridPos = gridPosOptions[index];
 		gridPosOptions.erase(gridPosOptions.begin() + index);
