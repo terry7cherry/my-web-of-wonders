@@ -26,9 +26,10 @@ lines related to recording events, which are explained shortly.
 
 ### Recommendations
 
-It is recommended to try and keep the code in GameLogic.cpp as readable as possible to help others understand
-the game flow easily. There are a few recommendations to help with achieving this. If you look at the template
-code in GameLogic.cpp, you'll see how they are applied.
+It is recommended to try and keep the code in GameLogic.cpp as readable, maintainable, and reusable as
+possible to help others understand the game flow easily, and minimise the potential for errors. There are a
+few recommendations to help with achieving this. If you look at the template code in GameLogic.cpp, you'll see
+how they are applied.
 
 1. **Keep functions short and focused:** Most functions contain only 2–5 lines of code. The fewer the better.
    This makes it easy to see at a glance what a function does.
@@ -40,6 +41,15 @@ code in GameLogic.cpp, you'll see how they are applied.
     - it is easy to forget to update text comments when the code they describe changes.
     - the reader will usually read the code as well as the comments, so it takes longer to understand the
       code.
+4. **Avoid theme-specific language in function and variable names:** E.g., instead of "Fisherman" say
+   "collectionSymbol". This makes your code more reusable if a new theme is applied later.
+5. **Do not refer to symbols by their index or symbol names in code:** Use a symbol type in the spreadsheet to
+   define the symbol used in a certain case (or a symbolWeightTable to choose a symbol randomly) and refer to
+   this in your code. This means if the symbol names are changed later or more symbols are added to the
+   pay table (maybe when someone uses your game as a base for a new game in the future) everything will still
+   work.
+6. **Make your maths sheet the single source of truth:** Don't copy and paste values to spreadsheet parser
+   input, use formulas to import them. This eliminates a common source of bugs.
 
 ### Common tasks
 
