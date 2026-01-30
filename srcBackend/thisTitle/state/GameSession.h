@@ -17,10 +17,8 @@
  */
 struct GameSession : GameSessionBase
 {
-    /// Persistent jackpot value tracked across spins.
-    int jackpotValue;
-    /// Counter of consecutive spins that resulted in a loss.
-    int consecutiveLosingSpins;
+    // int jackpotValue;
+    // int consecutiveLosingSpins;
 
     /**
      * \brief Construct a new session for a given bet and maths configuration.
@@ -36,10 +34,10 @@ struct GameSession : GameSessionBase
                 const GameMaths& maths,
                 const Forces::SimForce simForce = Forces::ForceNone
     )
-        : GameSessionBase(bet, maths, simForce),
-          // Initialise persistent values (typically from gameMaths). e.g.
-          jackpotValue(maths.ints["initialJackpotValue"]),
-          consecutiveLosingSpins(0)
+        : GameSessionBase(bet, maths, simForce)
+    // Initialise persistent values (typically from gameMaths). e.g.
+    // jackpotValue(maths.ints["initialJackpotValue"]),
+    // consecutiveLosingSpins(0)
     {
     }
 
@@ -59,7 +57,7 @@ struct GameSession : GameSessionBase
         : GameSession(bet, maths, Forces::ForceNone)
     {
         // Copy any persistent data that SHOULD NOT BE bet locked from the oldSession. E.g.
-        consecutiveLosingSpins = oldSession.consecutiveLosingSpins;
+        // consecutiveLosingSpins = oldSession.consecutiveLosingSpins;
     }
 
     /**
@@ -68,11 +66,10 @@ struct GameSession : GameSessionBase
      * \param jsonSession JSON object produced by \c toJson().
      */
     GameSession(const Json::Value& jsonSession)
-        : GameSessionBase(jsonSession),
-          // Initialise all persistent values from the json here. E.g.
-          jackpotValue(jsonSession["jackpotValue"].asInt()),
-          consecutiveLosingSpins(jsonSession["consecutiveLosingSpins"].asInt())
-
+        : GameSessionBase(jsonSession)
+    // Initialise all persistent values from the json here. E.g.
+    // jackpotValue(jsonSession["jackpotValue"].asInt()),
+    // consecutiveLosingSpins(jsonSession["consecutiveLosingSpins"].asInt())
     {
     }
 
@@ -87,8 +84,8 @@ struct GameSession : GameSessionBase
     {
         Json::Value jsonSession = GameSessionBase::toJson();
         // Add any persistent data to the JSON session here. E.g.
-        jsonSession["jackpotValue"] = jackpotValue;
-        jsonSession["consecutiveLosingSpins"] = consecutiveLosingSpins;
+        // jsonSession["jackpotValue"] = jackpotValue;
+        // jsonSession["consecutiveLosingSpins"] = consecutiveLosingSpins;
         return jsonSession;
     }
 };
