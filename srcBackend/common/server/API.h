@@ -27,17 +27,26 @@ namespace API
                                  std::function<void(const drogon::HttpResponsePtr&)>&& callback,
                                  const ParSheet& parSheet);
 
+    void handleMathsRequest(const drogon::HttpRequestPtr& request,
+                            std::function<void(const drogon::HttpResponsePtr&)>&& callback,
+                            const ParSheet& parSheet);
+
     void handleOptionsRequest(std::function<void(const drogon::HttpResponsePtr&)>&& callback,
                               const ParSheet& parSheet);
 
-    GameCycle playNaturalGame(const GameMaths& maths,
-                              GameCycleReused& reused,
-                              GameSession& session);
+    std::pair<GameCycle, uint32_t> playFixedSeedGame(const GameMaths& maths,
+                                                     GameCycleReused& reused,
+                                                     GameSession& session,
+                                                     uint32_t seed);
 
-    GameCycle playForcedGame(const GameMaths& maths,
-                             GameCycleReused& reused,
-                             GameSession& session,
-                             int forceIndex);
+    std::pair<GameCycle, uint32_t> playNaturalGame(const GameMaths& maths,
+                                                   GameCycleReused& reused,
+                                                   GameSession& session);
+
+    std::pair<GameCycle, uint32_t> playForcedGame(const GameMaths& maths,
+                                                  GameCycleReused& reused,
+                                                  GameSession& session,
+                                                  int forceIndex);
 
     Json::Value getJsonFromRequest(const drogon::HttpRequestPtr& request);
 

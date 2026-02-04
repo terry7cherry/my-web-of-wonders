@@ -19,7 +19,7 @@ public:
 	 */
 	explicit FreeSpinsCompleteEvent(
 		const GameCycle& cycle)
-		: FreeSpinsCompleteEvent(cycle.totalWin, cycle.fsInitialSpins, cycle.fsSpinsPlayed)
+		: FreeSpinsCompleteEvent(cycle.freeSpinsWin, cycle.fsInitialSpins, cycle.fsSpinsPlayed)
 	{
 	}
 
@@ -50,6 +50,7 @@ protected :
 	{
 		Json::Value eventDetails;
 		eventDetails["eventType"] = "freeSpinsComplete";
+		eventDetails["totalWin"] = totalWin;
 		return eventDetails;
 	}
 };

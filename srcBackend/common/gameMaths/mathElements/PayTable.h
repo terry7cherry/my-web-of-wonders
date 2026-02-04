@@ -100,5 +100,7 @@ public:
         return symbolVect[symbolId].substWild;
     }
 
-    Json::Value toJson() const;
+    Json::Value awardsToJson() const;
+
+    Json::Value symbolNamesToJson() const;
 };

@@ -36,6 +36,7 @@ public:
     std::string fileName;
     std::string gameTitle;
     std::string gameVersion;
+    int minBet;
 
     /**
      * @brief Construct and parse the specified par sheet file from the project's parSheets folder.
@@ -129,6 +130,7 @@ public:
     {
         bool foundTitle = false;
         bool foundVersion = false;
+        bool foundMinBet = false;
         for (const std::shared_ptr<TaggedRange>& taggedRange : taggedRanges)
         {
             if (taggedRange->type == "metadata")
@@ -154,6 +156,11 @@ public:
                         {
                             foundVersion = true;
                             gameVersion = dataPoint.value;
+                        }
+                        if (dataPoint.fullName == "minBet")
+                        {
+                            foundMinBet = true;
+                            minBet = std::stoi(dataPoint.value);
                         }
                     }
                 }
@@ -275,10 +282,13 @@ public:
         }
         if (!foundTitle)
             throw std::runtime_error(
-                "No gameTitle found in metadata. Par sheet must include a tagged range with type \"metadata\" and two values: gameTitle and gameVersion.");
+                "No gameTitle found in metadata. Par sheet must include a tagged range with type \"metadata\" and three values: gameTitle, gameVersion, and minBet.");
         if (!foundVersion)
             throw std::runtime_error(
-                "No gameVersion found in metadata. Par sheet must include a tagged range with type \"metadata\" and two values: gameTitle and gameVersion.");
+                "No gameVersion found in metadata. Par sheet must include a tagged range with type \"metadata\" and three values: gameTitle, gameVersion, and minBet.");
+        if (!foundMinBet)
+            throw std::runtime_error(
+                "No minBet found in metadata. Par sheet must include a tagged range with type \"metadata\" and three values: gameTitle, gameVersion, and minBet.");
     }
 
     /**
@@ -391,6 +401,7 @@ public:
                 gameMathsPtr->targetRTP = taggedRtpMaps[0]->value.at(rtp);
                 gameMathsPtr->rtp = rtp;
                 gameMathsPtr->betType = betType;
+                gameMathsPtr->minBet = minBet;
                 addRelevantElementsToConfigForType(taggedSymbols, gameMathsPtr->symbols, rtp, betType);
                 addRelevantElementsToConfigForType(taggedSymbolVectors, gameMathsPtr->symbolVectors, rtp,
                                                    betType);
@@ -428,7 +439,9 @@ public:
                 addRelevantElementsToConfigForType(taggedIntThresholdTables,
                                                    gameMathsPtr->intThresholdTables,
                                                    rtp, betType);
-                validateBetTypeCost(gameMathsPtr->betTypeCost, gameMathsPtr->ints["minBet"]);
+                validateBetTypeCost(gameMathsPtr->betTypeCost, minBet);
+                gameMathsPtr->minBetCost = static_cast<int>(gameMathsPtr->betTypeCost * static_cast<double>(
+                    minBet));
                 gameMathsVariants[betType][rtp] = std::move(gameMathsPtr);
             }
         }

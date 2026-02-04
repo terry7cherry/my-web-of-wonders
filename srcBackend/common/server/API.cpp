@@ -1,17 +1,21 @@
 #include "API.h"
+
+#include <random>
+
 #include "../gameMaths/parser/ParSheet.h"
 #include "../../thisTitle/state/GameSession.h"
 #include "drogon/drogon.h"
 #include "../../thisTitle/state/GameCycle.h"
 #include "../../thisTitle/GameLogic.h"
 #include "../../thisTitle/forces/frontendForces.h"
+#include "../rng/MathsRng.h"
 
 #ifdef FRONTEND
 void API::startAPIServer()
 {
 	ParSheet parSheet("test.xlsx");
 	const GameMaths& maths = *parSheet.gameMathsVariants["default"][96];
-	GameSession session(maths.ints["minBet"], maths);
+	GameSession session(maths.minBet, maths);
 	using namespace drogon;
 	app().registerHandler("/api/options",
 	                      [&parSheet](const HttpRequestPtr& request,
@@ -27,6 +31,22 @@ void API::startAPIServer()
 			                      callback(getBadRequestError(e.what()));
 		                      }
 	                      }
+	);
+	app().registerHandler("/api/maths",
+	                      [&parSheet](const HttpRequestPtr& request,
+	                                  std::function<void(const HttpResponsePtr&)>&&
+	                                  callback)
+	                      {
+		                      try
+		                      {
+			                      handleMathsRequest(request, std::move(callback), parSheet);
+		                      }
+		                      catch (const std::exception& e)
+		                      {
+			                      callback(getBadRequestError(e.what()));
+		                      }
+	                      },
+	                      {Post}
 	);
 	app().registerHandler("/api/newSession",
 
@@ -96,10 +116,13 @@ void API::handleSpinRequest(const drogon::HttpRequestPtr& request,
 	GameCycleReused reused(maths);
 
 	Json::Value forceIndexJson = requestJson["forceIndex"];
+	Json::Value seedJson = requestJson["seed"];
 
-	const GameCycle cycle = forceIndexJson.isNull()
-		                        ? playNaturalGame(maths, reused, session)
-		                        : playForcedGame(maths, reused, session, forceIndexJson.asInt());
+	const auto [cycle, seed] = !seedJson.isNull()
+		                           ? playFixedSeedGame(maths, reused, session, seedJson.asUInt())
+		                           : forceIndexJson.isNull()
+		                           ? playNaturalGame(maths, reused, session)
+		                           : playForcedGame(maths, reused, session, forceIndexJson.asInt());
 	Json::Value result;
 	Json::Value eventsArray(Json::arrayValue);
 	for (Json::ArrayIndex i = 0; i < cycle.events.size(); ++i)
@@ -116,10 +139,11 @@ void API::handleSpinRequest(const drogon::HttpRequestPtr& request,
 	}
 	result["events"] = eventsArray;
 	result["session"] = session.toJson();
+	result["seed"] = seed;
+	result["winnings"] = cycle.totalWin;
 	if (!forceIndexJson.isNull())
 	{
 		int forceIndex = forceIndexJson.asInt();
-		result["forceIndex"] = forceIndex;
 		result["forceName"] = Forces::frontendForces[forceIndex].name;
 	}
 
@@ -147,8 +171,25 @@ void API::handleNewSessionRequest(const drogon::HttpRequestPtr& request,
 		                               ? GameSession(bet, maths)
 		                               : GameSession(bet, maths, requestJson["session"]);
 
+	const Json::Value jsonResponse = newSession.toJson();
+	const auto resp = drogon::HttpResponse::newHttpJsonResponse(jsonResponse);
+	callback(resp);
+}
+
+void API::handleMathsRequest(const drogon::HttpRequestPtr& request,
+                             std::function<void(const drogon::HttpResponsePtr&)>&& callback,
+                             const ParSheet& parSheet)
+{
+	const auto requestJson = getJsonFromRequest(request);
+	if (requestJson["betType"].isNull())
+		throw std::runtime_error("betType is missing from request.");
+	if (requestJson["rtp"].isNull()) throw std::runtime_error("rtp is missing from request.");
+
+	const GameMaths& maths = *parSheet.gameMathsVariants
+	                                  .at(requestJson["betType"].asString())
+	                                  .at(requestJson["rtp"].asInt());
+
 	Json::Value jsonResponse;
-	jsonResponse["session"] = newSession.toJson();
 	jsonResponse["maths"] = maths.toJson();
 	jsonResponse["forceOptions"] = getForceOptionsForBetType(maths.betType);
 	const auto resp = drogon::HttpResponse::newHttpJsonResponse(jsonResponse);
@@ -207,6 +248,7 @@ void API::handleOptionsRequest(std::function<void(const drogon::HttpResponsePtr&
 	optionsJson["rtps"] = Json::Value(Json::arrayValue);
 	for (const int rtp : parSheet.rtps) optionsJson["rtps"].append(rtp);
 	optionsJson["gameTitle"] = parSheet.gameTitle;
+	optionsJson["minBet"] = parSheet.minBet;
 
 	// Serialize with a writer configured for decimal precision for this endpoint only.
 	Json::StreamWriterBuilder builder;
@@ -221,21 +263,36 @@ void API::handleOptionsRequest(std::function<void(const drogon::HttpResponsePtr&
 	callback(resp);
 }
 
-
-GameCycle API::playNaturalGame(const GameMaths& maths,
-                               GameCycleReused& reused,
-                               GameSession& session)
+std::pair<GameCycle, uint32_t> API::playFixedSeedGame(const GameMaths& maths,
+                                                      GameCycleReused& reused,
+                                                      GameSession& session,
+                                                      const uint32_t seed)
 {
+	mathsRng.setSeed(seed);
 	GameCycle cycle(session, reused, maths);
 	GameLogic::playGame(maths, cycle);
-	return cycle;
+	return {cycle, seed};
 }
 
-GameCycle API::playForcedGame(const GameMaths& maths,
-                              GameCycleReused& reused,
-                              GameSession& session,
-                              const int forceIndex)
+
+std::pair<GameCycle, uint32_t> API::playNaturalGame(const GameMaths& maths,
+                                                    GameCycleReused& reused,
+                                                    GameSession& session)
 {
+	static std::mt19937 seedGenerator{std::random_device{}()};
+	uint32_t seed = seedGenerator();
+	mathsRng.setSeed(seed);
+	GameCycle cycle(session, reused, maths);
+	GameLogic::playGame(maths, cycle);
+	return {cycle, seed};
+}
+
+std::pair<GameCycle, uint32_t> API::playForcedGame(const GameMaths& maths,
+                                                   GameCycleReused& reused,
+                                                   GameSession& session,
+                                                   const int forceIndex)
+{
+	static std::mt19937 seedGenerator{std::random_device{}()};
 	if (forceIndex >= Forces::frontendForces.size())
 		throw std::runtime_error(
 			"Force " + std::to_string(forceIndex) + " does not exist.");
@@ -249,9 +306,11 @@ GameCycle API::playForcedGame(const GameMaths& maths,
 	uint64_t attempts = 0;
 	do
 	{
+		const uint32_t seed = seedGenerator();
+		mathsRng.setSeed(seed);
 		GameCycle cycle(session, reused, maths);
 		GameLogic::playGame(maths, cycle);
-		if (condition(cycle)) return cycle;
+		if (condition(cycle)) return {cycle, seed};
 		attempts++;
 	}
 	while (attempts < 100'000'000);

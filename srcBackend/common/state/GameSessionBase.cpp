@@ -26,13 +26,13 @@ GameSessionBase::GameSessionBase(const Json::Value& jsonSession)
 
 int GameSessionBase::getBetMultiplier(const int bet, const GameMaths& maths)
 {
-    const double multiplier = bet / maths.ints.at("minBet") / maths.betTypeCost;
+    const double multiplier = bet / maths.minBet / maths.betTypeCost;
     double intPart;
     if (std::modf(multiplier, &intPart) == 0.0) return static_cast<int>(multiplier);
     throw std::runtime_error(
         "Bet is not valid for this betType. Bet must be an integer multiple of "
-        + std::to_string(static_cast<int>(maths.ints.at("minBet") * maths.betTypeCost))
-        + ". (minBet of " + std::to_string(maths.ints.at("minBet"))
+        + std::to_string(static_cast<int>(maths.minBet * maths.betTypeCost))
+        + ". (minBet of " + std::to_string(maths.minBet)
         + " multiplied by betType cost of " + std::to_string(maths.betTypeCost) + ".)"
     );
 }

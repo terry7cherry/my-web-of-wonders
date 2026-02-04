@@ -151,7 +151,5 @@ public:
 protected :
     /** @brief Name used for output to console and file. */
     inline static std::string phaseName = "Template";
-
-private :
     const int totalWin;
 };

@@ -116,14 +116,31 @@ unsigned int PayTable::getWin(const Symbol symbolIndex, const unsigned int symbo
     return payData[symbolIndex][symbolCount];
 }
 
-Json::Value PayTable::toJson() const
+Json::Value PayTable::awardsToJson() const
 {
     Json::Value json;
     for (size_t i = 0; i < payData.size(); i++)
     {
-        json[symbolNames[i]] = Json::Value(Json::arrayValue);
+        const SymbolData symbol = symbolVect[i];
+        json[symbolNames[i]] = Json::Value();
+        json[symbolNames[i]]["func"] = symbol.isWild
+                                           ? "wild"
+                                           : symbol.isScatter
+                                           ? "scatter"
+                                           : "line";
+        json[symbolNames[i]]["awards"] = Json::Value(Json::arrayValue);
         for (const unsigned int award : payData[i])
-            json[symbolNames[i]].append(award);
+            json[symbolNames[i]]["awards"].append(award);
     }
     return json;
 }
+
+Json::Value PayTable::symbolNamesToJson() const
+{
+    Json::Value json(Json::arrayValue);
+    for (const std::string& name : symbolNames)
+        json.append(name);
+    return json;
+}
+
+

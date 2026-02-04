@@ -195,7 +195,7 @@ int simulatorMain()
 		for (int rtp : parSheet.rtps)
 		{
 			GameMaths& gameMaths = *parSheet.gameMathsVariants[config.betType][rtp];
-			const int bet = static_cast<int>(gameMaths.ints.at("minBet") * gameMaths.betTypeCost);
+			const int bet = static_cast<int>(gameMaths.minBet * gameMaths.betTypeCost);
 			doMonteCarloStdMultiThread(gameMaths, bet, config);
 		}
 	}
@@ -203,11 +203,11 @@ int simulatorMain()
 	{
 		// valid single RTP option
 		GameMaths& gameMaths = *parSheet.gameMathsVariants[config.betType][config.rtp];
-		const int bet = static_cast<int>(gameMaths.ints.at("minBet") * gameMaths.betTypeCost);
+		const int bet = static_cast<int>(gameMaths.minBet * gameMaths.betTypeCost);
 #ifdef SINGLETHREAD
-		doMonteCarloStd(gameMaths, bet, config);
+	doMonteCarloStd(gameMaths, bet, config);
 #else
-		doMonteCarloStdMultiThread(gameMaths, bet, config);
+	doMonteCarloStdMultiThread(gameMaths, bet, config);
 #endif
 	}
 #endif

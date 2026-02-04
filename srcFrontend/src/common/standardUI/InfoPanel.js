@@ -1,11 +1,11 @@
 import * as PIXI from "pixi.js";
-import MaskedContainer from "./MaskedContainer.js";
-import Button from "./Button.js";
+import MaskedContainer from "../uiElements/MaskedContainer.js";
+import Button from "../uiElements/Button.js";
 
 export default class InfoPanel {
-    constructor({game, app, x, y, width, height}) {
+    constructor({state, app, x, y, width, height}) {
 
-        this.game = game;
+        this.state = state;
         this.width = width;
         this.height = height;
         this.container = new MaskedContainer({app, x, y, width, height});
@@ -22,8 +22,8 @@ export default class InfoPanel {
             y: 0,
             width: 50,
             height: 50,
-            color: 0xffffff,
-            textColor: 0x000000,
+            colour: 0xffffff,
+            textColour: 0x000000,
             text: "X",
             parent: this.container,
             onClick: () => {
@@ -44,13 +44,13 @@ export default class InfoPanel {
 
     hide() {
         this.container.visible = false;
-        this.game.running = false;
+        this.state.running = false;
     }
 
     show() {
-        if (this.game.running) return;
+        if (this.state.running) return;
 
         this.container.visible = true;
-        this.game.running = true;
+        this.state.running = true;
     }
 }

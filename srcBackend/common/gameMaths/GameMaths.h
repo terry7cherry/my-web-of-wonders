@@ -29,8 +29,10 @@ class GameMaths
 public:
     std::string gameTitle;
     double betTypeCost;
+    int minBetCost;
     double targetRTP;
     int rtp;
+    int minBet;
     std::string betType;
     TypeConfig<int> ints{{"int"}};
     TypeConfig<Symbol> symbols{{"symbol"}};

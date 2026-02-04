@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <script type="module" src="src/main.js"></script>
+    <script type="module" src="src/common/main.js"></script>
     <style>
         #eventHistory {
             width: 800px;
@@ -26,9 +26,9 @@
             background-color: #f9f9f9;
         }
 
-            #spinHistory td {
-                padding-left: 10px;
-            }
+        #spinHistory td {
+            padding-left: 10px;
+        }
 
         #ReadMe {
             margin-left: 20px;
@@ -73,52 +73,105 @@
             width: 60px;
         }
 
-        .wrapper {
-            width: 300px;
-            padding: 10px;
-            height: 150px;
+        .dropdown-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px; /* vertical spacing */
+            width: 250px; /* optional container width */
         }
+
+        .dropdown-row {
+            display: flex;
+            align-items: center;
+        }
+
+        .dropdown-row label {
+            width: 80px; /* fixed width for labels */
+            margin-right: 10px; /* spacing between label and dropdown */
+        }
+
+        .dropdown-row select {
+            flex: 1; /* dropdown fills remaining horizontal space */
+            min-width: 150px; /* optional: minimum width */
+        }
+
     </style>
 </head>
 <body>
-    <div class="main-layout">
-        <div id="game-container"></div>
-        <div id="side-panel">
-            <h3>This Session</h3>
-            <table>
-                <tr><td><label for="session-rounds-played">Rounds played: </label></td><td><input type="text" id="session-rounds-played" class="session-data" name="session-rounds-played" /></td></tr>
-                <tr><td><label for="session-total-bet">Total bet: </label></td><td><input type="text" id="session-total-bet" class="session-data currency" name="session-total-bet" /></td></tr>
-                <tr><td><label for="session-total-won">Total won: </label></td><td><input type="text" id="session-total-won" class="session-data currency" name="session-total-won" /></td></tr>
-                <tr><td><label for="session-rtp">RTP: </label></td><td><input type="text" id="session-rtp" class="session-data percent" name="session-rtp" /></td></tr>
-                <tr><td><label for="session-freespins-sessions">Freespins Sessions: </label></td><td><input type="text" id="session-freespins-sessions" class="session-data" name="session-freespins-sessions" /></td></tr>
-                <tr><td><label for="session-freespins-played">Total freespins: </label></td><td><input type="text" id="session-freespins-played" class="session-data" name="session-freespins-played" /></td></tr>
-            </table>
-            <button id="session-reset-button">Reset</button>
-            <!--
+<div class="main-layout">
+    <div id="game-container"></div>
+    <div id="side-panel">
+        <h3>This Session</h3>
+        <table>
+            <tr>
+                <td><label for="session-rounds-played">Rounds played: </label></td>
+                <td><input type="text" id="session-rounds-played" class="session-data"
+                           name="session-rounds-played"/></td>
+            </tr>
+            <tr>
+                <td><label for="session-total-bet">Total bet: </label></td>
+                <td><input type="text" id="session-total-bet" class="session-data currency feeds-rtp"
+                           name="session-total-bet"/></td>
+            </tr>
+            <tr>
+                <td><label for="session-total-won">Total won: </label></td>
+                <td><input type="text" id="session-total-won" class="session-data currency"
+                           name="session-total-won"/></td>
+            </tr>
+            <tr>
+                <td><label for="session-rtp">RTP: </label></td>
+                <td><input type="text" id="session-rtp"
+                           class="session-data percent calculated numerator-total-won divisor-total-bet"
+                           name="session-rtp"/></td>
+            </tr>
+            <tr>
+                <td><label for="session-freespins-sessions">Freespins Sessions: </label></td>
+                <td><input type="text" id="session-freespins-sessions" class="session-data"
+                           name="session-freespins-sessions"/></td>
+            </tr>
+            <tr>
+                <td><label for="session-freespins-played">Total freespins: </label></td>
+                <td><input type="text" id="session-freespins-played" class="session-data"
+                           name="session-freespins-played"/></td>
+            </tr>
+        </table>
+        <button id="session-reset-button">Reset</button>
+        <!--
 
-            <h3>Bet Type</h3>
-            <div class="wrapper">
-                <select size="5" name="" id="bet-type">
-                </select>
+        <h3>Bet Type</h3>
+        <div class="wrapper">
+            <select size="5" name="" id="bet-type">
+            </select>
+        </div>
+        -->
+        <h3>Playback</h3>
+        <div>
+            <button id="play">▶</button>
+            <button id="pause">⏸︎</button>
+            <button id="quarter-speed">Quarter speed</button>
+            <button id="half-speed">Half speed</button>
+            <button id="full-speed">Normal speed</button>
+            <button id="double-speed">X2 speed</button>
+            <button id="quadrupal-speed">X4 speed</button>
+            <button id="twenty-speed">X20 speed</button>
+            <button id="max-speed">Max speed</button>
+        </div>
+        <h3>Options</h3>
+        <div class="dropdown-container">
+            <div class="dropdown-row">
+                <label for="rtp-selector">RTP:</label>
+                <select id="rtp-selector"></select>
             </div>
-            -->
-            <h3>Playback</h3>
-            <div>
-                <button id="play">▶</button>
-                <button id="pause">⏸︎</button>
-                <button id="quarter-speed">Quarter speed</button>
-                <button id="half-speed">Half speed</button>
-                <button id="full-speed">Normal speed</button>
-                <button id="double-speed">X2 speed</button>
-                <button id="quadrupal-speed">X4 speed</button>
-                <button id="twenty-speed">X20 speed</button>
-                <button id="max-speed">Max speed</button>
+            <div class="dropdown-row">
+                <label for="bet-type-selector">Bet Type:</label>
+                <select id="bet-type-selector"></select>
             </div>
         </div>
     </div>
-    <div class="gameLogs">
-        <div id="eventHistory" style="white-space: pre;"></div>
-        <div id="spinHistory"></div>
-    </div>
+</div>
+<div class="gameLogs">
+    <div id="eventHistory" style="white-space: pre;"></div>
+    <div id="spinHistory"></div>
+</div>
 </body>
 </html>

@@ -3,6 +3,9 @@
 #include <sstream>
 
 #include "UserConfig.h"
+
+#include <random>
+
 #include "../gameMaths/parser/ParSheet.h"
 #include "../console/Console.h"
 #include "../../thisTitle/forces/simForces.h"
@@ -14,7 +17,7 @@ UserConfig::UserConfig()
       betType(getUserBetTypeChoice(parSheet)),
       force(getUserForceChoice()),
       seedChoice(getUserSeedChoice()),
-      seed(seedChoice.value_or(std::rand()))
+      seed(seedChoice.value_or(std::random_device{}()))
 {
     saveOrUpdateCache();
 }
@@ -37,9 +40,7 @@ UserConfig::UserConfig(const std::string& cachedConfig)
                      : std::optional<int>(std::stoi(split(cachedConfig).at(6)))
       )
       ,
-      seed(seedChoice
-          .
-          value_or(std::rand())
+      seed(seedChoice.value_or(std::random_device{}())
       )
 {
     saveOrUpdateCache();

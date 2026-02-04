@@ -1,41 +1,41 @@
 import * as PIXI from "pixi.js";
 import MaskedContainer from "./MaskedContainer.js";
-import moveElement from "./animation/moveElement.js";
+import moveElement from "../animation/moveElement.js";
 
 export default class Ticker {
-    constructor({ app, width, height, x, y, pauseScale, textFormat, textColor, historyTextBox }) {
-        this.textColor = textColor;
+    constructor({app, parent, width, height, x, y, pauseScale, textFormat, textColour, historyTextBox}) {
+        this.textColour = textColour;
         this.historyTextBox = historyTextBox;
         this.textFormat = textFormat ?? {
             fontFamily: "Arial",
             fontSize: 100,
-            fill: this.textColor ?? "#000000",
+            fill: this.textColour ?? "#000000",
         };
         this.width = width;
         this.height = height;
-        this.pauseScale = pauseScale;
-        this.container = new MaskedContainer({ app, x, y, width, height });
+        this.pauseScale = pauseScale ?? 50;
+        this.container = new MaskedContainer({app, parent, x, y, width, height});
+        this.value = 0;
     }
 
     setVisible(visible) {
         this.container.visible = visible;
     }
 
-    updateText = async (text, instant, pause, noHistoryEntry, color) => {
+    updateText = async (text, instant, pause, noHistoryEntry, colour) => {
         if (this.historyTextBox && !noHistoryEntry && text != "⠀") this.historyTextBox.addText(text);
-        const textFormat = { ...this.textFormat };
-        if (color) textFormat.fill = color;
+        const textFormat = {...this.textFormat};
+        if (colour) textFormat.fill = colour;
         const textObject = new PIXI.Text(text, textFormat);
-
         const scaleX = this.width / textObject.width;
         const scaleY = this.height / textObject.height;
         const scale = Math.min(scaleX, scaleY);
-
         textObject.scale.set(scale, scale);
         const x = (this.width - textObject.width) / 2;
         const y = (this.height - textObject.height) / 2;
-        if (instant) await this.setText(textObject, x, y, pause);
-        else {
+        if (instant) {
+            await this.setText(textObject, x, y, pause ?? 0);
+        } else {
             pause = pause ?? text.length * this.pauseScale;
             if (!this.currentText) await this.setText(textObject, x, y, pause);
             else await this.scrollText(textObject, x, y, pause);
@@ -47,7 +47,11 @@ export default class Ticker {
             textObject.x = x;
             textObject.y = y;
             this.container.removeChildren(0);
-            if (this.currentText) this.currentText.destroy({ children: true, texture: true, baseTexture: true });
+            if (this.currentText) this.currentText.destroy({
+                children: true,
+                texture: true,
+                baseTexture: true
+            });
             this.container.addChild(textObject);
             this.currentText = textObject;
             this.wait(resolve, pause);
@@ -73,7 +77,7 @@ export default class Ticker {
             });
             Promise.all([animateOldText, animateNewText]).then(() => {
                 this.container.removeChild(this.currentText);
-                this.currentText.destroy({ children: true, texture: true, baseTexture: true });
+                this.currentText.destroy({children: true, texture: true, baseTexture: true});
                 this.currentText = newText;
                 this.wait(resolve, pause);
             })
@@ -93,7 +97,16 @@ export default class Ticker {
         PIXI.Ticker.shared.add(tick);
     }
 
-    clearText = async () => {
-        await this.updateText("⠀");
+    clearText = async (instant) => {
+        await this.updateText("⠀", instant);
     };
+
+    async update(number, instant) {
+        this.value = number;
+        await this.updateText(this.value, instant)
+    }
+
+    async increment(number) {
+        await this.update(this.value + number);
+    }
 }

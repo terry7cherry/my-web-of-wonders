@@ -5,9 +5,9 @@ import moveElement from "./common/animation/moveElement.js"
 // await this.grid.transformSymbol(reelnum, rowNum, newSymbolCode) - Updates symbol with a scrolling animation.
 // await this.grid.updateGrid(newGrid) - Updates only symbols that have changed from existing grid with scrolling animation.
 // await moveElement({ element, newX, newY, pixlesPerFrame OR totalFrames}) - Moves any PIXI element to new location at given speed OR within given timeframe.
-// await this.grid.addBackgroundToSymbol(reelNum, symbolNum, color) - Adds a background colour to a symbol. (Will only be visible if symbol has transparent parts.)
+// await this.grid.addBackgroundToSymbol(reelNum, symbolNum, colour) - Adds a background colour to a symbol. (Will only be visible if symbol has transparent parts.)
 // await this.grid.removeBackgroundFromSymbol(reelNum, symbolNum)
-// await this.grid.addFrameToSymbol(reelNum, symbolNum[, color, width]) - Adds a frame on top of symbol (default white, 8px).
+// await this.grid.addFrameToSymbol(reelNum, symbolNum[, colour, width]) - Adds a frame on top of symbol (default white, 8px).
 // await this.grid.removeFrameFromSymbol(reelNum, symbolNum)
 // await this.grid.addTextToSymbol(reelNum, symbolNum, text[, textStyle]) - Adds text at bottom of symbol. textStyle will overwrite whichever style parameters you add (fill etc. - look up PIXI.TextStyle). You can also override default placement with x and y parameters in textStyle.
 // await this.grid.removeTextFromSymbol(reelNum, symbolNum)
@@ -86,19 +86,19 @@ export default class CustomGame extends Game {
 
     /**
      * Launches the free spins round.
-     * By default, shows free spins left and free spisn balance tickers, display free spins awarded in main ticker, increments session stats, changes UI background color.
+     * By default, shows free spins left and free spisn balance tickers, display free spins awarded in main ticker, increments session stats, changes UI background colour.
      * @param {Object} params - Parameters from macroRound including number of free spins awarded.
      * @returns {Promise<void>}
      */
     async launchFreeSpins(PARAMETERS) {
-        const { freespins_collected } = PARAMETERS;
+        const {freespins_collected} = PARAMETERS;
         await super.launchFreeSpins(PARAMETERS);
         //Add additional free spins setup tasks.
     }
 
     /**
      * Ends the free spins session and processes total winnings.
-     * By default, displays free spins winnings in main ticker, adds winnings to main ticker, increments session stats, changes background color for MGame.
+     * By default, displays free spins winnings in main ticker, adds winnings to main ticker, increments session stats, changes background colour for MGame.
      * @returns {Promise<void>}
      */
     async endFreeSpinsSession() {

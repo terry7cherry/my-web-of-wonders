@@ -2,17 +2,17 @@ import * as PIXI from "pixi.js";
 import MaskedContainer from "./MaskedContainer.js";
 
 export default class NiceText {
-  constructor({ app, text, width, height, x, y, textFormat, textColor }) {
-    this.textColor = textColor;
+  constructor({ app, text, width, height, x, y, textFormat, textColour }) {
+    this.textColour = textColour;
     this.textFormat = textFormat ?? {
       fontFamily: "Arial",
       fontSize: 60,
       fontWeight: "bold",
-      fill: this.textColor,
+      fill: this.textColour,
       stroke: "#000000",
       strokeThickness: 5,
       dropShadow: true,
-      dropShadowColor: "#000000",
+      dropShadowColour: "#000000",
       dropShadowBlur: 4,
       dropShadowAngle: Math.PI / 6,
       dropShadowDistance: 6,
@@ -40,8 +40,8 @@ export default class NiceText {
     this.setText(textObject, x, y);
   };
 
-  updateColor = (color) => {
-    this.textFormat.fill = color;
+  updateColour = (colour) => {
+    this.textFormat.fill = colour;
     const textObject = new PIXI.Text(this.text, this.textFormat);
 
     const scaleX = this.width / textObject.width;

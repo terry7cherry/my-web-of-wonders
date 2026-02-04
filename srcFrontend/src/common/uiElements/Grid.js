@@ -1,31 +1,27 @@
 import * as PIXI from "pixi.js";
 import MaskedContainer from "./MaskedContainer.js";
 import Mask from "./Mask.js";
-import moveElement from "./animation/moveElement.js"
+import moveElement from "../animation/moveElement.js"
 
 export default class Grid {
     constructor({
-        app,
-        parent,
-        width,
-        height,
-        x,
-        y,
-        numReels,
-        numRows,
-        symbolColorMapper,
-        symbolFontSize = 32,
-        displayReelSet,
-        weightedDisplayReelSet,
-        symbolMap,
-        imageMap,
-        sound,
-        reelSpinGridTransformer,
-        suspenseSymbolCode,
-        simultaneousWinLineAnimations,
-        winLineColor,
-        winLines,
-    }) {
+                    parent,
+                    width,
+                    height,
+                    x,
+                    y,
+                    numReels,
+                    numRows,
+                    symbolColourMapper,
+                    symbolFontSize = 32,
+                    displayReelSet,
+                    symbolMap,
+                    imageMap,
+                    sound,
+                    suspenseSymbolCode,
+                    simultaneousWinLineAnimations,
+                    winLineColour,
+                }) {
         this.reelWidth = Math.round(width / numReels);
         this.symbolHeight = Math.round(height / numRows);
         this.numReels = numReels;
@@ -36,19 +32,22 @@ export default class Grid {
         this.height = height;
         this.sound = sound;
         this.symbolFontSize = symbolFontSize;
-        this.symbolColorMapper = symbolColorMapper;
+        this.symbolColourMapper = symbolColourMapper;
         this.suspenseSymbolCode = suspenseSymbolCode;
-        this.displayReelSet = displayReelSet?.bands;
-        this.weightedDisplayReelSet = displayReelSet?.weights;
+        this.displayReelSet = displayReelSet;
         this.symbolMap = symbolMap;
         this.imageMap = imageMap;
-        this.container = new MaskedContainer({ app, parent, x: this.x, y: this.y, width: this.width, height: this.height });
+        this.container = new MaskedContainer({
+            parent,
+            x: this.x,
+            y: this.y,
+            width: this.width,
+            height: this.height
+        });
         this.reels = this.createReels();
         this.getReelStartingPositions();
-        this.reelSpinGridTransformer = reelSpinGridTransformer;
         this.simultaneousWinLineAnimations = simultaneousWinLineAnimations;
-        this.winLineColor = winLineColor;
-        this.winLines = winLines;
+        this.winLineColour = winLineColour;
     }
 
     hide() {
@@ -67,7 +66,7 @@ export default class Grid {
             container.x = i * this.reelWidth;
             this.container.addChild(container);
             const apertures = [];
-            const reel = { container, apertures };
+            const reel = {container, apertures};
             reels.push(reel);
         }
         return reels;
@@ -94,12 +93,12 @@ export default class Grid {
         } else if (this.weightedDisplayReelSet) {
             const singleReel = typeof this.weightedDisplayReelSet[0].symbol !== "undefined";
             const reel = singleReel ? this.weightedDisplayReelSet : this.weightedDisplayReelSet[reelNum];
-            const totalWeight = reel.map(({ weight }) => weight).reduce((a, b) => a + b, 0);
+            const totalWeight = reel.map(({weight}) => weight).reduce((a, b) => a + b, 0);
             const symbols = [];
             for (let i = 0; i < numSymbols; i++) {
                 const random = Math.floor(Math.random() * totalWeight);
                 let runningTotal = 0;
-                const outcome = reel.find(({ weight }) => {
+                const outcome = reel.find(({weight}) => {
                     runningTotal += weight;
                     return random < runningTotal;
                 });
@@ -111,7 +110,6 @@ export default class Grid {
 
     spinReels(symbols, stickyReels, stickyApertures) {
         return new Promise(async (resolve, reject) => {
-            if (this.reelSpinGridTransformer) symbols = this.reelSpinGridTransformer(symbols)
             const spinSound = await this.sound.playAsync("spin");
             this.setAddedTimePerReel(this.reels, symbols);
             const reelSpinAnimations = this.getReelSpinAnimations(this.reels, symbols, stickyReels, stickyApertures);
@@ -133,13 +131,13 @@ export default class Grid {
             });
             const totalFrames = (r + reel.addedTime + 1) * 20;
             const apertureAnimations = reel.apertures.map((aperture, a) => {
-                const { container } = aperture;
+                const {container} = aperture;
                 if (stickyApertures?.[r]?.includes(a)) {
                     container.zIndex = Infinity;
                     return;
                 }
                 const newY = container.y + this.symbolHeight * (this.numRows + numRandomSymbolsToAdd);
-                return moveElement({ element: container, newX: container.x, newY, totalFrames })
+                return moveElement({element: container, newX: container.x, newY, totalFrames})
             })
             Promise.all(apertureAnimations).then(() => {
                 const oldApertures = reel.apertures.splice(this.numRows);
@@ -165,8 +163,8 @@ export default class Grid {
             const numScatters = symbols
                 .slice(0, r)
                 .map((reel) => reel.filter((s) =>
-                    s == this.suspenseSymbolCode
-                    || this.symbolMap?.[s] == this.suspenseSymbolCode
+                    s === this.suspenseSymbolCode
+                    || this.symbolMap?.[s] === this.suspenseSymbolCode
                     || ["BN", "SC", ...(Array.isArray(this.suspenseSymbolCode) ? this.suspenseSymbolCode : [])].includes(s)
                     || ["BN", "SC", ...(Array.isArray(this.suspenseSymbolCode) ? this.suspenseSymbolCode : [])].includes(this.symbolMap?.[s])
                     || ["BN", "SC"].includes()).length
@@ -202,23 +200,21 @@ export default class Grid {
         const container = new PIXI.Container();
         const backgroundContainer = new PIXI.Container();
         container.addChild(backgroundContainer);
-        const symbol = this.imageMap?.[symbolCode] ? this.getSymbolImage(symbolCode) : this.getSymbolText(symbolCode);
+        const symbolName = this.symbolMap[symbolCode];
+        const symbol = this.getSymbolImageOrText(symbolName);
         symbol.x = (this.reelWidth - symbol.width) / 2;
         symbol.y = (this.symbolHeight - symbol.height) / 2;
         container.addChild(symbol);
         const overlayContainer = new PIXI.Container();
         container.addChild(overlayContainer);
-        return { container, backgroundContainer, overlayContainer, symbol, symbolCode };
+        return {container, backgroundContainer, overlayContainer, symbol, symbolCode, symbolName};
     }
 
-    getSymbolText(symbolCode, textStyle) {
-        const text = this.symbolMap ? this.symbolMap[symbolCode] ?? symbolCode : symbolCode;
-        const symbol = new PIXI.Text(text, textStyle ?? this.getSymbolTextStyle(text));
-        return symbol;
-    }
-
-    getSymbolImage(symbolCode) {
-        const texture = this.imageMap[symbolCode];
+    getSymbolImageOrText(symbolName) {
+        const texture = this.imageMap[symbolName];
+        if (!texture) {
+            return this.getSymbolText(symbolName);
+        }
         const symbol = new PIXI.Sprite(texture);
         symbol.scale.set(
             this.reelWidth / symbol.width,
@@ -228,9 +224,13 @@ export default class Grid {
         return symbol;
     }
 
+    getSymbolText(text, textStyle) {
+        return new PIXI.Text(text, textStyle ?? this.getSymbolTextStyle(text));
+    }
+
     async updateGrid(newGrid) {
         await Promise.all(this.reels
-            .map((reel, r) => reel.apertures.map(({ symbolCode }, a) => {
+            .map((reel, r) => reel.apertures.map(({symbolCode}, a) => {
                 if (symbolCode == newGrid[r][a]) return;
                 return this.transformSymbol(r, a, newGrid[r][a]);
             }))
@@ -238,10 +238,10 @@ export default class Grid {
             .filter((p) => p));
     }
 
-    addBackgroundToSymbol(reelNum, symbolNum, color) {
+    addBackgroundToSymbol(reelNum, symbolNum, colour) {
         const aperture = this.reels[reelNum].apertures[symbolNum];
         const background = new PIXI.Graphics();
-        background.beginFill(color);
+        background.beginFill(colour);
         background.drawRect(0, 0, this.reelWidth, this.symbolHeight);
         background.endFill();
         aperture.backgroundContainer.addChild(background);
@@ -251,14 +251,14 @@ export default class Grid {
     removeBackgroundFromSymbol(reelNum, symbolNum) {
         const aperture = this.reels[reelNum].apertures[symbolNum];
         aperture.backgroundContainer.removeChild(aperture.background);
-        aperture.background.destroy({ children: true });
+        aperture.background.destroy({children: true});
     }
 
-    addFrameToSymbol(reelNum, symbolNum, color = "0xFFFFFF", width = 8) {
+    addFrameToSymbol(reelNum, symbolNum, colour = "0xFFFFFF", width = 8) {
         const aperture = this.reels[reelNum].apertures[symbolNum];
         const frame = new PIXI.Graphics();
         frame.moveTo(width / 2, width / 2);
-        frame.lineStyle(width, color, 1, 0.5);
+        frame.lineStyle(width, colour, 1, 0.5);
         frame.lineTo(width / 2, this.symbolHeight - width / 2);
         frame.lineTo(this.reelWidth - width / 2, this.symbolHeight - width / 2);
         frame.lineTo(this.reelWidth - width / 2, width / 2);
@@ -270,7 +270,7 @@ export default class Grid {
     removeFrameFromSymbol(reelNum, symbolNum) {
         const aperture = this.reels[reelNum].apertures[symbolNum];
         aperture.overlayContainer.removeChild(aperture.frame);
-        aperture.frame.destroy({ children: true });
+        aperture.frame.destroy({children: true});
     }
 
     addTextToSymbol(reelNum, symbolNum, text, textStyle) {
@@ -283,7 +283,7 @@ export default class Grid {
             stroke: "#000000",
             strokeThickness: 5,
             dropShadow: true,
-            dropShadowColor: "#000000",
+            dropShadowColour: "#000000",
             dropShadowBlur: 4,
             dropShadowAngle: Math.PI / 6,
             dropShadowDistance: 6,
@@ -300,7 +300,7 @@ export default class Grid {
     removeTextFromSymbol(reelNum, symbolNum) {
         const aperture = this.reels[reelNum].apertures[symbolNum];
         aperture.overlayContainer.removeChild(aperture.overlayText);
-        aperture.overlayText.destroy({ children: true });
+        aperture.overlayText.destroy({children: true});
     }
 
     transformSymbol(reelNum, symbolNum, newSymbolCode, speed) {
@@ -348,18 +348,18 @@ export default class Grid {
     }
 
     getSymbolTextStyle(symbolCode) {
-        const color = (this.symbolColorMapper && this.symbolColorMapper(symbolCode)) ?? {
+        const colour = (this.symbolColourMapper && this.symbolColourMapper(symbolCode)) ?? {
             L: "#9cd141", M: "#1b8c44", H: "#07ba04", B: "#d1672e", S: "#d1672e", W: "#2e5cd1"
         }[symbolCode[0]] ?? "#ffffff";
         return {
             fontFamily: "Arial",
             fontSize: this.symbolFontSize,
             fontWeight: "bold",
-            fill: color,
+            fill: colour,
             stroke: "#000000",
             strokeThickness: 5,
             dropShadow: true,
-            dropShadowColor: "#000000",
+            dropShadowColour: "#000000",
             dropShadowBlur: 4,
             dropShadowAngle: Math.PI / 6,
             dropShadowDistance: 6,
@@ -380,9 +380,9 @@ export default class Grid {
                 x: (x + 0.5) * this.reelWidth,
                 y: (y + 0.5) * this.symbolHeight,
             }));
-            lineGraphic.lineStyle(4, this.winLineColor);
+            lineGraphic.lineStyle(4, this.winLineColour);
             lineGraphic.moveTo(centrePositions[0].x, centrePositions[0].y);
-            centrePositions.slice(1).forEach(({ x, y }) => {
+            centrePositions.slice(1).forEach(({x, y}) => {
                 lineGraphic.lineTo(x, y);
             });
             this.container.addChild(lineGraphic);
@@ -390,10 +390,10 @@ export default class Grid {
             win.payLine.slice(0, OAK).forEach((y, x) => {
                 const container = this.reels[x].apertures[y].overlayContainer;
                 const symbolGraphic = new PIXI.Graphics();
-                symbolGraphic.lineStyle(4, this.winLineColor);
+                symbolGraphic.lineStyle(4, this.winLineColour);
                 symbolGraphic.drawCircle(this.reelWidth / 2, this.symbolHeight / 2, 50);
                 container.addChild(symbolGraphic);
-                symbolGraphics.push({ container, symbolGraphic });
+                symbolGraphics.push({container, symbolGraphic});
             });
             const animate = (delta) => {
                 elapsedTime += delta;
@@ -402,7 +402,7 @@ export default class Grid {
                     this.container.removeChild(lineGraphic);
                     lineGraphic.destroy();
                     while (symbolGraphics.length) {
-                        const { container, symbolGraphic } = symbolGraphics.pop();
+                        const {container, symbolGraphic} = symbolGraphics.pop();
                         container.removeChild(symbolGraphic);
                         symbolGraphic.destroy();
                     }
@@ -418,7 +418,7 @@ export default class Grid {
     }
 
     async animateWinLines(wins) {
-        const lineWins = wins.filter(({ winType }) => winType == "line");
+        const lineWins = wins.filter(({winType}) => winType == "line");
         if (this.simultaneousWinLineAnimations) {
             await Promise.all(lineWins.map((win) => this.animateWinLine(win)))
         } else {

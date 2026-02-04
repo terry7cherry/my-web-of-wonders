@@ -1,7 +1,7 @@
 import * as PIXI from "pixi.js"
 
 export default class BetSelector {
-    constructor({x, y, parent, raiseBet, lowerBet, titleColor, betColor, plusColor, minusColor, defaultStake }) {
+    constructor({x, y, parent, raiseBet, lowerBet, titleColour, betColour, plusColour, minusColour, defaultStake }) {
         this.lowerBet = lowerBet;
         this.raiseBet = raiseBet;
         this.container = new PIXI.Container();
@@ -9,36 +9,36 @@ export default class BetSelector {
         this.container.x = x;
         this.stake = defaultStake;
 
-        this.addTitleText(titleColor);
-        this.addMinusButton(minusColor);
-        this.addBetText(betColor);
-        this.addPlusButton(plusColor);
+        this.addTitleText(titleColour);
+        this.addMinusButton(minusColour);
+        this.addBetText(betColour);
+        this.addPlusButton(plusColour);
 
         parent.addChild(this.container);
     }
 
-    updateStake(newStake) {
+    updateBet(newStake) {
         this.stake = newStake;
         this.betText.text = "£" + (newStake/100).toFixed(2);
         this.plusButton.x = 2 + this.titleText.width + this.minusButton.width + 4 + this.betText.width + 2;
     }
 
-    addTitleText(titleColor) {
+    addTitleText(titleColour) {
         this.titleText = new PIXI.Text("Bet: ", {
               fontFamily: "Arial",
                 fontSize: 23,
-                fill: titleColor ?? 0xffffff,
+                fill: titleColour ?? 0xffffff,
                 align: "center",
         })
         this.titleText.x = 2;
         this.container.addChild(this.titleText);
     }
 
-    addMinusButton(minusColor) {
+    addMinusButton(minusColour) {
         const minusButton = new PIXI.Text("-", {
               fontFamily: "Arial",
                 fontSize: 26,
-                fill: minusColor ?? 0xFF0000,
+                fill: minusColour ?? 0xFF0000,
                 align: "center",
         })
         minusButton.x = 2 + this.titleText.width;
@@ -47,18 +47,18 @@ export default class BetSelector {
         minusButton.buttonMode = true;
         minusButton.on("pointerdown", () => {
             const newStake = this.lowerBet(this.stake);
-            this.updateStake(newStake);
+            this.updateBet(newStake);
         });
 
         this.container.addChild(minusButton);
         this.minusButton = minusButton;
     }
 
-    addPlusButton(plusColor) {
+    addPlusButton(plusColour) {
         const plusButton = new PIXI.Text("+", {
               fontFamily: "Arial",
                 fontSize: 26,
-                fill: plusColor ?? 0x00FF00,
+                fill: plusColour ?? 0x00FF00,
                 align: "center",
         })
         plusButton.x = 2 + this.titleText.width + this.minusButton.width + 4 + this.betText.width + 2;
@@ -68,18 +68,18 @@ export default class BetSelector {
         plusButton.buttonMode = true;
         plusButton.on("pointerdown", () => {
             const newStake = this.raiseBet(this.stake);
-            this.updateStake(newStake);
+            this.updateBet(newStake);
         });
 
         this.container.addChild(plusButton);
         this.plusButton = plusButton;
     }
 
-    addBetText(betColor) {
+    addBetText(betColour) {
         const betText = new PIXI.Text("£" + (this.stake / 100).toFixed(2), {
               fontFamily: "Arial",
                 fontSize: 23,
-                fill: betColor ?? 0xFFFFFF,
+                fill: betColour ?? 0xFFFFFF,
                 align: "center",
         })
         betText.x = 2 + this.titleText.width + this.minusButton.width + 4;
