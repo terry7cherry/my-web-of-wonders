@@ -9,6 +9,9 @@
 /srcBackend/common/defunct
 # Frontend
 /srcFrontend/node_modules
+/srcFrontend/dist
+/srcFrontend/.vite
+/Simulations
 # Distributions
 /Distributions/*
 # CMake
