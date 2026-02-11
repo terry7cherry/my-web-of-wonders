@@ -19,10 +19,10 @@ unsigned int LineGrid::evaluateWins(const unsigned int betMultiplier,
         unsigned int wildMultiplier;
         unsigned int lineMultiplier;
         const std::vector<SymbolData>& symbolVect = payTable.symbolVect;
-        for (int line = 0; line < lpPayLines->lineCount; ++line)
+        for (int line = 0; line < payLines.lineCount; ++line)
         {
             bool blnCheckLine;
-            size_t row = lpPayLines->getRow(line, 0);
+            size_t row = payLines.getRow(line, 0);
             startSymbol = symbolToMatch = reelSymbolVect[0][row];
             const SymbolData& startSymData = symbolVect[startSymbol];
 
@@ -41,7 +41,7 @@ unsigned int LineGrid::evaluateWins(const unsigned int betMultiplier,
             for (int reel = 0; reel < maxReels; reel++)
             {
                 // start from beginning again to account for multipliers
-                row = lpPayLines->getRow(line, reel);
+                row = payLines.getRow(line, reel);
                 Symbol nextSym = reelSymbolVect[reel][row];
                 const SymbolData& nextSymData = symbolVect[nextSym];
 
@@ -117,7 +117,7 @@ unsigned int LineGrid::evaluateWins(const unsigned int betMultiplier,
         unsigned int symbolCount = this->getSymbolCount(scatterSymbol);
         if (symbolCount < payTable.minPaySymbolsVect[scatterSymbol])
             continue;
-        if (unsigned int win = betMultiplier * static_cast<unsigned int>(lpPayLines->lineCount)
+        if (unsigned int win = betMultiplier * static_cast<unsigned int>(payLines.lineCount)
             * payTable.getWin(scatterSymbol, symbolCount))
         {
             totalWin += win;
@@ -321,7 +321,7 @@ int LineGrid::showWins(int startRow, const int col, const bool showTitle,
     }
 
     int row = startRow;
-    for (int i = 0; i < lpPayLines->lineCount; i++)
+    for (int i = 0; i < payLines.lineCount; i++)
     {
         // clear previous output
         Console::setCursorPos(row++, col);

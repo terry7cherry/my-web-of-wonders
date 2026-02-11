@@ -20,19 +20,11 @@ class LineGrid :
 {
 protected:
     std::string szWinLineHeader = "Line Wins";
-    const PayLines* lpPayLines = nullptr;
+    const PayLines& payLines;
 
 public:
     std::string szBlankWin;
 
-    /**
-     * @brief Construct grid with dimensions and pay table; defaults to left-to-right evaluation.
-     */
-    LineGrid(const size_t reels, const size_t rows, const PayTable& payTable) : PayGrid(reels, rows, payTable)
-    {
-        szBlankWin = std::string(MAX_LINE_TEXT_LEN, ' ');
-        winVector.reserve(100);
-    }
 
     /**
      * @brief Construct grid with dimensions, pay table, and payline set.
@@ -42,9 +34,13 @@ public:
      * @param payLines PayLines to use of win analysis.
      */
     LineGrid(const size_t reels, const size_t rows, const PayTable& payTable,
-             const PayLines& payLines) : LineGrid(reels, rows, payTable)
+             const PayLines& payLines) : PayGrid(reels, rows, payTable),
+                                         payLines(payLines)
     {
-        setPayLines(payLines);
+        szBlankWin = std::string(MAX_LINE_TEXT_LEN, ' ');
+        winVector.reserve(100);
+        winVector.clear();
+        winVector.reserve(payLines.lineCount);
     }
 
     /**
@@ -57,16 +53,6 @@ public:
                    maths.payTables["default"],
                    maths.payLines["default"])
     {
-    }
-
-    /**
-     * @brief Set the active payline definitions and resize internal buffers.
-     */
-    void setPayLines(const PayLines& payLines)
-    {
-        lpPayLines = &payLines;
-        winVector.clear();
-        winVector.reserve(lpPayLines->lineCount);
     }
 
     /************************************/
@@ -150,6 +136,6 @@ public:
      */
     const std::vector<size_t>* getPayLine(const int payLineNum) const
     {
-        return &lpPayLines->lineVect[payLineNum];
+        return &payLines.lineVect[payLineNum];
     }
 };

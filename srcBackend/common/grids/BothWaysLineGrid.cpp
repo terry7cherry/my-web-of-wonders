@@ -7,7 +7,7 @@ uint32_t BothWaysLineGrid::quickWinCheck()
 
 	quickWinMask = lrMask = rlMask = 0; // default no wins
 	stopReel = payTable.minWinSymbols;
-	Symbol symId = SYMBOL_NONE;
+	Symbol symId;
 
 	// check left_right
 	lrMask = UINT32_MAX;
@@ -68,7 +68,7 @@ int BothWaysLineGrid::evaluateScatterWins(const int betMultiplier)
 		const unsigned int symbolCount = this->getSymbolCount(scatterSymbol);
 		if (symbolCount < payTable.minPaySymbolsVect[scatterSymbol])
 			continue;
-		if (const unsigned int win = betMultiplier * static_cast<unsigned int>(lpPayLines->lineCount) *
+		if (const unsigned int win = betMultiplier * static_cast<unsigned int>(payLines.lineCount) *
 			payTable.getWin(scatterSymbol, symbolCount))
 		{
 			totalScatterWin += win;
@@ -105,11 +105,11 @@ int BothWaysLineGrid::lrWinCheck(const int betMultiplier, const MultipliersCombi
 	Symbol symbolToMatch;
 	const std::vector<SymbolData>& symbolVect = payTable.symbolVect;
 
-	for (int line = 0; line < lpPayLines->lineCount; ++line)
+	for (int line = 0; line < payLines.lineCount; ++line)
 	{
 		constexpr int startReel = 0;
 		bool blnCheckLine;
-		size_t row = lpPayLines->getRow(line, startReel);
+		size_t row = payLines.getRow(line, startReel);
 		const Symbol startSymbol = symbolToMatch = reelSymbolVect[startReel][row];
 		const SymbolData& startSymData = symbolVect[startSymbol];
 
@@ -127,7 +127,7 @@ int BothWaysLineGrid::lrWinCheck(const int betMultiplier, const MultipliersCombi
 		for (int reel = startReel; reel < maxReels; reel++)
 		{
 			// start from beginning again to account for multipliers
-			row = lpPayLines->getRow(line, reel);
+			row = payLines.getRow(line, reel);
 			const Symbol nextSym = reelSymbolVect[reel][row];
 			const SymbolData& nextSymData = symbolVect[nextSym];
 
@@ -202,10 +202,10 @@ int BothWaysLineGrid::rlWinCheck(const int betMultiplier, const MultipliersCombi
 	const size_t startReel = maxReels - 1;
 	const std::vector<SymbolData>& symbolVect = payTable.symbolVect;
 
-	for (int line = 0; line < lpPayLines->lineCount; ++line)
+	for (int line = 0; line < payLines.lineCount; ++line)
 	{
 		bool blnCheckLine;
-		size_t row = lpPayLines->getRow(line, startReel);
+		size_t row = payLines.getRow(line, startReel);
 		const Symbol startSymbol = symbolToMatch = reelSymbolVect[startReel][row];
 		const SymbolData& startSymData = symbolVect[startSymbol];
 
@@ -223,7 +223,7 @@ int BothWaysLineGrid::rlWinCheck(const int betMultiplier, const MultipliersCombi
 		for (size_t reel = startReel; reel <= startReel; reel--)
 		{
 			// start from beginning again to account for multipliers
-			row = lpPayLines->getRow(line, reel);
+			row = payLines.getRow(line, reel);
 			const Symbol nextSym = reelSymbolVect[reel][row];
 			const SymbolData& nextSymData = symbolVect[nextSym];
 
@@ -270,7 +270,7 @@ int BothWaysLineGrid::rlWinCheck(const int betMultiplier, const MultipliersCombi
 			{
 				totalWin += (win * lineMultiplier);
 				LineWin lineWin;
-				lineWin.payLine = &lpPayLines->lineVect[line];
+				lineWin.payLine = &payLines.lineVect[line];
 				lineWin.win = lineWin.totalWin = win;
 				if (lineMultiplier > 1)
 				{

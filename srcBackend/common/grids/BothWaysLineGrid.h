@@ -20,19 +20,10 @@ public:
 	uint32_t rlMask = UINT32_MAX;
 
 	/**
-	 * @brief Construct a bidirectional line grid with dimensions and payTable.
-	 */
-	BothWaysLineGrid(const int reels, const int rows, const PayTable& payTable) : LineGrid(
-		reels, rows, payTable)
-	{
-	}
-
-	/**
 	 * @brief Construct a bidirectional line grid with dimensions, payTable and payLines.
 	 */
 	BothWaysLineGrid(const int reels, const int rows, const PayTable& payTable, const PayLines& payLines) :
-		LineGrid(
-			reels, rows, payTable, payLines)
+		LineGrid(reels, rows, payTable, payLines)
 	{
 	}
 
