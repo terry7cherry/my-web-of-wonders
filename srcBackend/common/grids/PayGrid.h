@@ -42,10 +42,16 @@ public:
 	 */
 	explicit PayGrid(const GameMaths& maths);
 
+	PayGrid() = delete;
+
 	/**
 	 * @brief Reset symbols in parent Grid and
 	 */
 	void reset();
+
+	static unsigned int combineMultipliers(unsigned int previousMultiplier, unsigned int newMultiplier,
+	                                       MultipliersCombineType combineType =
+		                                       MultipliersCombineType::multiply);
 
 
 	/************************************/
