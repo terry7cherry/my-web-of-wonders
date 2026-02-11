@@ -3,16 +3,10 @@
 uint32_t BothWaysLineGrid::quickWinCheck()
 {
 	size_t stopReel = 0;
-	const std::vector<SymbolData>& symbolVect = lpPayTable->symbolVect;
+	const std::vector<SymbolData>& symbolVect = payTable.symbolVect;
 
 	quickWinMask = lrMask = rlMask = 0; // default no wins
-	if (lpPayTable)
-		stopReel = lpPayTable->minWinSymbols;
-	else
-	{
-		reportError("PayGrid:quickWinCheck", "No pay table set");
-		return quickWinMask;
-	}
+	stopReel = payTable.minWinSymbols;
 	Symbol symId = SYMBOL_NONE;
 
 	// check left_right
@@ -29,7 +23,7 @@ uint32_t BothWaysLineGrid::quickWinCheck()
 	}
 
 	// check right_left
-	stopReel = maxReels - lpPayTable->minWinSymbols;
+	stopReel = maxReels - payTable.minWinSymbols;
 	rlMask = UINT32_MAX;
 	for (size_t reel = maxReels - 1; reel >= stopReel; --reel)
 	{
@@ -69,14 +63,13 @@ int BothWaysLineGrid::evaluateWins(const int betMultiplier,
 int BothWaysLineGrid::evaluateScatterWins(const int betMultiplier)
 {
 	int totalScatterWin = 0;
-	for (const Symbol scatterSymbol : lpPayTable->scatterSymVect)
+	for (const Symbol scatterSymbol : payTable.scatterSymVect)
 	{
 		const unsigned int symbolCount = this->getSymbolCount(scatterSymbol);
-		if (symbolCount < lpPayTable->minPaySymbolsVect[scatterSymbol])
+		if (symbolCount < payTable.minPaySymbolsVect[scatterSymbol])
 			continue;
 		if (const unsigned int win = betMultiplier * static_cast<unsigned int>(lpPayLines->lineCount) *
-			lpPayTable->
-			getWin(scatterSymbol, symbolCount))
+			payTable.getWin(scatterSymbol, symbolCount))
 		{
 			totalScatterWin += win;
 
@@ -110,7 +103,7 @@ int BothWaysLineGrid::lrWinCheck(const int betMultiplier, const MultipliersCombi
 	int lineMultiplier;
 	unsigned int consecutiveWilds, wildCount = 0;
 	Symbol symbolToMatch;
-	const std::vector<SymbolData>& symbolVect = lpPayTable->symbolVect;
+	const std::vector<SymbolData>& symbolVect = payTable.symbolVect;
 
 	for (int line = 0; line < lpPayLines->lineCount; ++line)
 	{
@@ -162,13 +155,13 @@ int BothWaysLineGrid::lrWinCheck(const int betMultiplier, const MultipliersCombi
 				break;
 		}
 
-		if (number >= lpPayTable->minPaySymbolsVect[symbolToMatch])
+		if (number >= payTable.minPaySymbolsVect[symbolToMatch])
 		{
-			if (consecutiveWilds >= lpPayTable->minWinSymbols)
+			if (consecutiveWilds >= payTable.minWinSymbols)
 			{
 				// Wilds make a payout. If wins are equal pay more symbols in preference to fewer wilds
-				if ((wildMultiplier * lpPayTable->getWin(startSymbol, consecutiveWilds)) > (
-					lineMultiplier * lpPayTable->getWin(symbolToMatch, number)))
+				if ((wildMultiplier * payTable.getWin(startSymbol, consecutiveWilds)) > (
+					lineMultiplier * payTable.getWin(symbolToMatch, number)))
 				{
 					//  Wild payout > symbol payout e.g. W-W-W > W-W-W-sym.
 					symbolToMatch = startSymbol;
@@ -177,7 +170,7 @@ int BothWaysLineGrid::lrWinCheck(const int betMultiplier, const MultipliersCombi
 				}
 			}
 
-			if (const int win = betMultiplier * lpPayTable->getWin(symbolToMatch, number))
+			if (const int win = betMultiplier * payTable.getWin(symbolToMatch, number))
 			{
 				totalWin += (win * lineMultiplier);
 				LineWin lineWin;
@@ -207,7 +200,7 @@ int BothWaysLineGrid::rlWinCheck(const int betMultiplier, const MultipliersCombi
 	unsigned int consecutiveWilds, wildCount = 0;
 	Symbol symbolToMatch;
 	const size_t startReel = maxReels - 1;
-	const std::vector<SymbolData>& symbolVect = lpPayTable->symbolVect;
+	const std::vector<SymbolData>& symbolVect = payTable.symbolVect;
 
 	for (int line = 0; line < lpPayLines->lineCount; ++line)
 	{
@@ -258,13 +251,13 @@ int BothWaysLineGrid::rlWinCheck(const int betMultiplier, const MultipliersCombi
 				break;
 		}
 
-		if (number >= lpPayTable->minPaySymbolsVect[symbolToMatch])
+		if (number >= payTable.minPaySymbolsVect[symbolToMatch])
 		{
-			if (consecutiveWilds >= lpPayTable->minWinSymbols)
+			if (consecutiveWilds >= payTable.minWinSymbols)
 			{
 				// Wilds make a payout. If wins are equal pay more symbols in preference to fewer wilds
-				if ((wildMultiplier * lpPayTable->getWin(startSymbol, consecutiveWilds)) > (
-					lineMultiplier * lpPayTable->getWin(symbolToMatch, number)))
+				if ((wildMultiplier * payTable.getWin(startSymbol, consecutiveWilds)) > (
+					lineMultiplier * payTable.getWin(symbolToMatch, number)))
 				{
 					//  Wild payout > symbol payout e.g. W-W-W > W-W-W-sym.
 					symbolToMatch = startSymbol;
@@ -273,7 +266,7 @@ int BothWaysLineGrid::rlWinCheck(const int betMultiplier, const MultipliersCombi
 				}
 			}
 
-			if (const int win = betMultiplier * lpPayTable->getWin(symbolToMatch, number))
+			if (const int win = betMultiplier * payTable.getWin(symbolToMatch, number))
 			{
 				totalWin += (win * lineMultiplier);
 				LineWin lineWin;

@@ -2,7 +2,7 @@
 
 PayGrid::PayGrid(const size_t reels, const size_t rows, const PayTable& payTable)
     : Grid(reels, rows),
-      lpPayTable(&payTable)
+      payTable(payTable)
 {
     isWinVect.resize(maxReels);
 }
@@ -25,7 +25,7 @@ uint32_t PayGrid::quickWinCheck()
     quickWinMask = 0xFFFFFFFF;
     int reelsToCheck = 0;
 
-    reelsToCheck = lpPayTable->minWinSymbols;
+    reelsToCheck = payTable.minWinSymbols;
 
     for (int reel = 0; quickWinMask && reel < reelsToCheck; ++reel)
     {
@@ -33,7 +33,7 @@ uint32_t PayGrid::quickWinCheck()
         for (int row = 0; row < reelHeightVect[reel]; ++row)
         {
             const Symbol symId = getReelSymbol(reel, row);
-            reelMask |= lpPayTable->symbolVect[symId].payMask;
+            reelMask |= payTable.symbolVect[symId].payMask;
         }
         quickWinMask &= reelMask;
     }

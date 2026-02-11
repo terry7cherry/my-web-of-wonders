@@ -18,7 +18,7 @@ unsigned int LineGrid::evaluateWins(const unsigned int betMultiplier,
         unsigned int number;
         unsigned int wildMultiplier;
         unsigned int lineMultiplier;
-        const std::vector<SymbolData>& symbolVect = lpPayTable->symbolVect;
+        const std::vector<SymbolData>& symbolVect = payTable.symbolVect;
         for (int line = 0; line < lpPayLines->lineCount; ++line)
         {
             bool blnCheckLine;
@@ -71,14 +71,14 @@ unsigned int LineGrid::evaluateWins(const unsigned int betMultiplier,
                     break;
             }
 
-            if (number >= lpPayTable->minPaySymbolsVect[symbolToMatch])
+            if (number >= payTable.minPaySymbolsVect[symbolToMatch])
             {
-                if (consecutiveWilds >= lpPayTable->minWinSymbols)
+                if (consecutiveWilds >= payTable.minWinSymbols)
                 {
                     // Wilds make a payout. If wins are equal pay more symbols in preference to fewer wilds
-                    if ((wildMultiplier * lpPayTable->getWin(
+                    if ((wildMultiplier * payTable.getWin(
                             startSymbol, consecutiveWilds)) >
-                        (lineMultiplier * lpPayTable->getWin(
+                        (lineMultiplier * payTable.getWin(
                             symbolToMatch, number)))
                     {
                         //  Wild payout > symbol payout e.g. W-W-W > W-W-W-sym.
@@ -88,7 +88,7 @@ unsigned int LineGrid::evaluateWins(const unsigned int betMultiplier,
                     }
                 }
 
-                if (unsigned int win = betMultiplier * lpPayTable->getWin(symbolToMatch, number))
+                if (unsigned int win = betMultiplier * payTable.getWin(symbolToMatch, number))
                 {
                     totalWin += win * lineMultiplier;
 
@@ -112,13 +112,13 @@ unsigned int LineGrid::evaluateWins(const unsigned int betMultiplier,
         }
     }
 
-    for (Symbol scatterSymbol : lpPayTable->scatterSymVect)
+    for (Symbol scatterSymbol : payTable.scatterSymVect)
     {
         unsigned int symbolCount = this->getSymbolCount(scatterSymbol);
-        if (symbolCount < lpPayTable->minPaySymbolsVect[scatterSymbol])
+        if (symbolCount < payTable.minPaySymbolsVect[scatterSymbol])
             continue;
-        if (unsigned int win = betMultiplier * static_cast<unsigned int>(lpPayLines->lineCount) * lpPayTable->
-            getWin(scatterSymbol, symbolCount))
+        if (unsigned int win = betMultiplier * static_cast<unsigned int>(lpPayLines->lineCount)
+            * payTable.getWin(scatterSymbol, symbolCount))
         {
             totalWin += win;
 

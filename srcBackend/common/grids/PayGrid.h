@@ -19,7 +19,7 @@ extern Console gameConsole;
 class PayGrid : public Grid
 {
 protected:
-	const PayTable* lpPayTable;
+    const PayTable& payTable;
 
 public:
 	uint32_t quickWinMask = UINT32_MAX;
@@ -28,13 +28,13 @@ public:
 	std::vector<std::unique_ptr<Win>> winVector;
 	int gridMultiplier = 1;
 
-	/**
-	 * @brief Construct a grid and store pointer to payTable.
-	 * @param reels Number of reels.
-	 * @param rows Number of rows.
-	 * @param payTable Pay table to use with this grid.
-	 */
-	PayGrid(const size_t reels, const size_t rows, const PayTable& payTable);
+ /**
+  * @brief Construct a grid and store reference to payTable.
+  * @param reels Number of reels.
+  * @param rows Number of rows.
+  * @param payTable Pay table to use with this grid.
+  */
+ PayGrid(const size_t reels, const size_t rows, const PayTable& payTable);
 
 	/**
 	 * @brief Construct from maths config (uses "default" pay table).
