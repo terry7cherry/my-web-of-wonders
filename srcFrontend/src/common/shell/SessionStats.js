@@ -1,3 +1,5 @@
+import toCurrency from "../utils/toCurrency.js";
+
 export default class SessionStats {
     constructor() {
         this.stats = {};
@@ -26,7 +28,7 @@ export default class SessionStats {
         const {input, isCurrency, feeds} = this.stats[statName];
         if (isCurrency) {
             input.numberValue = Number(input.numberValue) + (increment ?? 1);
-            input.value = "£" + input.numberValue.toFixed(2);
+            input.value = toCurrency(input.numberValue);
         } else {
             input.value = Number(input.value) + (increment ?? 1);
         }
@@ -53,7 +55,7 @@ export default class SessionStats {
         Object.values(this.stats).forEach(({input, isCurrency, isPercent}) => {
             if (isCurrency) {
                 input.numberValue = 0;
-                input.value = "£0.00";
+                input.value = toCurrency(input.numberValue);
             } else if (isPercent) {
                 input.value = "";
             } else {

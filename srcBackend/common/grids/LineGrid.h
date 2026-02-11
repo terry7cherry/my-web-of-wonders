@@ -6,7 +6,9 @@
 
 #include "PayGrid.h"
 #include "../gameMaths/mathElements/PayLines.h"
-#include "Win.h"
+#include "../wins/Win.h"
+#include "../wins/ScatterWin.h"
+#include "../wins/LineWin.h"
 
 #define MAX_LINE_TEXT_LEN 45
 
@@ -63,7 +65,8 @@ public:
     void setPayLines(const PayLines& payLines)
     {
         lpPayLines = &payLines;
-        winVector.resize(lpPayLines->lineCount);
+        winVector.clear();
+        winVector.reserve(lpPayLines->lineCount);
     }
 
     /************************************/
@@ -90,7 +93,7 @@ public:
      * @param lineWin LineWin object to process.
      * @return Number of active multipliers affecting win.
      */
-    int countWinMultipliers(const Win& lineWin) const;
+    int countWinMultipliers(const LineWin& lineWin) const;
 
     /**
      * @brief Count multipliers in the grid that contribute to any wins.

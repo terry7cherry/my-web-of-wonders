@@ -16,18 +16,20 @@ public:
     /**
      * @brief Construct from a grid snapshot.
      * @param grid Grid object to take symbols from.
+     * @param maths GameMaths object for symbol names.
      */
-    explicit ReelSpinEvent(const Grid& grid) :
-        GridEventTemplate(grid)
+    explicit ReelSpinEvent(const Grid& grid, const GameMaths& maths) :
+        GridEventTemplate(grid, maths)
     {
     }
 
     /**
      * @brief Optional metrics hook (unused).
      * @param grid Grid object to take symbols from.
+     * @param maths GameMaths object for symbol names.
      * @details Note this is required because updateMeters arguments must match constructor.
      */
-    static void updateMeters(const Grid& grid [[maybe_unused]])
+    static void updateMeters(const Grid& grid [[maybe_unused]], const GameMaths& maths [[maybe_unused]])
     {
     }
 

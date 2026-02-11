@@ -31,8 +31,8 @@ export default class Button {
         buttonContainer.addChild(this.buttonText);
 
         // Position the button on the screen
-        buttonContainer.x = x;
-        buttonContainer.y = y;
+        buttonContainer.x = x ?? 0;
+        buttonContainer.y = y ?? 0;
 
         // Add the button container to the stage
         if (parent) parent.addChild(buttonContainer);

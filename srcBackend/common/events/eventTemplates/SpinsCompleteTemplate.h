@@ -29,9 +29,9 @@ public:
      * @param initialSpins Spins awarded from base game.
      * @param finalSpins Total spins played, including retriggers.
      */
-    explicit SpinsCompleteTemplate(const int totalWin,
-                                   const int initialSpins[[maybe_unused]],
-                                   const int finalSpins[[maybe_unused]])
+    explicit SpinsCompleteTemplate(const unsigned int totalWin,
+                                   const unsigned int initialSpins[[maybe_unused]],
+                                   const unsigned int finalSpins[[maybe_unused]])
         : PhaseCompleteTemplate<T>(totalWin)
     {
     }
@@ -42,7 +42,9 @@ public:
      * @param initialSpins Spins awarded from base game.
      * @param finalSpins Total spins played, including retriggers.
      */
-    static void updateMeters(const int totalWin, const int initialSpins, const int finalSpins)
+    static void updateMeters(const unsigned int totalWin,
+                             const unsigned int initialSpins,
+                             const unsigned int finalSpins)
     {
         PhaseCompleteTemplate<T>::updateMeters(totalWin);
         initialSpinsMeter.add(initialSpins);

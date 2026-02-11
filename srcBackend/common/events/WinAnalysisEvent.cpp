@@ -1,32 +1,38 @@
 #include "WinAnalysisEvent.h"
 #include "../grids/PayGrid.h"
 
-WinAnalysisEvent::WinAnalysisEvent(const PayGrid& grid, const std::string& analysisStage)
-    : wins(grid.winVector),
+WinAnalysisEvent::WinAnalysisEvent(const PayGrid& grid,
+                                   const GameMaths& maths,
+                                   const std::string& analysisStage) // NOLINT(*-pass-by-value)
+    : symbolNames(maths.payTables["default"].symbolNames),
       analysisStage(analysisStage)
 {
-    for (const auto& win : wins)
+    wins.reserve(grid.winVector.size());
+    for (const auto& winPtr : grid.winVector)
     {
-        totalWin += win.totalWin;
+        // Deep copy to preserve any derived data if present in future
+        wins.push_back(winPtr->clone());
+        totalWin += winPtr->totalWin;
     }
 }
 
 void WinAnalysisEvent::updateMeters(const PayGrid& grid [[maybe_unused]],
-                                    std::string analysisStage [[maybe_unused]])
+                                    const GameMaths& maths [[maybe_unused]],
+                                    const std::string& analysisStage [[maybe_unused]])
 {
-    for (const auto& win : grid.winVector)
+    for (const auto& winPtr : grid.winVector)
     {
-        payTableHits.add(win.symbol, win.oak);
-        payTableWinnings.add(win.symbol, win.oak, win.totalWin);
+        payTableHits.add(winPtr->symbol, winPtr->oak);
+        payTableWinnings.add(winPtr->symbol, winPtr->oak, winPtr->totalWin);
     }
 }
 
 Json::Value WinAnalysisEvent::getWinsAsJson() const
 {
     Json::Value winsAsJson(Json::arrayValue);
-    for (const Win& win : wins)
+    for (const auto& winPtr : wins)
     {
-        winsAsJson.append(convertWinToJson(win));
+        winsAsJson.append(winPtr->toJson(symbolNames));
     }
     return winsAsJson;
 }
@@ -41,22 +47,8 @@ Json::Value WinAnalysisEvent::toJson() const
     return eventDetails;
 }
 
-Json::Value WinAnalysisEvent::convertWinToJson(const Win& win)
-{
-    Json::Value winAsJson;
-    winAsJson["symbol"] = win.symbol;
-    winAsJson["oak"] = win.oak;
-    winAsJson["wildCount"] = win.wildCount;
-    winAsJson["multiplier"] = win.multiplier;
-    winAsJson["win"] = win.win;
-    winAsJson["totalWin"] = win.totalWin;
-    winAsJson["direction"] = static_cast<int>(win.direction);
-    winAsJson["winType"] = win.winType;
-    if (win.winType == "line") winAsJson["payLine"] = BasicEvent::toJsonArray(*win.payLine);
-    return winAsJson;
-}
-
-void WinAnalysisEvent::consoleReportRTP(uint64_t simGames, int bet,
+void WinAnalysisEvent::consoleReportRTP(const uint64_t simGames,
+                                        const int bet,
                                         const std::vector<std::string>& symbolNames)
 {
     size_t maxOAK = 0;
@@ -84,8 +76,10 @@ void WinAnalysisEvent::consoleReportRTP(uint64_t simGames, int bet,
         for (size_t oak = minOAK; oak <= maxOAK; oak++)
         {
             printf("\t%12.2f%%",
-                   static_cast<double>(100 * static_cast<long double>(
-                           payTableWinnings.global[symbolId][oak - 1]) / simGames / bet
+                   static_cast<double>(100
+                       * static_cast<long double>(payTableWinnings.global[symbolId][oak - 1])
+                       / static_cast<long double>(simGames)
+                       / bet
                    ));
         }
     }

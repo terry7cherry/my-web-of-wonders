@@ -12,6 +12,8 @@
 class NewFreeSpinEvent : public BasicEvent
 {
 public:
+	const int multiplier;
+
 	/**
 	 * @param multiplier Optional win multiplier for spin. Displayed in frontend ticker.
 	 */
@@ -36,7 +38,4 @@ protected:
 		eventDetails["multiplier"] = multiplier;
 		return eventDetails;
 	}
-
-private:
-	const int multiplier;
 };

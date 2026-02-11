@@ -3,8 +3,8 @@
  * @file WeightTables.h
  * @brief Weighted random selection tables for ints, doubles, bools, strings, symbols, and reel sets.
  */
-#include "ReelSet.h"
 #include "../../headers/pch.h"
+#include "ReelSet.h"
 
 // Create a vector of this structure to define WeightTable
 // The First 2 items are required:

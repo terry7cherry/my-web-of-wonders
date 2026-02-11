@@ -17,22 +17,31 @@
 class GridUpdateEvent : public GridEventTemplate<GridUpdateEvent>
 {
 public:
+    /** @brief Message to display in frontend ticker while grid updates. **/
+    inline static std::string phaseName = "Grid Update";
+    std::string message;
+
     /**
      * @param grid Grid object from which to take symbols.
+     * @param maths GameMaths object for symbol names.
      * @param message Message to display on frontend ticker.
      */
-    explicit GridUpdateEvent(const Grid& grid, std::string message = "Grid updated!")
-        : GridEventTemplate(grid),
-          message(std::move(message))
+    explicit GridUpdateEvent(const Grid& grid,
+                             const GameMaths& maths,
+                             const std::string& message = "Grid updated!")
+        : GridEventTemplate(grid, maths),
+          message(message)
     {
     }
 
     /**
      * @param grid Grid object from which to take symbols.
+     * @param maths GameMaths object for symbol names.
      * @param message Message to display on frontend ticker.
      */
-    static void updateMeters(const Grid& grid[[maybe_unused]],
-                             std::string message [[maybe_unused]] = "Grid updated!")
+    static void updateMeters(const Grid& grid [[maybe_unused]],
+                             const GameMaths& maths [[maybe_unused]],
+                             const std::string& message [[maybe_unused]] = "Grid updated!")
     {
     }
 
@@ -44,7 +53,4 @@ protected :
         eventDetails["message"] = message;
         return eventDetails;
     }
-
-private :
-    std::string message;
 };

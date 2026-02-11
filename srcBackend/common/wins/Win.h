@@ -3,16 +3,14 @@
  * @file Win.h
  * @brief Represents a single payline win with metadata and formatting helpers.
  */
+#include "../headers/types.h"
 #include <map>
 #include <string>
-#include <vector>
+#include <memory>
+#include <json/json.h>
 
 #define MAX_LINE_TEXT_LEN 45
 
-enum class WinDirections
-{
-    none, left_right, right_left, both
-};
 
 enum class MultipliersCombineType
 {
@@ -25,15 +23,13 @@ enum class MultipliersCombineType
 class Win
 {
 public:
-    Symbol symbol = 0;
+    virtual ~Win() = default;
+    Symbol symbol = SYMBOL_NONE;
     unsigned int oak = 0;
     unsigned int wildCount = 0;
     unsigned int multiplier = 1;
     unsigned int win = 0;
     unsigned int totalWin = 0;
-    WinDirections direction = WinDirections::none;
-    const std::vector<size_t>* payLine = nullptr;
-    int payLineNum = -1;
     std::string winType;
 
     /**
@@ -41,21 +37,20 @@ public:
      */
     Win()
     {
-        reset(true);
+        Win::reset(true);
     }
 
     /**
      * @brief Reset internal fields to default values.
      * @param force If true, reset even when `win` is zero.
      */
-    void reset(bool force = false)
+    virtual void reset(const bool force = false)
     {
         if (win || force)
         {
             symbol = 0;
             multiplier = 1;
             oak = wildCount = win = totalWin = 0;
-            direction = WinDirections::none;
         }
     }
 
@@ -75,7 +70,7 @@ public:
      * @brief Format the win as text.
      * @return For example, "Line 7 L-R: 3 H1 = 40 (x2) = 80".
      */
-    std::string getWinText(std::string szSymbol, bool showDirection = true) const;
+    virtual std::string getWinText(std::string szSymbol, bool showDirection = true) const;
 
 
     /**
@@ -84,4 +79,20 @@ public:
      */
     std::string getWinText(const std::map<Symbol, std::string>& symbolMap,
                            bool showDirection = false) const;
+
+    // Polymorphic clone to preserve derived data when copying via base pointer
+    virtual std::unique_ptr<Win> clone() const { return std::make_unique<Win>(*this); }
+
+    virtual Json::Value toJson(const std::vector<std::string>& symbolNames) const
+    {
+        Json::Value winAsJson;
+        winAsJson["symbol"] = symbolNames[symbol];
+        winAsJson["oak"] = oak;
+        winAsJson["wildCount"] = wildCount;
+        winAsJson["multiplier"] = multiplier;
+        winAsJson["win"] = win;
+        winAsJson["totalWin"] = totalWin;
+        winAsJson["winType"] = winType;
+        return winAsJson;
+    }
 };

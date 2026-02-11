@@ -11,7 +11,7 @@ Json::Value GameMaths::toJson() const
     config["minBetCost"] = minBetCost;
     config["payTable"] = payTables["default"].awardsToJson();
     config["symbolNames"] = payTables["default"].symbolNamesToJson();
-    config["displayReelSet"] = reelSets["reelSet1"].toJson();
-    config["suspenseSymbolCode"] = symbols["fsTriggerSymbol"];
+    config["displayReelSet"] = reelSets["reelSet1"].toJson(payTables["default"].symbolNames);
+    config["suspenseSymbol"] = payTables["default"].symbolNames[symbols["fsTriggerSymbol"]];
     return config;
 }

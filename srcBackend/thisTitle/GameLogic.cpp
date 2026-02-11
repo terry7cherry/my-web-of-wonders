@@ -59,7 +59,7 @@ namespace GameLogic
         spinReels(maths, cycle, "baseGame");
 
         cycle.baseGameWin += cycle.grid.evaluateWins(cycle.session.betMultiplier);
-        cycle.recordEvent<WinAnalysisEvent>(cycle.grid, "base game");
+        cycle.recordEvent<WinAnalysisEvent>(cycle.grid, maths, "base game");
 
         checkForFreeSpinsTrigger(maths, cycle);
         return cycle.baseGameWin;
@@ -79,7 +79,7 @@ namespace GameLogic
     void spinReels(const GameMaths& maths, GameCycle& cycle, const std::string& weightTableName)
     {
         cycle.grid.applySpin(maths.reelSetWeights[weightTableName]);
-        cycle.recordEvent<ReelSpinEvent>(cycle.grid);
+        cycle.recordEvent<ReelSpinEvent>(cycle.grid, maths);
     }
 
     void checkForFreeSpinsTrigger(const GameMaths& maths, GameCycle& cycle)
@@ -120,7 +120,10 @@ namespace GameLogic
 
         if (numWildReelsExpanded > 0)
             cycle.recordEvent<GridUpdateEvent>(
-                cycle.grid, numWildReelsExpanded > 1 ? "Wilds expanded!" : "Wild expanded!");
+                cycle.grid,
+                maths,
+                numWildReelsExpanded > 1 ? "Wilds expanded!" : "Wild expanded!"
+            );
     }
 
     unsigned int evaluateWinsWithMultiplier(const GameMaths& maths [[maybe_unused]], GameCycle& cycle)
@@ -130,7 +133,7 @@ namespace GameLogic
         if (spinWin && cycle.grid.gridMultiplier > 1)
             spinWin = cycle.grid.applyGridMultiplier(MultipliersCombineType::add);
 
-        cycle.recordEvent<WinAnalysisEvent>(cycle.grid, "free spin");
+        cycle.recordEvent<WinAnalysisEvent>(cycle.grid, maths, "free spin");
         return spinWin;
     }
 

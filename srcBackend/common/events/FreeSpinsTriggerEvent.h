@@ -13,6 +13,9 @@
 class FreeSpinsTriggerEvent : public BasicEvent
 {
 public:
+	const int spins;
+	const int multiplier;
+
 	/**
 	 * @param spins Num spins awarded.
 	 * @param multiplier Optional win multiplier for awarded spins.
@@ -41,8 +44,4 @@ protected:
 		eventDetails["multiplier"] = multiplier;
 		return eventDetails;
 	}
-
-private:
-	const int spins;
-	const int multiplier;
 };

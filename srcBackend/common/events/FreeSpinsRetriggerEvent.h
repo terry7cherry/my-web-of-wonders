@@ -15,6 +15,9 @@
 class FreeSpinsRetriggerEvent : public BasicEvent
 {
 public:
+	const int spins;
+	const int multiplier;
+
 	/**
 	 * @param spins Retrigger spins awarded
 	 * @param multiplier Optional multiplier for retrigger spins awarded.
@@ -43,8 +46,4 @@ protected:
 		eventDetails["multiplier"] = multiplier;
 		return eventDetails;
 	}
-
-private:
-	const int spins;
-	const int multiplier;
 };

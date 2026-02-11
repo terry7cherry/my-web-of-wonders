@@ -18,7 +18,7 @@ void API::startAPIServer()
 	GameSession session(maths.minBet, maths);
 	using namespace drogon;
 	app().registerHandler("/api/options",
-	                      [&parSheet](const HttpRequestPtr& request,
+	                      [&parSheet](const HttpRequestPtr& request [[maybe_unused]],
 	                                  std::function<void(const HttpResponsePtr&)>&&
 	                                  callback)
 	                      {

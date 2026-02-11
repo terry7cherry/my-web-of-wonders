@@ -18,7 +18,7 @@ export default class Grid {
                     symbolMap,
                     imageMap,
                     sound,
-                    suspenseSymbolCode,
+                    suspenseSymbol,
                     simultaneousWinLineAnimations,
                     winLineColour,
                 }) {
@@ -33,7 +33,7 @@ export default class Grid {
         this.sound = sound;
         this.symbolFontSize = symbolFontSize;
         this.symbolColourMapper = symbolColourMapper;
-        this.suspenseSymbolCode = suspenseSymbolCode;
+        this.suspenseSymbol = suspenseSymbol;
         this.displayReelSet = displayReelSet;
         this.symbolMap = symbolMap;
         this.imageMap = imageMap;
@@ -48,14 +48,6 @@ export default class Grid {
         this.getReelStartingPositions();
         this.simultaneousWinLineAnimations = simultaneousWinLineAnimations;
         this.winLineColour = winLineColour;
-    }
-
-    hide() {
-        this.container.visible = false;
-    }
-
-    show() {
-        this.container.visible = true;
     }
 
     createReels() {
@@ -163,11 +155,8 @@ export default class Grid {
             const numScatters = symbols
                 .slice(0, r)
                 .map((reel) => reel.filter((s) =>
-                    s === this.suspenseSymbolCode
-                    || this.symbolMap?.[s] === this.suspenseSymbolCode
-                    || ["BN", "SC", ...(Array.isArray(this.suspenseSymbolCode) ? this.suspenseSymbolCode : [])].includes(s)
-                    || ["BN", "SC", ...(Array.isArray(this.suspenseSymbolCode) ? this.suspenseSymbolCode : [])].includes(this.symbolMap?.[s])
-                    || ["BN", "SC"].includes()).length
+                        s === this.suspenseSymbol
+                    ).length
                 )
                 .reduce((a, b) => a + b, 0);
             if (numScatters >= 2) addedTime += 4;
@@ -180,34 +169,33 @@ export default class Grid {
         symbols.forEach(symbol => this.addSymbolToTopOfReel(reelIndex, symbol))
     }
 
-    addSymbolToBottomOfReel(reelNum, symbolCode) {
+    addSymbolToBottomOfReel(reelNum, symbolName) {
         const reel = this.reels[reelNum];
-        const symbol = this.getSymbol(symbolCode);
+        const symbol = this.getSymbol(symbolName);
         symbol.container.y = reel.apertures.length * this.symbolHeight;
         reel.apertures.push(symbol);
         reel.container.addChild(symbol.container);
     }
 
-    addSymbolToTopOfReel(reelNum, symbolCode) {
+    addSymbolToTopOfReel(reelNum, symbolName) {
         const reel = this.reels[reelNum];
-        const symbol = this.getSymbol(symbolCode);
+        const symbol = this.getSymbol(symbolName);
         symbol.container.y = reel.apertures[0].container.y - this.symbolHeight;
         reel.apertures.unshift(symbol);
         reel.container.addChild(symbol.container);
     }
 
-    getSymbol(symbolCode) {
+    getSymbol(symbolName) {
         const container = new PIXI.Container();
         const backgroundContainer = new PIXI.Container();
         container.addChild(backgroundContainer);
-        const symbolName = this.symbolMap[symbolCode];
         const symbol = this.getSymbolImageOrText(symbolName);
         symbol.x = (this.reelWidth - symbol.width) / 2;
         symbol.y = (this.symbolHeight - symbol.height) / 2;
         container.addChild(symbol);
         const overlayContainer = new PIXI.Container();
         container.addChild(overlayContainer);
-        return {container, backgroundContainer, overlayContainer, symbol, symbolCode, symbolName};
+        return {container, backgroundContainer, overlayContainer, symbol, symbolCode: symbolName, symbolName};
     }
 
     getSymbolImageOrText(symbolName) {
@@ -303,11 +291,11 @@ export default class Grid {
         aperture.overlayText.destroy({children: true});
     }
 
-    transformSymbol(reelNum, symbolNum, newSymbolCode, speed) {
+    transformSymbol(reelNum, symbolNum, newSymbolName, speed) {
         return new Promise((resolve, reject) => {
             const reel = this.reels[reelNum];
             const oldAperture = reel.apertures[symbolNum];
-            const newAperture = this.getSymbol(newSymbolCode);
+            const newAperture = this.getSymbol(newSymbolName);
             const newSymbol = newAperture.symbol;
             newAperture.container.x = oldAperture.container.x;
             newAperture.container.y = oldAperture.container.y;
@@ -417,7 +405,7 @@ export default class Grid {
         })
     }
 
-    async animateWinLines(wins) {
+    async animateWins(wins) {
         const lineWins = wins.filter(({winType}) => winType == "line");
         if (this.simultaneousWinLineAnimations) {
             await Promise.all(lineWins.map((win) => this.animateWinLine(win)))

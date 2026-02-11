@@ -22,6 +22,10 @@ template <typename T>
 class PhaseCompleteTemplate : public BasicEvent
 {
 public:
+    /** @brief Name used for output to console and file. */
+    inline static std::string phaseName = "Template";
+    const unsigned int totalWin;
+
     /**
      * @param phaseWin Win for the completed phase.
      */
@@ -147,9 +151,4 @@ public:
                     maxWinCount ? static_cast<uint64_t>(hitCount / maxWinCount) : static_cast<uint64_t>(0));
         // EventRate
     }
-
-protected :
-    /** @brief Name used for output to console and file. */
-    inline static std::string phaseName = "Template";
-    const int totalWin;
 };

@@ -39,9 +39,7 @@ std::string Win::getWinText(std::string szSymbol, const bool showDirection) cons
         {
             size = std::snprintf(
                 buffer, space,
-                "Line%2d %s: %d %s = %d ",
-                payLineNum,
-                (direction == WinDirections::left_right) ? "L-R" : "R-L",
+                "%d %s = %d ",
                 static_cast<int>(oak),
                 szSymbol.c_str(),
                 static_cast<int>(win)
@@ -51,8 +49,7 @@ std::string Win::getWinText(std::string szSymbol, const bool showDirection) cons
         {
             size = std::snprintf(
                 buffer, space,
-                "Line%2d: %d %s = %d ",
-                payLineNum,
+                "%d %s = %d ",
                 static_cast<int>(oak),
                 szSymbol.c_str(),
                 static_cast<int>(win)
@@ -91,7 +88,7 @@ std::string Win::getWinText(std::string szSymbol, const bool showDirection) cons
 }
 
 std::string Win::getWinText(const std::map<Symbol, std::string>& symbolMap,
-                                const bool showDirection) const
+                            const bool showDirection) const
 {
     const std::string szSymbol = symbolMap.at(symbol);
     return getWinText(szSymbol, showDirection);

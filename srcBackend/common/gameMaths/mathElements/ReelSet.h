@@ -107,5 +107,5 @@ public:
 	int checkSymbolBlocks(int maxBlock, int noCheckSymbol,
 	                      const std::vector<std::string>* lpSymbolVect = nullptr) const;
 
-	Json::Value toJson() const;
+	Json::Value toJson(const std::vector<std::string>& symbolNames) const;
 };

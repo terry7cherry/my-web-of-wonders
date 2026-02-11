@@ -6,6 +6,7 @@
 
 
 #include <vector>
+#include <memory>
 
 #include "eventTemplates/BasicEvent.h"
 #include "../grids/PayGrid.h"
@@ -17,20 +18,32 @@
 class WinAnalysisEvent : public BasicEvent
 {
 public:
+	unsigned int totalWin = 0; // total of all wins in this analysis stage
+	unsigned int gridMultiplier = 1;
+	// Store polymorphic wins without slicing; Event owns its own copies
+	std::vector<std::unique_ptr<Win>> wins;
+	const std::vector<std::string>& symbolNames;
+	std::string analysisStage; // e.g., "base game", "free spins"
+
 	/**
 	 * @param grid Grid from which to take wins.
+     * @param maths Game maths object for symbol names.
 	 * @param analysisStage Name of analysis stage, for display in frontend ticker.
 	 */
-	explicit WinAnalysisEvent(const PayGrid& grid, const std::string& analysisStage);
+	explicit WinAnalysisEvent(const PayGrid& grid,
+	                          const GameMaths& maths,
+	                          const std::string& analysisStage);
 
 	/**
 	 * @brief Optional metrics hook.
 	 * @details Note this is required because updateMeters arguments must match constructor.
 	 * @param grid Grid from which to take wins.
+     * @param maths Game maths object for symbol names.
 	 * @param analysisStage Name of analysis stage, for display in frontend ticker.
 	 */
 	static void updateMeters(const PayGrid& grid [[maybe_unused]],
-	                         std::string analysisStage [[maybe_unused]]);
+	                         const GameMaths& maths [[maybe_unused]],
+	                         const std::string& analysisStage [[maybe_unused]]);
 
 	static void consoleReportRTP(uint64_t simGames, int bet, const std::vector<std::string>& symbolNames);
 
@@ -48,10 +61,5 @@ private:
 	/**
 	 * @brief Convert a single win to JSON.
 	 */
-	static Json::Value convertWinToJson(const Win& win);
-
-	unsigned int totalWin = 0; // total of all wins in this analysis stage
-	unsigned int gridMultiplier = 1;
-	std::vector<Win> wins;
-	std::string analysisStage; // e.g., "preMultiplier", "postMultiplier"
+	Json::Value convertWinToJson(const Win& win) const;
 };

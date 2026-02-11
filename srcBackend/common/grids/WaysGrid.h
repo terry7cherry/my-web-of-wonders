@@ -4,7 +4,7 @@
 #include "../headers/pch.h"
 #include "../mathElements/PayTable.h"
 #include "PayGrid.h"
-#include "WaysWin.h"
+#include "../wins/WaysWin.h"
 #include "../console/Console.h"
 
 // game globals
@@ -19,7 +19,6 @@ public:
 	int maxWays = 0;
 
 	// details of wins in the current grid
-	std::vector<WaysWin*> winVector;
 
 	WaysGrid(const size_t reels, const size_t rows, const PayTable& payTable) : PayGrid(reels, rows, payTable)
 	{
@@ -45,20 +44,18 @@ public:
 	// deletes all entries from the winVector
 	void winVectorReset(void)
 	{
-		for (auto item : winVector)
-			delete item;
 		winVector.clear();
 	}
 
 	int evaluateWins(PayTable* lpPayTable, const int betMultiplier)
 	{
-		std::map<int, WaysWin*> winMap;
+		std::map<Symbol, WaysWin*> winMap;
 		winVectorReset();
 
 		if (!quickWinCheck())
 			return 0;
 
-		std::map<int, WaysWin*>::iterator it;
+		std::map<Symbol, WaysWin*>::iterator it;
 
 		// check for symbols on 1st reel and in quickWinMask, includes wilds
 		int reel = 0;
@@ -143,7 +140,7 @@ public:
 			if (winVal)
 			{
 				spinWin += winVal;
-				winVector.push_back(it->second);
+				winVector.emplace_back(std::make_unique<WaysWin>(*it->second));
 			}
 			else
 			{
@@ -160,13 +157,13 @@ public:
 	{
 		int newWin = 0;
 		int initialWin = 0;
-		for (auto win : winVector)
+		for (auto& win : winVector)
 		{
 			if (win->symbol == symbol)
 			{
-				initialWin = win->totalWinVal;
-				win->totalWinVal *= multiplier;
-				newWin = win->totalWinVal - initialWin;
+				initialWin = win->totalWin;
+				win->totalWin *= multiplier;
+				newWin = win->totalWin - initialWin;
 				return newWin;
 			}
 		}
@@ -175,10 +172,10 @@ public:
 
 	// show the ways wins, 1 per line.
 	// DEL TEL - should be deprecate. Use getWinTextVect() to get the strings and display them in calling method
-	int showWins(std::map<int, std::string>& symbolMap, int startRow, int col)
+	int showWins(std::map<Symbol, std::string>& symbolMap, int startRow, int col)
 	{
 		int row = startRow;
-		for (auto win : winVector)
+		for (auto& win : winVector)
 		{
 			gameConsole.setCursorPos(row++, col);
 			std::cout << win->getWinText(symbolMap);
@@ -187,10 +184,10 @@ public:
 	}
 
 	// generates the vector using passed symbolMap
-	std::vector<std::string> getWinTextVect(std::map<int, std::string>& symbolMap)
+	std::vector<std::string> getWinTextVect(std::map<Symbol, std::string>& symbolMap)
 	{
 		std::vector<std::string> winTextVect;
-		for (auto win : winVector)
+		for (auto& win : winVector)
 			winTextVect.push_back(win->getWinText(symbolMap));
 		return winTextVect;
 	}
@@ -199,7 +196,7 @@ public:
 	std::vector<std::string> getWinTextVect(void)
 	{
 		std::vector<std::string> winTextVect;
-		for (auto win : winVector)
+		for (auto& win : winVector)
 			winTextVect.push_back(win->getWinText(mTextMap));
 		return winTextVect;
 	}
@@ -209,8 +206,12 @@ public:
 	std::vector<std::vector<std::vector<int>>> getWinPosVect(void)
 	{
 		std::vector<std::vector<std::vector<int>>> winPosVect;
-		for (auto win : winVector)
-			winPosVect.push_back(win->winPosVect);
+		for (auto& win : winVector)
+		{
+			if (win->winType != "ways") continue;
+			const auto& waysWin = dynamic_cast<const WaysWin&>(*win);
+			winPosVect.push_back(waysWin.winPosVect);
+		}
 		return winPosVect;
 	}
 };

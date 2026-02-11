@@ -1,12 +1,15 @@
 // Precompiled header
-#include "../headers/pch.h"
-#include <cstdio>   // for std::snprintf
 #include "WaysWin.h"
 
+#include "../headers/types.h"
+#include <cstdio>   // for std::snprintf
+
 // basic constructor with no starting win positions
-WaysWin::WaysWin(const Symbol winSymbol, const int maxReelCount, const int maxRowCount)
-    : maxReels(maxReelCount), maxRows(maxRowCount), symbol(winSymbol) // set member variables
+WaysWin::WaysWin(const Symbol winSymbol, const size_t maxReelCount, const size_t maxRowCount)
+    : maxReels(maxReelCount), maxRows(maxRowCount)
 {
+    symbol = winSymbol;
+    winType = "ways";
     if (maxReels)
         resizeVectors();
 }
@@ -14,6 +17,7 @@ WaysWin::WaysWin(const Symbol winSymbol, const int maxReelCount, const int maxRo
 // default constructor for creating arrays
 WaysWin::WaysWin() : WaysWin(SYMBOL_NONE, 0, 0)
 {
+    winType = "ways";
 }
 
 void WaysWin::resizeVectors(void)
@@ -27,7 +31,7 @@ void WaysWin::resizeVectors(void)
 
 // Identifies a win as all wilds 
 // Call once if 1st symbol is wild
-void WaysWin::setWildWin(bool isWild)
+void WaysWin::setWildWin(const bool isWild)
 {
     isWildWin = isWild;
 }
@@ -36,11 +40,12 @@ void WaysWin::setWildWin(bool isWild)
 // Parameter isWild identifies the position as a symbol or a wild
 void WaysWin::addPosition(int reel, int row, bool isWild)
 {
+    positions.push_back(std::make_pair(reel, row));
     reelCountVect[reel]++;
     if (isWild)
         wildCountVect[reel]++;
 
-    int winIndex = reel + (row * maxReels);
+    const size_t winIndex = reel + (row * maxReels);
     winMask |= (static_cast<uint64>(1) << winIndex);
     winPosVect[reel][row] = isWild ? 2 : 1;
 }
@@ -48,41 +53,41 @@ void WaysWin::addPosition(int reel, int row, bool isWild)
 // Calculates the number of winning ways and returns that value
 int WaysWin::setWays(void)
 {
-    winWays = wildWays = 1;
+    ways = wildWays = 1;
     for (oak = 0; oak < maxReels && reelCountVect[oak]; oak++)
     {
         wildWays *= wildCountVect[oak];
-        winWays *= reelCountVect[oak];
+        ways *= reelCountVect[oak];
     }
     if (!isWildWin)
-        winWays -= wildWays;
-    return winWays;
+        ways -= wildWays;
+    return ways;
 }
 
 // Calculates the total win and returns it
-int WaysWin::setWin(PayTable* lpPayTable, int betMultiplier)
+int WaysWin::setWin(const PayTable* lpPayTable, const int betMultiplier)
 {
     if (setWays() > 0)
     {
-        winVal = lpPayTable->getWin(symbol, oak) * betMultiplier;
-        if (winVal) totalWinVal = winVal * winWays * multiplier;
+        win = lpPayTable->getWin(symbol, oak) * betMultiplier;
+        if (win) totalWin = win * ways * multiplier;
     }
-    return totalWinVal;
+    return totalWin;
 }
 
 // Generates text that describes the WayWin
 // returns string in the format, "3 H1(100) x2 Ways [x2 multiplier ] = 400"
-std::string WaysWin::getWinText(std::string szSymbol)
+std::string WaysWin::getWinText(std::string szSymbol) const
 {
     char buffer[120];
 
     // remove spaces from symbol
-    auto end_pos = std::remove(szSymbol.begin(), szSymbol.end(), ' ');
+    const auto end_pos = std::ranges::remove(szSymbol, ' ').begin();
     szSymbol.erase(end_pos, szSymbol.end());
 
     int space = 120;
     int size = std::snprintf(buffer, space, "%d %s(%d) x%d Ways ",
-                             oak, szSymbol.c_str(), winVal, winWays);
+                             oak, szSymbol.c_str(), win, ways);
     if (size < 0) size = 0;
     if (size > space) size = space;
     space -= size;
@@ -98,7 +103,7 @@ std::string WaysWin::getWinText(std::string szSymbol)
 
     if (space > 0)
     {
-        int added = std::snprintf(&buffer[size], space, "= %d", totalWinVal);
+        int added = std::snprintf(&buffer[size], space, "= %d", totalWin);
         if (added < 0) added = 0;
         if (added > space) added = space;
         size += added;
@@ -110,9 +115,22 @@ std::string WaysWin::getWinText(std::string szSymbol)
 
 // Generates text that describes the WayWin
 // returns string in the format, "3 H1(100) x2 ways [x2 multiplier ] = 400"
-std::string WaysWin::getWinText(std::map<int, std::string>& symbolMap)
+std::string WaysWin::getWinText(std::map<int, std::string>& symbolMap) const
 {
     std::string szSymbol = symbolMap[symbol];
     return getWinText(szSymbol);
 }
 
+Json::Value WaysWin::toJson(const std::vector<std::string>& symbolNames) const
+{
+    Json::Value winAsJson = Win::toJson(symbolNames);
+    winAsJson["positions"] = Json::Value(Json::arrayValue);
+    for (const auto& [reel, row] : positions)
+    {
+        Json::Value position;
+        position["reel"] = reel;
+        position["row"] = row;
+        winAsJson["positions"].append(position);
+    }
+    return winAsJson;
+}

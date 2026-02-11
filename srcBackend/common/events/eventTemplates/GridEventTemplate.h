@@ -18,18 +18,26 @@ template <typename T>
 class GridEventTemplate : public BasicEvent
 {
 public:
+    std::vector<std::vector<Symbol>> symbols{};
+    const std::vector<std::string>& symbolNames;
+    size_t numReels;
+    size_t numRows;
+    std::string message;
+
     /**
      * @brief Capture current grid symbols at construction.
      * @param grid Grid object from which to get symbols.
+     * @param maths Game maths object for symbol names.
      */
-    explicit GridEventTemplate(const Grid& grid)
-        : numReels(grid.maxReels),
+    explicit GridEventTemplate(const Grid& grid, const GameMaths& maths)
+        : symbolNames(maths.payTables["default"].symbolNames),
+          numReels(grid.maxReels),
           numRows(grid.maxRows)
     {
         for (size_t reelNum = 0; reelNum < numReels; ++reelNum)
         {
             std::vector<Symbol> reelSymbols(numRows);
-            for (size_t rowNum = 0; rowNum < numRows; ++rowNum)
+            for (size_t rowNum = 0; rowNum < grid.reelHeightVect[reelNum]; ++rowNum)
                 reelSymbols[rowNum] = grid.getReelSymbol(reelNum, rowNum);
             symbols.push_back(reelSymbols);
         }
@@ -52,18 +60,14 @@ protected :
         Json::Value eventDetails;
         eventDetails["eventType"] = "gridTemplate";
         Json::Value symbolsAsJson(Json::arrayValue);
-        for (size_t reelNum = 0; reelNum < numReels; ++reelNum)
+        for (const auto& reel : symbols)
         {
-            Json::Value reel = BasicEvent::toJsonArray(symbols[reelNum]);
-            symbolsAsJson.append(reel);
+            Json::Value jsonReel(Json::arrayValue);
+            for (const auto& symbol : reel)
+                jsonReel.append(symbolNames[symbol]);
+            symbolsAsJson.append(jsonReel);
         }
         eventDetails["reelSymbolArray"] = symbolsAsJson;
         return eventDetails;
     };
-
-private :
-    std::vector<std::vector<Symbol>> symbols{};
-    size_t numReels;
-    size_t numRows;
-    std::string message;
 };

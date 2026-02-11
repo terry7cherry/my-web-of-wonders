@@ -1,5 +1,6 @@
 import InfoPanel from "./InfoPanel.js"
 import * as PIXI from "pixi.js"
+import toCurrency from "../utils/toCurrency.js";
 
 export default class PayTable extends InfoPanel {
     constructor({state, app, x, y, width, height}) {
@@ -85,7 +86,7 @@ export default class PayTable extends InfoPanel {
                 subText.x = symbolBoxSize + 10;
                 subText.y = textHeight * count + textHeight;
                 subText.style = style;
-                subText.text = (index + 1) + " symbols: " + "£" + (this.stakeMultiplier * awards[index] / 100).toFixed(2);
+                subText.text = (index + 1) + " symbols: " + toCurrency(this.stakeMultiplier * awards[index]);
                 infoGrid.addChild(subText);
                 count++;
             }

@@ -14,11 +14,13 @@
 class FreeSpinsCompleteEvent : public SpinsCompleteTemplate<FreeSpinsCompleteEvent>
 {
 public:
+	/** @brief Name used for stats output. **/
+	inline static std::string phaseName = "Free Spins";
+
 	/**
 	 * @param cycle Game cycle event including totalWin, fsInitialSpins, and fsSpinsPlayed properties.
 	 */
-	explicit FreeSpinsCompleteEvent(
-		const GameCycle& cycle)
+	explicit FreeSpinsCompleteEvent(const GameCycle& cycle)
 		: FreeSpinsCompleteEvent(cycle.freeSpinsWin, cycle.fsInitialSpins, cycle.fsSpinsPlayed)
 	{
 	}
@@ -29,9 +31,9 @@ public:
 	 * @param finalSpins Number of spins played including retriggers.
 	 */
 	FreeSpinsCompleteEvent(
-		const int totalWin,
-		const int initialSpins,
-		const int finalSpins
+		const unsigned int totalWin,
+		const unsigned int initialSpins,
+		const unsigned int finalSpins
 	) : SpinsCompleteTemplate(totalWin, initialSpins, finalSpins)
 	{
 	}
@@ -41,9 +43,6 @@ public:
 		SpinsCompleteTemplate::updateMeters(
 			cycle.totalWin, cycle.fsInitialSpins, cycle.fsSpinsPlayed);
 	}
-
-	/** @brief Name used for stats output. **/
-	inline static std::string phaseName = "Free Spins";
 
 protected :
 	Json::Value toJson() const override

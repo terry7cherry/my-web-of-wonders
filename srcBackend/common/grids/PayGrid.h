@@ -7,7 +7,8 @@
 #include "../gameMaths/mathElements/PayTable.h"
 #include "../console/Console.h"
 #include "Grid.h"
-#include "Win.h"
+#include "../wins/Win.h"
+#include <memory>
 
 extern Console gameConsole;
 
@@ -24,7 +25,7 @@ public:
 	uint32_t quickWinMask = UINT32_MAX;
 	std::vector<std::vector<bool>> isWinVect; // [reel][row]
 	std::vector<int> winIndexVect; // undefined size, populate with index of winning positions
-	std::vector<Win> winVector;
+	std::vector<std::unique_ptr<Win>> winVector;
 	int gridMultiplier = 1;
 
 	/**

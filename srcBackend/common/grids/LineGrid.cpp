@@ -1,4 +1,6 @@
 #include "LineGrid.h"
+#include "../wins/LineWin.h"
+#include "../wins/ScatterWin.h"
 
 unsigned int LineGrid::evaluateWins(const unsigned int betMultiplier)
 {
@@ -92,7 +94,7 @@ unsigned int LineGrid::evaluateWins(const unsigned int betMultiplier)
                 {
                     totalWin += static_cast<unsigned int>(win * lineMultiplier);
 
-                    Win lineWin;
+                    LineWin lineWin;
                     lineWin.payLine = this->getPayLine(line);
                     lineWin.payLineNum = line;
                     lineWin.win = lineWin.totalWin = win;
@@ -108,7 +110,7 @@ unsigned int LineGrid::evaluateWins(const unsigned int betMultiplier)
                     lineWin.symbol = symbolToMatch;
                     lineWin.direction = WinDirections::left_right;
                     lineWin.winType = "line";
-                    winVector.push_back(lineWin);
+                    winVector.emplace_back(std::make_unique<LineWin>(lineWin));
                 }
             }
         }
@@ -124,12 +126,25 @@ unsigned int LineGrid::evaluateWins(const unsigned int betMultiplier)
         {
             totalWin += win;
 
-            Win scatterWin;
+            ScatterWin scatterWin;
             scatterWin.win = scatterWin.totalWin = win;
             scatterWin.oak = symbolCount;
             scatterWin.symbol = scatterSymbol;
             scatterWin.winType = "scatter";
-            winVector.push_back(scatterWin);
+
+            unsigned int scattersToFind = symbolCount;
+            for (size_t reel = 0; reel < reelSymbolVect.size(); reel++)
+            {
+                for (size_t row = 0; row < reelSymbolVect[reel].size(); row++)
+                    if (reelSymbolVect[reel][row] == scatterSymbol)
+                    {
+                        scattersToFind--;
+                        scatterWin.positions.push_back(std::make_pair(reel, row));
+                        if (scattersToFind == 0) break;
+                    }
+                if (scattersToFind == 0) break;
+            }
+            winVector.emplace_back(std::make_unique<ScatterWin>(scatterWin));
         }
     }
     return totalWin;
@@ -138,24 +153,26 @@ unsigned int LineGrid::evaluateWins(const unsigned int betMultiplier)
 int LineGrid::setWinningSymbols()
 {
     // check each active payline and set all winning positions in isWinVect
-    for (Win& lineWin : winVector)
+    for (const auto& winPtr : winVector)
     {
-        if (lineWin.winType == "scatter")
+        const Win& win = *winPtr;
+        if (win.winType == "line")
         {
+            const LineWin& lineWin = dynamic_cast<const LineWin&>(win);
             if (lineWin.direction == WinDirections::left_right)
             {
-                for (size_t reel = 0; reel < lineWin.oak; reel++)
+                for (size_t reel = 0; reel < win.oak; reel++)
                     isWinVect[reel][(*lineWin.payLine)[reel]] = true;
             }
             else
             {
-                for (size_t reel = maxReels - lineWin.oak; reel < maxReels; reel++)
+                for (size_t reel = maxReels - win.oak; reel < maxReels; reel++)
                     isWinVect[reel][(*lineWin.payLine)[reel]] = true;
             }
         }
         else
         {
-            const size_t& symbolId = lineWin.symbol;
+            const size_t& symbolId = win.symbol;
             int index = 0;
             for (int row = 0; row < maxRows; row++)
             {
@@ -183,7 +200,7 @@ int LineGrid::setWinningSymbols()
     return static_cast<int>(winIndexVect.size());
 }
 
-int LineGrid::countWinMultipliers(const Win& lineWin) const
+int LineGrid::countWinMultipliers(const LineWin& lineWin) const
 {
     int multiplierCount = 0;
 
@@ -212,17 +229,18 @@ int LineGrid::countActiveWinMultipliers()
 
     for (size_t i = 0; i < winVector.size(); i++)
     {
-        Win& win = winVector[i];
-        const size_t startReel = (win.direction == WinDirections::left_right)
+        if (winVector[i]->winType != "line") continue;
+        const auto& lineWin = dynamic_cast<const LineWin&>(*winVector[i]);
+        const size_t startReel = (lineWin.direction == WinDirections::left_right)
                                      ? 0
-                                     : maxReels - win.oak;
-        const size_t endReel = (win.direction == WinDirections::left_right)
-                                   ? win.oak
+                                     : maxReels - lineWin.oak;
+        const size_t endReel = (lineWin.direction == WinDirections::left_right)
+                                   ? lineWin.oak
                                    : maxReels;
         for (size_t reel = startReel; multiplierVect.size() && reel < endReel;
              reel++)
         {
-            const size_t row = lpPayLines->getRow(win.payLine, reel);
+            const size_t row = lpPayLines->getRow(lineWin.payLine, reel);
             if (multiplierVect[reel][row] > 1)
                 activeMultiplierVect[reel][row] = true;
         }
@@ -251,9 +269,7 @@ unsigned int LineGrid::applyGridMultiplier(const MultipliersCombineType combineT
     if (applyMultiplier > 1)
     {
         for (size_t i = 0; i < winVector.size(); i++)
-            totalWin += static_cast<unsigned int>(
-                winVector[i].applyMultiplier(applyMultiplier, combineType)
-            );
+            totalWin += winVector[i]->applyMultiplier(applyMultiplier, combineType);
     }
     return totalWin;
 }
@@ -262,26 +278,27 @@ unsigned int LineGrid::applyWinMultipliers(const MultipliersCombineType combineT
 {
     size_t startReel = 0, endReel = 0;
     unsigned int totalWin = 0;
-    for (Win& win : winVector)
+    for (size_t i = 0; i < winVector.size(); i++)
     {
-        if (win.winType != "line") continue;
-        unsigned int winMultiplier = win.multiplier;
+        if (winVector[i]->winType != "line") continue;
+        auto& lineWin = dynamic_cast<LineWin&>(*winVector[i]);
+        unsigned int winMultiplier = lineWin.multiplier;
 
-        if (win.direction == WinDirections::right_left)
+        if (lineWin.direction == WinDirections::right_left)
         {
-            startReel = maxReels - win.oak;
+            startReel = maxReels - lineWin.oak;
             endReel = maxReels;
         }
         else
         {
             startReel = 0;
-            endReel = win.oak;
+            endReel = lineWin.oak;
         }
 
         for (size_t reel = startReel; reel < endReel; reel++)
         {
             const unsigned int cellMultiplier = multiplierVect[reel][lpPayLines->getRow(
-                win.payLine, reel)];
+                lineWin.payLine, reel)];
             if (cellMultiplier > 1)
             {
                 if (combineType == MultipliersCombineType::multiply)
@@ -291,8 +308,8 @@ unsigned int LineGrid::applyWinMultipliers(const MultipliersCombineType combineT
             }
         }
         totalWin += (winMultiplier > 1)
-                        ? win.applyMultiplier(winMultiplier, combineType)
-                        : win.totalWin;
+                        ? lineWin.applyMultiplier(winMultiplier, combineType)
+                        : lineWin.totalWin;
     }
     return totalWin;
 }
@@ -322,12 +339,15 @@ int LineGrid::showWins(int startRow, const int col, const bool showTitle,
     }
 
     row = startRow;
-    for (auto& win : winVector)
+    for (const auto& winPtr : winVector)
     {
+        const Win& win = *winPtr;
         // output current win lines
-        if (win.winType == "line")
+        for (size_t i = 0; i < winVector.size(); i++)
         {
-            if (win.payLine)
+            if (winVector[i]->winType != "line") continue;
+            const auto& lineWin = dynamic_cast<LineWin&>(*winVector[i]);
+            if (lineWin.payLine)
             {
                 gameConsole.setCursorPos(row++, col);
                 std::cout << win.getWinText(mTextMap, showDirection);
@@ -348,7 +368,7 @@ std::vector<std::string> LineGrid::getWinTextVect(
         reportError("LineGrid::getWinTextVect",
                     "Call 'Grid::setTextMap()' before using this method");
     else
-        for (const auto& win : winVector)
-            winTextVect.push_back(win.getWinText(symbolMap, showDirection));
+        for (const auto& winPtr : winVector)
+            winTextVect.push_back(winPtr->getWinText(symbolMap, showDirection));
     return winTextVect;
 }

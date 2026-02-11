@@ -1,5 +1,5 @@
 export default class ApiClient {
-    static async getMathsForRtpAndBetType(rtp, betType) {
+    static async getMathsAndForcesForRtpAndBetType(rtp, betType) {
         const jsonBody = {rtp, betType};
 
         const response = await fetch("/api/maths", {
@@ -11,7 +11,7 @@ export default class ApiClient {
             body: JSON.stringify(jsonBody),
         });
 
-        /** @type {{ forceOptions: Array.<{index: number, name: string}>, maths: { betTypeCost: number, displayReelSet: Array.<Array.<number>>, gameTitle: string, minBet: number, minBetCost: number, numReels: number, numRows: number, payTable: Object.<string, Array.<number>>, suspenseSymbolCode: number, symbolNames: Array.<string>}}} */
+        /** @type {{ forceOptions: Array.<{index: number, name: string}>, maths: { betTypeCost: number, displayReelSet: Array.<Array.<number>>, gameTitle: string, minBet: number, minBetCost: number, numReels: number, numRows: number, payTable: Object.<string, Array.<number>>, suspenseSymbol: number, symbolNames: Array.<string>}}} */
         const responseJson = await response.json();
         console.log(responseJson);
         if (responseJson.error) {

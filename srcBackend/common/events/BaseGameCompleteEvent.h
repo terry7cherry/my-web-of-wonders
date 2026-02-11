@@ -12,12 +12,13 @@
 class BaseGameCompleteEvent : public PhaseCompleteTemplate<BaseGameCompleteEvent>
 {
 public:
-    /**
-     * @param totalWin Total won in simulation.
-     */
-    explicit BaseGameCompleteEvent(const int totalWin) : PhaseCompleteTemplate(totalWin)
-    {
-    }
+	/** @brief Name used for stats output. **/
+	inline static std::string phaseName = "Base Game";
 
-    inline static std::string phaseName = "Base Game";
+	/**
+	 * @param totalWin Total won in simulation.
+	 */
+	explicit BaseGameCompleteEvent(const int totalWin) : PhaseCompleteTemplate(totalWin)
+	{
+	}
 };

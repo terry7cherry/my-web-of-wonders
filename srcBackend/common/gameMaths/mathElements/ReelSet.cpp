@@ -210,14 +210,14 @@ int ReelSet::checkSymbolBlocks(const int maxBlock, const int noCheckSymbol,
 	return static_cast<int>(errVect.size());
 }
 
-Json::Value ReelSet::toJson() const
+Json::Value ReelSet::toJson(const std::vector<std::string>& symbolNames) const
 {
 	Json::Value reels(Json::arrayValue);
-	for (const auto& i : mSourceReelsVect)
+	for (const auto& reel : mSourceReelsVect)
 	{
-		Json::Value reel(Json::arrayValue);
-		for (const auto& j : i) reel.append(j);
-		reels.append(reel);
+		Json::Value jsonReel(Json::arrayValue);
+		for (const auto& j : reel) jsonReel.append(symbolNames[j]);
+		reels.append(jsonReel);
 	}
 	return reels;
 }
