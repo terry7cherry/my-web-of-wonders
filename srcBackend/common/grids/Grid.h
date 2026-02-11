@@ -44,7 +44,9 @@ public:
     // state
     /************************************/
 
-    std::vector<bool> lockedVect;
+    std::vector<bool> lockedReelVect;
+    std::vector<bool> reelHasStickySymbolVect;
+    std::vector<std::vector<bool>> stickySymbolVect;
     std::vector<std::vector<Symbol>> reelSymbolVect; // [reel][row]
     std::vector<std::vector<unsigned int>> multiplierVect; // [reel][row]
 
@@ -146,6 +148,45 @@ public:
      * @brief Unlock all reels.
      */
     void clearSpinLock();
+
+    /**************************************************/
+    // Spin lock
+    /**************************************************/
+
+    /**
+     * @brief Resets all sticky symbol flags within the grid to false.
+     */
+    void clearSticky();
+
+    /**
+     * @brief Set sticky state of given cell.
+     * @param reel
+     * @param row
+     * @param isSticky State to set.
+     */
+    void setSticky(size_t reel, size_t row, bool isSticky = true);
+
+    /**
+     * @brief Set sticky state of all cells containing specified symbol.
+     * @param symbol Symbol to search for
+     * @param isSticky State to set.
+     */
+    void setSticky(Symbol symbol, bool isSticky = true);
+
+    /**
+     * @brief Set sticky state of all cells containing any of the specified symbols.
+     * @param symbols Symbols to search for.
+     * @param isSticky State to set.
+     */
+    void setSticky(const std::vector<Symbol>& symbols, bool isSticky = true);
+
+    /**
+     * @brief Check sticky state of specified cell.
+     * @param reel
+     * @param row
+     * @return Sticky state.
+     */
+    bool isSticky(size_t reel, size_t row);
 
 
     /**************************************************/
@@ -378,8 +419,19 @@ public:
      * @return Row index if found; std::nullopt otherwise.
      */
     std::optional<size_t> getReelSymbolRow(size_t reel, Symbol sym,
-                                           symbolMatchTypes matchType = symbolMatchTypes::exact)
-    const;
+                                           symbolMatchTypes matchType = symbolMatchTypes::exact) const;
+
+    /**
+     * @brief Check if reel contains matching symbol.
+     * @param reel Reel index.
+     * @param sym Symbol to find.
+     * @param matchType Comparison mode (exact/greater/etc.).
+     * @return Was symbol found?
+     */
+    bool reelContainsSymbol(size_t reel, Symbol sym,
+                            symbolMatchTypes matchType = symbolMatchTypes::exact) const;
+
+    static bool doSymbolsMatch(Symbol a, Symbol b, symbolMatchTypes matchType = symbolMatchTypes::exact);
 
     /************************************/
     // Grid processing - expand

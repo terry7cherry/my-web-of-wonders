@@ -31,7 +31,8 @@ Grid::Grid(const size_t reels, const size_t rows)
 {
 	reelSymbolVect.resize(maxReels);
 	multiplierVect.resize(maxReels);
-	lockedVect.resize(maxReels, false);
+	clearSpinLock();
+	clearSticky();
 	for (int reel = 0; reel < maxReels; reel++)
 	{
 		reelSymbolVect[reel].resize(maxRows, SYMBOL_NONE);
@@ -47,39 +48,40 @@ Grid::Grid(const size_t reels, const size_t rows)
 // Set all grid symbols to SYMBOL_NONE
 void Grid::reset()
 {
-    for (int reel = 0; reel < static_cast<int>(maxReels); reel++)
-    {
-        for (int row = 0; row < static_cast<int>(maxRows); row++)
-        {
-            reelSymbolVect[reel][row] = SYMBOL_NONE;
-        }
-    }
+	for (int reel = 0; reel < static_cast<int>(maxReels); reel++)
+	{
+		for (int row = 0; row < static_cast<int>(maxRows); row++)
+		{
+			reelSymbolVect[reel][row] = SYMBOL_NONE;
+		}
+	}
+	clearSpinLock();
 }
 
 // Set all multipliers to 1
 void Grid::resetMultipliers()
 {
-    for (int reel = 0; reel < static_cast<int>(maxReels); reel++)
-    {
-        for (int row = 0; row < static_cast<int>(maxRows); row++)
-        {
-            multiplierVect[reel][row] = 1;
-        }
-    }
+	for (int reel = 0; reel < static_cast<int>(maxReels); reel++)
+	{
+		for (int row = 0; row < static_cast<int>(maxRows); row++)
+		{
+			multiplierVect[reel][row] = 1;
+		}
+	}
 }
 
 // Convert linear index to {reel,row}
 std::vector<size_t> Grid::getGridPosition(size_t index) const
 {
-    size_t row = index / maxReels;
-    size_t reel = index - (row * maxReels);
-    return {reel, row};
+	size_t row = index / maxReels;
+	size_t reel = index - (row * maxReels);
+	return {reel, row};
 }
 
 // Convert {reel,row} to linear index
 size_t Grid::getGridIndex(size_t reel, size_t row) const
 {
-    return (row * maxReels) + reel;
+	return (row * maxReels) + reel;
 }
 
 Grid::Grid(const GameMaths& maths)
@@ -166,7 +168,7 @@ void Grid::applySpin(const SpinResult& spinResult, const bool getLockedReels)
 {
 	for (size_t reelNum = 0; reelNum < maxReels; reelNum++)
 	{
-		if (!lockedVect[reelNum] || getLockedReels)
+		if (!lockedReelVect[reelNum] || getLockedReels)
 		{
 			setSymbolsForReel(reelNum, &spinResult.reelSet, spinResult.stopIndexVect[reelNum]);
 		}
@@ -175,9 +177,17 @@ void Grid::applySpin(const SpinResult& spinResult, const bool getLockedReels)
 
 void Grid::setSymbolsForReel(const size_t reelNum, const ReelSet* reelSetPtr, const size_t reelStop)
 {
-	MEMCPY_SAFE(reelSymbolVect[reelNum].data(), reelDataBytes,
-	            &reelSetPtr->wrappedBandVect[reelNum][reelStop],
-	            reelDataBytes);
+	if (!reelHasStickySymbolVect[reelNum]) [[likely]]
+	{
+		MEMCPY_SAFE(reelSymbolVect[reelNum].data(), reelDataBytes,
+		            &reelSetPtr->wrappedBandVect[reelNum][reelStop],
+		            reelDataBytes);
+		return;
+	}
+
+	for (size_t rowNum = 0; rowNum < reelHeightVect[reelNum]; rowNum++)
+		if (!stickySymbolVect[reelNum][rowNum])
+			reelSymbolVect[reelNum][rowNum] = reelSetPtr->wrappedBandVect[reelNum][rowNum + reelStop];
 }
 
 /**************************************************/
@@ -190,7 +200,7 @@ void Grid::setSpinLock(const std::vector<int>& noSpinVect)
 {
 	clearSpinLock();
 	for (int i : noSpinVect)
-		lockedVect[i] = true;
+		lockedReelVect[i] = true;
 }
 
 // Set lockedVect = spinStateVect.
@@ -202,20 +212,70 @@ void Grid::setSpinLock(const std::vector<bool>& spinStateVect)
 		reportError("ReelSet::setSpinLock", "Passed 'spinStateVect' is the wrong size");
 		return;
 	}
-	lockedVect = spinStateVect;
+	lockedReelVect = spinStateVect;
 }
 
 
 void Grid::clearSpinLock()
 {
-	lockedVect.resize(maxReels, false);
+	lockedReelVect.resize(maxReels, false);
 }
+
+/**************************************************/
+// Sticky Symbols
+/**************************************************/
+
+void Grid::clearSticky()
+{
+	reelHasStickySymbolVect.resize(maxReels, false);
+	stickySymbolVect.resize(maxReels);
+	for (size_t reel = 0; reel < maxReels; reel++)
+		stickySymbolVect[reel].resize(maxRows, false);
+}
+
+void Grid::setSticky(const size_t reel, const size_t row, const bool isSticky)
+{
+	stickySymbolVect[reel][row] = isSticky;
+	if (isSticky && !reelHasStickySymbolVect[reel])
+	{
+		reelHasStickySymbolVect[reel] = true;
+		return;
+	}
+	if (!isSticky && reelHasStickySymbolVect[reel])
+	{
+		for (const bool cellSticky : stickySymbolVect[reel])
+			if (cellSticky) return;
+		reelHasStickySymbolVect[reel] = false;
+	}
+}
+
+void Grid::setSticky(const Symbol symbol, const bool isSticky)
+{
+	for (size_t reel = 0; reel < maxReels; reel++)
+		for (size_t row = 0; row < maxRows; row++)
+			if (reelSymbolVect[reel][row] == symbol)
+				setSticky(reel, row, isSticky);
+}
+
+void Grid::setSticky(const std::vector<Symbol>& symbols, const bool isSticky)
+{
+	for (const Symbol symbol : symbols)
+		setSticky(symbol, isSticky);
+}
+
+bool Grid::isSticky(const size_t reel, const size_t row)
+{
+	return stickySymbolVect[reel][row];
+}
+
 
 /**************************************************/
 // Set Symbols
 /**************************************************/
 
 // replace current reel symbols with 'count' of 'newSymbol' from top to bottom
+
+
 void Grid::setReelSymbols(const size_t reel, const Symbol newSymbol, const int count)
 {
 	for (int row = 0; row < count; row++)
@@ -229,11 +289,11 @@ void Grid::setReelSymbols(const size_t reel, const Symbol newSymbol)
 		reelSymbolVect[reel][row] = newSymbol;
 }
 
-// replace current reel symbols with 'newSymbol' for each element in rowVect
+// replace current reel symbols with 'newSymbol' for each element in rowVect.
 // rowVect may contain:
 //		1. An entry for each row position, each non-zero entry is set e.g. { 0,0,1}
-//		2. The indexes of rows to set e.g. {2}
-// returns vector of grid indexes that have been set
+//		2. The indexes of rows to be set e.g. {2}.
+// Returns vector of grid indexes that have been set.
 std::vector<size_t> Grid::setReelSymbols(const size_t reel, const Symbol newSymbol,
                                          const std::vector<size_t>& rowVect)
 {
@@ -266,53 +326,15 @@ std::vector<size_t> Grid::setReelSymbols(const size_t reel, const Symbol newSymb
 // Analysis
 /************************************/
 
-// count number of sym on passed reel
+// count of sym on passed reel
 // optional parameter matchType
 int Grid::getReelSymbolCount(const size_t reel, const Symbol sym,
                              const symbolMatchTypes matchType) const
 {
 	int count = 0;
-
-	if (matchType == symbolMatchTypes::exact)
-	{
-		for (int row = 0; row < reelHeightVect[reel]; ++row)
-		{
-			if (reelSymbolVect[reel][row] == sym)
-				count++;
-		}
-	}
-	else if (matchType == symbolMatchTypes::greaterEqual)
-	{
-		for (int row = 0; row < reelHeightVect[reel]; ++row)
-		{
-			if (reelSymbolVect[reel][row] >= sym)
-				count++;
-		}
-	}
-	else if (matchType == symbolMatchTypes::greater)
-	{
-		for (int row = 0; row < reelHeightVect[reel]; ++row)
-		{
-			if (reelSymbolVect[reel][row] > sym)
-				count++;
-		}
-	}
-	else if (matchType == symbolMatchTypes::lessEqual)
-	{
-		for (int row = 0; row < reelHeightVect[reel]; ++row)
-		{
-			if (reelSymbolVect[reel][row] <= sym)
-				count++;
-		}
-	}
-	else if (matchType == symbolMatchTypes::less)
-	{
-		for (int row = 0; row < reelHeightVect[reel]; ++row)
-		{
-			if (reelSymbolVect[reel][row] < sym)
-				count++;
-		}
-	}
+	for (size_t row = 0; row < reelHeightVect[reel]; ++row)
+		if (doSymbolsMatch(reelSymbolVect[reel][row], sym, matchType))
+			count++;
 	return count;
 }
 
@@ -320,9 +342,7 @@ int Grid::getSymbolCount(const Symbol sym, const symbolMatchTypes matchType) con
 {
 	int total = 0;
 	for (size_t reel = 0; reel < maxReels; ++reel)
-	{
 		total += getReelSymbolCount(reel, sym, matchType);
-	}
 	return total;
 }
 
@@ -331,47 +351,33 @@ int Grid::getSymbolCount(const Symbol sym, const symbolMatchTypes matchType) con
 std::optional<size_t> Grid::getReelSymbolRow(const size_t reel, const Symbol sym,
                                              const symbolMatchTypes matchType) const
 {
-	if (matchType == symbolMatchTypes::exact)
-	{
-		for (int row = 0; row < reelHeightVect[reel]; ++row)
-		{
-			if (reelSymbolVect[reel][row] == sym)
-				return row;
-		}
-	}
-	else if (matchType == symbolMatchTypes::greaterEqual)
-	{
-		for (int row = 0; row < reelHeightVect[reel]; ++row)
-		{
-			if (reelSymbolVect[reel][row] >= sym)
-				return row;
-		}
-	}
-	else if (matchType == symbolMatchTypes::greater)
-	{
-		for (int row = 0; row < reelHeightVect[reel]; ++row)
-		{
-			if (reelSymbolVect[reel][row] > sym)
-				return row;
-		}
-	}
-	else if (matchType == symbolMatchTypes::lessEqual)
-	{
-		for (int row = 0; row < reelHeightVect[reel]; ++row)
-		{
-			if (reelSymbolVect[reel][row] <= sym)
-				return row;
-		}
-	}
-	else if (matchType == symbolMatchTypes::less)
-	{
-		for (int row = 0; row < reelHeightVect[reel]; ++row)
-		{
-			if (reelSymbolVect[reel][row] < sym)
-				return row;
-		}
-	}
+	for (size_t row = 0; row < reelHeightVect[reel]; ++row)
+		if (doSymbolsMatch(reelSymbolVect[reel][row], sym, matchType))
+			return row;
 	return {}; // symbol not found
+}
+
+bool Grid::reelContainsSymbol(const size_t reel, const Symbol sym, const symbolMatchTypes matchType) const
+{
+	for (size_t row = 0; row < reelHeightVect[reel]; ++row)
+		if (doSymbolsMatch(reelSymbolVect[reel][row], sym, matchType))
+			return true;
+	return false;
+}
+
+bool Grid::doSymbolsMatch(const Symbol a, const Symbol b, const symbolMatchTypes matchType)
+{
+	if (matchType == symbolMatchTypes::exact)
+		return a == b;
+	if (matchType == symbolMatchTypes::greaterEqual)
+		return a >= b;
+	if (matchType == symbolMatchTypes::greater)
+		return a > b;
+	if (matchType == symbolMatchTypes::lessEqual)
+		return a <= b;
+	if (matchType == symbolMatchTypes::less)
+		return a < b;
+	return false;
 }
 
 
@@ -526,7 +532,7 @@ std::vector<int> Grid::replaceRandomSymbols(const Symbol newSymbol, const int co
 	for (int i = 0; i < count; i++)
 	{
 		const uint32 index = mathsRng.getInt(static_cast<uint32_t>(gridPosOptions.size()),
-		                                    "replaceRandomSymbolsIndex");
+		                                     "replaceRandomSymbolsIndex");
 		int gridPos = gridPosOptions[index];
 		gridPosOptions.erase(gridPosOptions.begin() + index);
 		gridPosVect.push_back(gridPos);
