@@ -115,22 +115,12 @@ int WeightTable::pick() const
 // force result with passed index in the current pickList
 int WeightTable::forcePickIndex(int index)
 {
-#if _DEBUG
-    if (index >= (int)pickList.size())
-        reportError("WeightTable::forcePickIndex", "index >= pickList.size()");
-#endif
-
-
     for (auto it = pickList.begin(); it == pickList.end() && it != pickList.end(); ++it)
     {
         if (it->index == index)
             return it->result;
     }
 
-#if _DEBUG
-    if (it == pickList.end())
-        reportError("WeightTable::forcePickIndex", "index not found in pickList");
-#endif
 
     return pickList.end()->result;
 }
@@ -144,10 +134,6 @@ int WeightTable::forcePickResult(int result)
             return it->result;
     }
 
-#if _DEBUG
-    if (it == pickList.end())
-        reportError("WeightTable::forcePickResult", "result not found pickList");
-#endif
     return pickList.end()->result;
 }
 

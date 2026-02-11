@@ -52,10 +52,13 @@ public:
 	/**
 	 * @brief Evaluate both L->R and R->L wins and optionally de-duplicate max-of-a-kind.
 	 * @param betMultiplier Wager multiplier.
+	 * @param combineType Strategy for combining multipliers - multiply or add.
 	 * @param payMaxOakTwice If false, remove duplicate 5OAK lines across directions.
 	 * @return Total win across both directions (after any de-duplication).
 	 */
-	int evaluateWins(int betMultiplier, bool payMaxOakTwice = true);
+	int evaluateWins(int betMultiplier,
+	                 MultipliersCombineType combineType = MultipliersCombineType::multiply,
+	                 bool payMaxOakTwice = true);
 
 	int evaluateScatterWins(int betMultiplier);
 
@@ -63,17 +66,19 @@ public:
 	/**
 	 * @brief Calculate wins, scanning from left to right.
 	 * @param betMultiplier Bet multiplier (multiple of minBet) used to calculate wins.
+	 * @param combineType Strategy for combining multipliers - multiply or add.
 	 * @return Total win from L->R lines.
 	 */
-	int lrWinCheck(int betMultiplier);
+	int lrWinCheck(int betMultiplier, MultipliersCombineType combineType = MultipliersCombineType::multiply);
 
 
 	/**
 	 * @brief Calculate wins scanning from right to left over paylines.
 	 * @param betMultiplier Bet multiplier (multiple of minBet) used to calculate wins.
+	 * @param combineType Strategy for combining multipliers - multiply or add.
 	 * @return Total win from R->L lines.
 	 */
-	int rlWinCheck(int betMultiplier);
+	int rlWinCheck(int betMultiplier, MultipliersCombineType combineType = MultipliersCombineType::multiply);
 
 
 	/**

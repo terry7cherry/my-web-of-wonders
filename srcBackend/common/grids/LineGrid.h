@@ -76,9 +76,11 @@ public:
     /**
      * @brief Reset win buffer, evaluate line wins, and apply line multipliers.
      * @param betMultiplier Line bet multiplier.
+     * @param combineType The strategy for combining multipliers - multiply or add
      * @return Total win for all lines.
      */
-    unsigned int evaluateWins(unsigned int betMultiplier);
+    unsigned int evaluateWins(unsigned int betMultiplier,
+                              MultipliersCombineType combineType = MultipliersCombineType::multiply);
 
 
     /**
@@ -99,7 +101,7 @@ public:
      * @brief Count multipliers in the grid that contribute to any wins.
      * @return Number of active multipliers.
      */
-    int countActiveWinMultipliers();
+    int countActiveWinMultipliers() const;
 
     /**
      * @brief Apply a gridMultiplier (or another multiplier) to all wins.

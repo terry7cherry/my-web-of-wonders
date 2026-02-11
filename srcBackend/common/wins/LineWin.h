@@ -104,6 +104,13 @@ public:
         return std::string(buffer, size);
     }
 
+    std::string getWinText(const std::map<Symbol, std::string>& symbolMap,
+                           const bool showDirection) const override
+    {
+        const std::string szSymbol = symbolMap.at(symbol);
+        return getWinText(szSymbol, showDirection);
+    }
+
     std::unique_ptr<Win> clone() const override
     {
         return std::make_unique<LineWin>(*this);

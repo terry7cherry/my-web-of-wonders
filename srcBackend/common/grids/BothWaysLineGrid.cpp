@@ -47,7 +47,9 @@ uint32_t BothWaysLineGrid::quickWinCheck()
 	return quickWinMask;
 }
 
-int BothWaysLineGrid::evaluateWins(const int betMultiplier, const bool payMaxOakTwice)
+int BothWaysLineGrid::evaluateWins(const int betMultiplier,
+                                   const MultipliersCombineType combineType,
+                                   const bool payMaxOakTwice)
 {
 	int totalWin = 0;
 
@@ -101,7 +103,7 @@ int BothWaysLineGrid::evaluateScatterWins(const int betMultiplier)
 	return totalScatterWin;
 }
 
-int BothWaysLineGrid::lrWinCheck(const int betMultiplier)
+int BothWaysLineGrid::lrWinCheck(const int betMultiplier, const MultipliersCombineType combineType)
 {
 	int totalWin = 0;
 	int lineMultiplier;
@@ -140,15 +142,14 @@ int BothWaysLineGrid::lrWinCheck(const int betMultiplier)
 			if (symbolVect[symbolToMatch].isWild || nextSymData.isWild || nextSym == symbolToMatch)
 			{
 				number++;
-				if (multiplierVect[reel][row] > 1)
-					lineMultiplier *= multiplierVect[reel][row];
+				lineMultiplier = combineMultipliers(lineMultiplier, multiplierVect[reel][row], combineType);
 				if (symbolVect[symbolToMatch].isWild)
 				{
 					if (nextSymData.isWild)
 					{
 						consecutiveWilds++;
-						if (multiplierVect[reel][row] > 1)
-							wildMultiplier *= multiplierVect[reel][row];
+						wildMultiplier = combineMultipliers(wildMultiplier, multiplierVect[reel][row],
+						                                    combineType);
 					}
 					else
 						symbolToMatch = nextSym;
@@ -198,7 +199,7 @@ int BothWaysLineGrid::lrWinCheck(const int betMultiplier)
 	return totalWin;
 }
 
-int BothWaysLineGrid::rlWinCheck(const int betMultiplier)
+int BothWaysLineGrid::rlWinCheck(const int betMultiplier, const MultipliersCombineType combineType)
 {
 	int totalWin = 0;
 	int lineMultiplier;
@@ -237,15 +238,14 @@ int BothWaysLineGrid::rlWinCheck(const int betMultiplier)
 			if (symbolVect[symbolToMatch].isWild || nextSymData.isWild || nextSym == symbolToMatch)
 			{
 				number++;
-				if (multiplierVect[reel][row] > 1)
-					lineMultiplier *= multiplierVect[reel][row];
+				lineMultiplier = combineMultipliers(lineMultiplier, multiplierVect[reel][row], combineType);
 				if (symbolVect[symbolToMatch].isWild)
 				{
 					if (nextSymData.isWild)
 					{
 						consecutiveWilds++;
-						if (multiplierVect[reel][row] > 1)
-							wildMultiplier *= multiplierVect[reel][row];
+						wildMultiplier = combineMultipliers(wildMultiplier, multiplierVect[reel][row],
+						                                    combineType);
 					}
 					else
 						symbolToMatch = nextSym;

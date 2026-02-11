@@ -39,3 +39,16 @@ uint32_t PayGrid::quickWinCheck()
     }
     return quickWinMask;
 }
+
+static unsigned int combineMultipliers(const unsigned int previousMultiplier,
+                                       const unsigned int newMultiplier,
+                                       const MultipliersCombineType combineType)
+{
+    if (newMultiplier <= 1)
+        return previousMultiplier;
+    if (combineType == MultipliersCombineType::multiply)
+        return previousMultiplier * newMultiplier;
+    if (previousMultiplier <= 1)
+        return newMultiplier;
+    return previousMultiplier + newMultiplier;
+}

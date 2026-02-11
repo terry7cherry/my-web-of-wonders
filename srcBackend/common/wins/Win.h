@@ -77,8 +77,8 @@ public:
      * @brief Format the win as text using a symbol map.
      * @return For example: "Line 7: 3 H1 = 40 [x2 line multiplier = 80]".
      */
-    std::string getWinText(const std::map<Symbol, std::string>& symbolMap,
-                           bool showDirection = false) const;
+    virtual std::string getWinText(const std::map<Symbol, std::string>& symbolMap,
+                                   bool showDirection = false) const;
 
     // Polymorphic clone to preserve derived data when copying via base pointer
     virtual std::unique_ptr<Win> clone() const { return std::make_unique<Win>(*this); }

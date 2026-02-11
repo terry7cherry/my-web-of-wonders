@@ -17,7 +17,7 @@ unsigned int Win::applyMultiplier(const unsigned int newMultiplier,
                              : multiplier + newMultiplier;
         else if (combineType == MultipliersCombineType::multiply)
             multiplier *= newMultiplier;
-        totalWin = static_cast<unsigned int>(win * multiplier);
+        totalWin = win * multiplier;
     }
     return totalWin;
 }
