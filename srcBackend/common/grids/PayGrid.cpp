@@ -23,11 +23,11 @@ void PayGrid::reset()
 uint32_t PayGrid::quickWinCheck()
 {
     quickWinMask = 0xFFFFFFFF;
-    int reelsToCheck = 0;
+    unsigned int reelsToCheck = 0;
 
     reelsToCheck = payTable.minWinSymbols;
 
-    for (int reel = 0; quickWinMask && reel < reelsToCheck; ++reel)
+    for (size_t reel = 0; quickWinMask && reel < reelsToCheck; ++reel)
     {
         uint32_t reelMask = 0;
         for (int row = 0; row < reelHeightVect[reel]; ++row)

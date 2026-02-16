@@ -61,4 +61,5 @@ public:
     TypeConfig<ThresholdTable<int>>& awards = intThresholdTables;
 
     Json::Value toJson() const;
+    static std::string getFrontendMathsSheetName();
 };

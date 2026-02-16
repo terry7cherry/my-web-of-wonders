@@ -4,9 +4,7 @@
  * @brief Symbol properties and payout lookup table.
  */
 
-#include <absl/container/flat_hash_map.h>
 #include <json/value.h>
-//#include "../../statistics/MeterFile.h"
 
 
 /************************************/
@@ -14,7 +12,7 @@
 /************************************/
 typedef struct
 {
-    int index;
+    Symbol symbol;
     bool isWild;
     int wildIndex;
     bool substWild;

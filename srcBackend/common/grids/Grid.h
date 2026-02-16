@@ -431,6 +431,16 @@ public:
     bool reelContainsSymbol(size_t reel, Symbol sym,
                             symbolMatchTypes matchType = symbolMatchTypes::exact) const;
 
+    /**
+     * @brief Check if reel contains matching symbol (multiple symbols to match).
+     * @param reel Reel index.
+     * @param symVect Symbols to find.
+     * @param matchType Comparison mode (exact/greater/etc.).
+     * @return Was symbol found?
+     */
+    bool reelContainsSymbol(size_t reel, const std::vector<Symbol>& symVect,
+                            symbolMatchTypes matchType = symbolMatchTypes::exact) const;
+
     static bool doSymbolsMatch(Symbol a, Symbol b, symbolMatchTypes matchType = symbolMatchTypes::exact);
 
     /************************************/

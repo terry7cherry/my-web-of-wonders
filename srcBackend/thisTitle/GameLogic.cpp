@@ -84,6 +84,8 @@ namespace GameLogic
 
     void checkForFreeSpinsTrigger(const GameMaths& maths, GameCycle& cycle)
     {
+        cycle.fsTrigger = false;
+        return;
         cycle.baseNumScatters = countBaseScatters(maths, cycle);
         cycle.fsInitialSpins = maths.awards["fsStartSpins"][cycle.baseNumScatters];
         if (cycle.fsInitialSpins) cycle.fsTrigger = true;

@@ -21,6 +21,7 @@ export default class Grid {
                     suspenseSymbol,
                     simultaneousWinLineAnimations,
                     winLineColour,
+                    waysWinColour,
                 }) {
         this.reelWidth = Math.round(width / numReels);
         this.symbolHeight = Math.round(height / numRows);
@@ -48,6 +49,7 @@ export default class Grid {
         this.getReelStartingPositions();
         this.simultaneousWinLineAnimations = simultaneousWinLineAnimations;
         this.winLineColour = winLineColour;
+        this.waysWinColour = waysWinColour;
     }
 
     createReels() {
@@ -119,7 +121,7 @@ export default class Grid {
             const numRandomSymbolsToAdd = Math.floor((r + reel.addedTime + 1) * (2 + Math.random() * 2));
             this.addRandomSymbolsToReel(reel, r, numRandomSymbolsToAdd);
             [...symbols[r]].reverse().forEach((symbol) => {
-                this.addSymbolToTopOfReel(r, symbol);
+                this.addSymbolToTopOfReel(r, symbol, this.height / symbols[r].length);
             });
             const totalFrames = (r + reel.addedTime + 1) * 20;
             const apertureAnimations = reel.apertures.map((aperture, a) => {
@@ -177,28 +179,36 @@ export default class Grid {
         reel.container.addChild(symbol.container);
     }
 
-    addSymbolToTopOfReel(reelNum, symbolName) {
+    addSymbolToTopOfReel(reelNum, symbolName, height) {
         const reel = this.reels[reelNum];
-        const symbol = this.getSymbol(symbolName);
-        symbol.container.y = reel.apertures[0].container.y - this.symbolHeight;
+        const symbol = this.getSymbol(symbolName, height);
+        symbol.container.y = reel.apertures[0].container.y - symbol.height;
         reel.apertures.unshift(symbol);
         reel.container.addChild(symbol.container);
     }
 
-    getSymbol(symbolName) {
+    getSymbol(symbolName, height) {
         const container = new PIXI.Container();
         const backgroundContainer = new PIXI.Container();
         container.addChild(backgroundContainer);
-        const symbol = this.getSymbolImageOrText(symbolName);
+        const symbol = this.getSymbolImageOrText(symbolName, height);
         symbol.x = (this.reelWidth - symbol.width) / 2;
-        symbol.y = (this.symbolHeight - symbol.height) / 2;
+        symbol.y = ((height ?? this.symbolHeight) - symbol.height) / 2;
         container.addChild(symbol);
         const overlayContainer = new PIXI.Container();
         container.addChild(overlayContainer);
-        return {container, backgroundContainer, overlayContainer, symbol, symbolCode: symbolName, symbolName};
+        return {
+            container,
+            backgroundContainer,
+            overlayContainer,
+            height: height ?? this.symbolHeight,
+            symbol,
+            symbolCode: symbolName,
+            symbolName
+        };
     }
 
-    getSymbolImageOrText(symbolName) {
+    getSymbolImageOrText(symbolName, height) {
         const texture = this.imageMap[symbolName];
         if (!texture) {
             return this.getSymbolText(symbolName);
@@ -206,7 +216,7 @@ export default class Grid {
         const symbol = new PIXI.Sprite(texture);
         symbol.scale.set(
             this.reelWidth / symbol.width,
-            this.symbolHeight / symbol.height,
+            (height ?? this.symbolHeight) / symbol.height,
         );
         symbol.isImage = true;
         return symbol;
@@ -230,7 +240,7 @@ export default class Grid {
         const aperture = this.reels[reelNum].apertures[symbolNum];
         const background = new PIXI.Graphics();
         background.beginFill(colour);
-        background.drawRect(0, 0, this.reelWidth, this.symbolHeight);
+        background.drawRect(0, 0, this.reelWidth, aperture.height);
         background.endFill();
         aperture.backgroundContainer.addChild(background);
         aperture.background = background;
@@ -247,8 +257,8 @@ export default class Grid {
         const frame = new PIXI.Graphics();
         frame.moveTo(width / 2, width / 2);
         frame.lineStyle(width, colour, 1, 0.5);
-        frame.lineTo(width / 2, this.symbolHeight - width / 2);
-        frame.lineTo(this.reelWidth - width / 2, this.symbolHeight - width / 2);
+        frame.lineTo(width / 2, aperture.height - width / 2);
+        frame.lineTo(this.reelWidth - width / 2, aperture.height - width / 2);
         frame.lineTo(this.reelWidth - width / 2, width / 2);
         frame.lineTo(0, width / 2);
         aperture.overlayContainer.addChild(frame);
@@ -280,7 +290,7 @@ export default class Grid {
         }
         const textObject = this.getSymbolText(text, textStyle);
         textObject.x = textStyle.x ?? (this.reelWidth - textObject.width) / 2;
-        textObject.y = textStyle.y ?? (this.symbolHeight - textObject.height);
+        textObject.y = textStyle.y ?? (aperture.height - textObject.height);
         aperture.overlayContainer.addChild(textObject)
         aperture.overlayText = textObject;
     }
@@ -295,17 +305,17 @@ export default class Grid {
         return new Promise((resolve, reject) => {
             const reel = this.reels[reelNum];
             const oldAperture = reel.apertures[symbolNum];
-            const newAperture = this.getSymbol(newSymbolName);
+            const newAperture = this.getSymbol(newSymbolName, oldAperture.height);
             const newSymbol = newAperture.symbol;
             newAperture.container.x = oldAperture.container.x;
             newAperture.container.y = oldAperture.container.y;
-            newSymbol.y = newSymbol.y + this.symbolHeight;
+            newSymbol.y = newSymbol.y + oldAperture.height;
             const mask = new Mask({
                 parent: this.container,
                 x: reelNum * this.reelWidth,
                 y: oldAperture.container.y,
                 width: this.reelWidth,
-                height: this.symbolHeight
+                height: oldAperture.height
             });
             oldAperture.container.mask = mask;
             newAperture.container.mask = mask;
@@ -314,13 +324,13 @@ export default class Grid {
             const animateOldSymbol = moveElement({
                 element: oldSymbol,
                 newX: oldSymbol.x,
-                newY: oldSymbol.y - this.symbolHeight,
+                newY: oldSymbol.y - oldAperture.height,
                 pixelsPerFrame: speed ?? 4
             })
             const animateNewSymbol = moveElement({
                 element: newSymbol,
                 newX: newSymbol.x,
-                newY: newSymbol.y - this.symbolHeight,
+                newY: newSymbol.y - newAperture.height,
                 pixelsPerFrame: speed ?? 4
             })
             Promise.all([animateOldSymbol, animateNewSymbol]).then(() => {
@@ -405,6 +415,29 @@ export default class Grid {
         })
     }
 
+    animateScatterOrWaysWin(win) {
+        return new Promise((resolve, reject) => {
+            const flashTime = 40;
+            const offTime = 20;
+            win.positions.forEach(({reel, row}) => {
+                this.addFrameToSymbol(reel, row, this.waysWinColour, 10);
+            })
+            let elapsedFrames = 0;
+            let flashing = true;
+            const animate = (delta) => {
+                elapsedFrames += delta;
+                if (elapsedFrames > flashTime && flashing) {
+                    flashing = false;
+                    win.positions.forEach(({reel, row}) => this.removeFrameFromSymbol(reel, row));
+                } else if (elapsedFrames > flashTime + offTime) {
+                    PIXI.Ticker.shared.remove(animate);
+                    return resolve();
+                }
+            }
+            PIXI.Ticker.shared.add(animate);
+        })
+    }
+
     async animateWins(wins) {
         const lineWins = wins.filter(({winType}) => winType == "line");
         if (this.simultaneousWinLineAnimations) {
@@ -413,6 +446,10 @@ export default class Grid {
             for (let win of lineWins) {
                 await this.animateWinLine(win);
             }
+        }
+        const waysAndScatterWins = wins.filter(({winType}) => ["way", "ways", "scatter"].includes(winType));
+        for (let win of waysAndScatterWins) {
+            await this.animateScatterOrWaysWin(win);
         }
     }
 }

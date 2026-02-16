@@ -31,9 +31,11 @@ int reportCountLimit = 100 * MILLION;
 int reportCount = reportAtCount;
 
 
-void showRtpReport(const uint64_t gamesPlayed, const uint64_t totalBet)
+void showRtpReport(const uint64_t gamesPlayed, const uint64_t totalBet, const uint64_t simSize)
 {
-	std::printf("\033[1A\r%s%10" PRIu64 " spins. RTP ", "\n", gamesPlayed);
+	std::printf("\033[1A\r%s%10" PRIu64 " spins. %.2f%% complete. " "RTP", "\n", gamesPlayed,
+	            static_cast<double>(100 * static_cast<long double>(gamesPlayed) / static_cast<long double>(
+		            simSize)));
 	const long double percent = static_cast<long double>(GameCycleCompleteEvent::eventTotalWin.global()) * 100
 		/ static_cast<double>(totalBet);
 	std::printf(": %s=%6.2Lf%%", "total", percent);
@@ -106,7 +108,7 @@ void doMonteCarloStdMultiThread(const GameMaths& gameMaths, const int bet, const
 		const uint64_t current = GameCycleCompleteEvent::eventTotalHits.global();
 		if (current != last_seen)
 		{
-			showRtpReport(current, bet * current);
+			showRtpReport(current, bet * current, config.simSize);
 			last_seen = current;
 		}
 		std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -142,7 +144,7 @@ void doMonteCarloStd(const GameMaths& gameMaths, const int bet, const UserConfig
 		if (--reportCount == 0)
 		{
 			int64_t gamesPlayed = gameCount + 1;
-			showRtpReport(gamesPlayed, bet * gamesPlayed);
+			showRtpReport(gamesPlayed, bet * gamesPlayed, config.simSize);
 			if ((reportAtCount != reportCountLimit) && (gamesPlayed == (10 * reportAtCount)))
 				reportAtCount *= 10;
 			reportCount = reportAtCount;
@@ -205,14 +207,23 @@ int simulatorMain()
 		GameMaths& gameMaths = *parSheet.gameMathsVariants[config.betType][config.rtp];
 		const int bet = static_cast<int>(gameMaths.minBet * gameMaths.betTypeCost);
 #ifdef SINGLETHREAD
-	doMonteCarloStd(gameMaths, bet, config);
+		doMonteCarloStd(gameMaths, bet, config);
 #else
-	doMonteCarloStdMultiThread(gameMaths, bet, config);
+		doMonteCarloStdMultiThread(gameMaths, bet, config);
 #endif
 	}
 #endif
 	return
 		0;
+}
+
+int rnStreamMain()
+{
+	mathsRng.setRng(RngOptions::data);
+	std::filesystem::path filePath = std::filesystem::path(GAME_SOURCE_DIR) / "srcBackend" / "thisTitle" /
+		"parSheets" / "rnStream.csv";
+	const int bet = dynamic_cast<RngData*>(mathsRng.lpRng)->openDataFile(filePath);
+	return 0;
 }
 
 int main()
@@ -222,7 +233,11 @@ int main()
 #ifdef FRONTEND
 		return frontendMain();
 #else
+#ifdef RN_STREAM
+		return rnStreamMain();
+#else
 		return simulatorMain();
+#endif
 #endif
 	}
 	catch (std::exception& e)

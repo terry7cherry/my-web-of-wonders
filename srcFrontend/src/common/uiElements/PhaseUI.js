@@ -33,6 +33,7 @@ export default class PhaseUI {
      * @param {number} [colours.leftPanelColour] - Colour of the left panel.
      * @param {number} [colours.rightPanelColour] - Colour of the right panel.
      * @param {number} [colours.winLineColour=0xf80000] - Colour for win line animations.
+     * @param {number} [colours.waysWinColour=0xf80000] - Colour for ways win animations.
      * @param {number} [colours.backgroundColour=0x1099bb] - PIXI app background colour for MGame etc.
      * @param {number} [grid.numReels] - Override numReels in maths.
      * @param {number} [grid.numRows] - Override numRows in maths.
@@ -160,6 +161,7 @@ export default class PhaseUI {
             suspenseSymbol: this.gridOptions.suspenseSymbol,
             simultaneousWinLineAnimations: this.gridOptions.simultaneousWinLineAnimations,
             winLineColour: this.colours.winLineColour ?? 0xf80000,
+            waysWinColour: this.colours.waysWinColour ?? 0xf80000,
         });
     }
 

@@ -25,6 +25,7 @@ void WaysWin::resizeVectors(void)
     reelCountVect.resize(maxReels, 0);
     wildCountVect.resize(maxReels, 0);
     winPosVect.resize(maxReels);
+    positions.reserve(maxReels * maxRows);
     for (int i = 0; i < maxReels; i++)
         winPosVect[i].resize(maxRows, 0);
 }
@@ -38,9 +39,9 @@ void WaysWin::setWildWin(const bool isWild)
 
 // Add new position (reel, row) for the winning symbol. 
 // Parameter isWild identifies the position as a symbol or a wild
-void WaysWin::addPosition(int reel, int row, bool isWild)
+void WaysWin::addPosition(size_t reel, size_t row, bool isWild)
 {
-    positions.push_back(std::make_pair(reel, row));
+    positions.emplace_back(reel, row);
     reelCountVect[reel]++;
     if (isWild)
         wildCountVect[reel]++;
@@ -65,11 +66,11 @@ int WaysWin::setWays(void)
 }
 
 // Calculates the total win and returns it
-int WaysWin::setWin(const PayTable* lpPayTable, const int betMultiplier)
+int WaysWin::setWin(const PayTable& payTable, const int betMultiplier)
 {
     if (setWays() > 0)
     {
-        win = lpPayTable->getWin(symbol, oak) * betMultiplier;
+        win = payTable.getWin(symbol, oak) * betMultiplier;
         if (win) totalWin = win * ways * multiplier;
     }
     return totalWin;
@@ -115,9 +116,9 @@ std::string WaysWin::getWinText(std::string szSymbol) const
 
 // Generates text that describes the WayWin
 // returns string in the format, "3 H1(100) x2 ways [x2 multiplier ] = 400"
-std::string WaysWin::getWinText(std::map<int, std::string>& symbolMap) const
+std::string WaysWin::getWinText(const std::map<int, std::string>& symbolMap) const
 {
-    std::string szSymbol = symbolMap[symbol];
+    const std::string szSymbol = symbolMap.at(symbol);
     return getWinText(szSymbol);
 }
 

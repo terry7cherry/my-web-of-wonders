@@ -467,7 +467,8 @@ SymbolWeightTable TaggedSymbolWeightTable::parseWeightTable(const TaggedRange& t
                 outcomeVector.push_back(it->second);
             else
                 throw std::runtime_error(
-                    "Unknown symbol '" + valueStr + "' at " + taggedRange.getCellLocationString(rowNum, 0));
+                    "Unknown symbol '" + valueStr + "' at " + taggedRange.getCellLocationString(rowNum, 0) +
+                    ". Unsure this symbol is in the pay table, even if it doesn't pay.");
         }
     }
     return SymbolWeightTable(weightVector, outcomeVector, taggedRange.name);
@@ -567,7 +568,7 @@ PayTable TaggedPayTable::parsePayTable(const TaggedRange& taggedRange)
         payTableVect.push_back(symbolVect);
         const Symbol symbolId = static_cast<Symbol>(rowNum) - 1;
         const std::string& payType = row[1];
-        if (payType == "line")
+        if (payType == "line" || payType == "ways" || payType == "way")
             paySymVect.push_back(symbolId);
         else if (payType == "lineNoWild")
         {
@@ -630,7 +631,9 @@ Symbol TaggedSymbol::convertValue(const std::string& valueStr,
 
     auto it = symbolIndexMap.find(valueStr);
     if (it != symbolIndexMap.end()) return it->second;
-    throw std::runtime_error("Unknown symbol '" + valueStr + "' at " + cellLocation);
+    throw std::runtime_error(
+        "Unknown symbol '" + valueStr + "' at " + cellLocation +
+        ". Ensure this symbol is present in pay table, even if it does not pay.");
 }
 
 std::vector<Symbol> TaggedSymbolVector::convertValue(const std::string& valueStr,

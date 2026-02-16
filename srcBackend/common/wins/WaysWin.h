@@ -21,6 +21,7 @@ public:
 	int ways = 1; // how many ways for this 'oak' of 'symbol'
 	bool isWildWin = false;
 	int wildWays = 1;
+	bool analysisComplete = false;
 	std::vector<int> reelCountVect; // how many 'symbol' on each reel
 	std::vector<int> wildCountVect; // how many wilds on each reel
 	std::vector<std::pair<size_t, size_t>> positions{};
@@ -61,7 +62,7 @@ public:
 
 	// Add new position (reel, row) for the winning symbol. 
 	// Parameter isWild identifies the position as a symbol or a wild
-	void addPosition(int reel, int row, bool isWild);
+	void addPosition(size_t reel, size_t row, bool isWild);
 
 	// Calculates the number of winning ways and returns that value
 	// Call once, after all reels have been checked
@@ -71,9 +72,9 @@ public:
 	// Needs the following code sequence
 	//		if (this.setWays())
 	//		{
-	//			if(winVal = lpPayTable->getWin(this.symbol, this.oak))
+	//			if(winVal = payTable.getWin(this.symbol, this.oak))
 	//				this.setWin(winVal * betMultiplier)
-	int setWin(const PayTable* lpPayTable, int betMultiplier);
+	int setWin(const PayTable& payTable, int betMultiplier);
 
 	// Generates text that describes the WayWin
 	// returns string in the format, "3 H1(100) x2 ways [x2 multiplier ] = 400"
@@ -81,7 +82,7 @@ public:
 
 	// Generates text that describes the WayWin
 	// returns string in the format, "3 H1(100) x2 ways [x2 multiplier ] = 400"
-	std::string getWinText(std::map<int, std::string>& symbolMap) const;
+	std::string getWinText(const std::map<int, std::string>& symbolMap) const;
 
 	Json::Value toJson(const std::vector<std::string>& symbolNames) const override;
 

@@ -23,7 +23,7 @@ UserConfig::UserConfig()
 }
 
 UserConfig::UserConfig(const std::string& cachedConfig)
-    : simSize(std::stoi(split(cachedConfig).at(1))),
+    : simSize(std::stoull(split(cachedConfig).at(1))),
       parSheet(split(cachedConfig).at(0)),
       rtp(std::stoi(split(cachedConfig).at(2))),
       betType(split(cachedConfig).at(3)),
@@ -65,7 +65,7 @@ UserConfig UserConfig::getNewOrCachedConfig()
         const std::vector<std::string> elements = split(line);
         std::vector<std::string> choice;
         choice.emplace_back(elements.at(0));
-        choice.emplace_back(std::to_string(std::stoi(elements.at(1)) / MILLION));
+        choice.emplace_back(std::to_string(std::stoull(elements.at(1)) / MILLION));
         choice.emplace_back(elements.at(2));
         choice.emplace_back(elements.at(3));
         choice.emplace_back(Forces::simForceNames.at(std::stoi(elements.at(4))));
@@ -332,7 +332,7 @@ uint64_t UserConfig::getUserSimSizeChoice()
 {
     return getUserInputAsInt("SET SIM SIZE",
                              "Enter number of games to simulate in millions. (press Enter for 1b)"
-    ).value_or(1000) * MILLION;
+    ).value_or(1000) * static_cast<uint64_t>(MILLION);
 }
 
 Forces::SimForce UserConfig::stringToForce(const std::string& stringValue)

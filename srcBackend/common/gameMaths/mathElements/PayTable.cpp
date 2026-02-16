@@ -36,8 +36,8 @@ PayTable::PayTable(
             }
         }
 
-        if (minPaySymbolsVect[iSym] != -1 &&
-            (minWinSymbols == -1 || minPaySymbolsVect[iSym] < minWinSymbols))
+        if (minPaySymbolsVect[iSym] != 0 &&
+            (minWinSymbols == 0 || minPaySymbolsVect[iSym] < minWinSymbols))
         {
             // got winning symbols and they are the lowest seen so far
             minWinSymbols = minPaySymbolsVect[iSym];
@@ -55,7 +55,7 @@ void PayTable::symbolsInit(const unsigned int symbolCount)
 
     for (Symbol i = 0u; i < symbolCount; i++)
     {
-        symbolVect[i].index = i;
+        symbolVect[i].symbol = i;
         symbolVect[i].substWild = true; // assume wilds substitutes for all
         symbolVect[i].mask = (1 << i); // create a mask for all
         symbolVect[i].payMask = 0; // assume not a pay symbol

@@ -365,6 +365,16 @@ bool Grid::reelContainsSymbol(const size_t reel, const Symbol sym, const symbolM
 	return false;
 }
 
+bool Grid::reelContainsSymbol(const size_t reel, const std::vector<Symbol>& symVect,
+                              const symbolMatchTypes matchType) const
+{
+	for (size_t row = 0; row < reelHeightVect[reel]; ++row)
+		for (const Symbol sym : symVect)
+			if (doSymbolsMatch(reelSymbolVect[reel][row], sym, matchType))
+				return true;
+	return false;
+}
+
 bool Grid::doSymbolsMatch(const Symbol a, const Symbol b, const symbolMatchTypes matchType)
 {
 	if (matchType == symbolMatchTypes::exact)

@@ -15,3 +15,8 @@ Json::Value GameMaths::toJson() const
     config["suspenseSymbol"] = payTables["default"].symbolNames[symbols["fsTriggerSymbol"]];
     return config;
 }
+
+std::string GameMaths::getFrontendMathsSheetName()
+{
+    return "ways.xlsx";
+}

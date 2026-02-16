@@ -122,7 +122,10 @@ public:
 
         std::printf("%20s,", T::phaseName.c_str()); // Event
         std::printf("%11.2f%%,", static_cast<long double>(totalWin) * 100.0 / totalBet); // RTP
-        std::printf("%12.2f,", static_cast<long double>(plays) / (hitCount ? hitCount : 1)); // HitRate
+        if (hitCount)
+            std::printf("%12.2f,", static_cast<long double>(plays) / (hitCount)); // HitRate
+        else
+            std::printf("%12s,", "Inf");
         std::printf("%12.2f,", hitCount ? static_cast<long double>(totalWin) / hitCount / betAmount : 0);
         // AvgPay
         std::printf("%12.2f,", winCount ? static_cast<long double>(totalWin) / winCount / betAmount : 0);

@@ -13,7 +13,7 @@
 #ifdef FRONTEND
 void API::startAPIServer()
 {
-	ParSheet parSheet("test.xlsx");
+	ParSheet parSheet(GameMaths::getFrontendMathsSheetName());
 	const GameMaths& maths = *parSheet.gameMathsVariants["default"][96];
 	GameSession session(maths.minBet, maths);
 	using namespace drogon;
