@@ -159,6 +159,7 @@ endif ()
 # --------------------------------------------------------------------
 option(FRONTEND_DEV "Enable frontend dev server" OFF)
 option(FRONTEND "Enable frontend release server" OFF)
+option(RN_STREAM "Run using RN stream CSV file" OFF)
 
 if (FRONTEND AND NOT FRONTEND_DEV)
     message(STATUS "Frontend release build is enabled (npm run build).")
@@ -173,6 +174,12 @@ if (FRONTEND AND NOT FRONTEND_DEV)
     add_dependencies(cpp-game frontend_build)
 else ()
     message(STATUS "Frontend release build is disabled (no npm run build).")
+endif ()
+
+if (RN_STREAM)
+    target_compile_definitions(cpp-game PUBLIC
+            RN_STREAM=1
+    )
 endif ()
 
 

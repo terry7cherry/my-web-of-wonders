@@ -16,11 +16,6 @@
         "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
         "VCPKG_TARGET_TRIPLET": "x64-windows"
-      },
-      "vendor": {
-        "jetbrains.com/clion": {
-          "runInExternalConsole": true
-        }
       }
     },
     {
@@ -32,11 +27,6 @@
         "CMAKE_BUILD_TYPE": "Release",
         "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
         "VCPKG_TARGET_TRIPLET": "x64-windows"
-      },
-      "vendor": {
-        "jetbrains.com/clion": {
-          "runInExternalConsole": true
-        }
       }
     },
     {
@@ -51,11 +41,6 @@
         "VCPKG_TARGET_TRIPLET": "x64-windows",
         "FRONTEND": "ON",
         "FRONTEND_DEV": "ON"
-      },
-      "vendor": {
-        "jetbrains.com/clion": {
-          "runInExternalConsole": true
-        }
       }
     },
     {
@@ -69,11 +54,31 @@
         "VCPKG_TARGET_TRIPLET": "x64-windows",
         "FRONTEND": "ON",
         "FRONTEND_DEV": "ON"
-      },
-      "vendor": {
-        "jetbrains.com/clion": {
-          "runInExternalConsole": true
-        }
+      }
+    },
+    {
+      "name": "windows-rn-stream-debug",
+      "displayName": "Windows RN Stream Debug",
+      "description": "Debug RN Stream build using Visual Studio toolchain.",
+      "generator": "Visual Studio 17 2022",
+      "binaryDir": "${sourceDir}/build/windows-rn-stream-debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+        "VCPKG_TARGET_TRIPLET": "x64-windows",
+        "RN_STREAM": "ON"
+      }
+    },
+    {
+      "name": "windows-rn-stream",
+      "displayName": "Windows RN Stream",
+      "generator": "Visual Studio 17 2022",
+      "binaryDir": "${sourceDir}/build/windows-rn-stream",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+        "VCPKG_TARGET_TRIPLET": "x64-windows",
+        "RN_STREAM": "ON"
       }
     },
     {
@@ -86,11 +91,6 @@
         "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
         "VCPKG_TARGET_TRIPLET": "arm64-osx"
-      },
-      "vendor": {
-        "jetbrains.com/clion": {
-          "runInExternalConsole": true
-        }
       }
     },
     {
@@ -102,11 +102,6 @@
         "CMAKE_BUILD_TYPE": "Release",
         "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
         "VCPKG_TARGET_TRIPLET": "arm64-osx"
-      },
-      "vendor": {
-        "jetbrains.com/clion": {
-          "runInExternalConsole": true
-        }
       }
     },
     {
@@ -121,11 +116,6 @@
         "VCPKG_TARGET_TRIPLET": "arm64-osx",
         "FRONTEND": "ON",
         "FRONTEND_DEV": "ON"
-      },
-      "vendor": {
-        "jetbrains.com/clion": {
-          "runInExternalConsole": true
-        }
       }
     },
     {
@@ -139,11 +129,31 @@
         "VCPKG_TARGET_TRIPLET": "arm64-osx",
         "FRONTEND": "ON",
         "FRONTEND_DEV": "ON"
-      },
-      "vendor": {
-        "jetbrains.com/clion": {
-          "runInExternalConsole": true
-        }
+      }
+    },
+    {
+      "name": "macos-rn-stream-debug",
+      "displayName": "macOS RN Stream Debug",
+      "description": "Debug RN Stream build using Apple Clang and vcpkg manifest",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/macos-rn-stream-debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+        "VCPKG_TARGET_TRIPLET": "arm64-osx",
+        "RN_STREAM": "ON"
+      }
+    },
+    {
+      "name": "macos-rn-stream",
+      "displayName": "macOS RN Stream",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/macos-rn-stream",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+        "VCPKG_TARGET_TRIPLET": "arm64-osx",
+        "RN_STREAM": "ON"
       }
     }
   ]

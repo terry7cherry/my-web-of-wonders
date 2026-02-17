@@ -50,6 +50,8 @@ public:
 	inline static PayTableMeter payTableHits;
 	inline static PayTableMeter payTableWinnings;
 
+	std::string prettyPrint(const std::string& baseIndent) override;
+
 protected:
 	Json::Value toJson() const override;
 

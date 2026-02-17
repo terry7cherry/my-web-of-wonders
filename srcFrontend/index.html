@@ -95,6 +95,18 @@
             min-width: 150px; /* optional: minimum width */
         }
 
+        /* RN Stream row: input + button side-by-side */
+        .rn-stream-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .rn-stream-row input[type="text"] {
+            flex: 1;
+            min-width: 150px;
+        }
+
     </style>
 </head>
 <body>
@@ -134,6 +146,12 @@
                 <label for="bet-type-selector">Bet Type:</label>
                 <select id="bet-type-selector"></select>
             </div>
+
+        </div>
+        <h3>RN Stream</h3>
+        <div class="rn-stream-row">
+            <input id="rn-stream" type="text" placeholder="Enter RN stream..."/>
+            <button id="rn-stream-spin">Spin</button>
         </div>
     </div>
 </div>

@@ -84,3 +84,31 @@ void WinAnalysisEvent::consoleReportRTP(const uint64_t simGames,
         }
     }
 }
+
+std::string WinAnalysisEvent::prettyPrint(const std::string& baseIndent)
+{
+    Json::Value jsonEvent = toJson();
+    for (auto& win : jsonEvent["wins"])
+    {
+        std::string prettyPayLine = "";
+        for (const auto& aperture : win["payLine"])
+            prettyPayLine += aperture.asString() + " ";
+        win["payLine"] = prettyPayLine;
+    }
+
+    Json::StreamWriterBuilder builder;
+    builder["indentation"] = "  "; // two spaces (default is 3)
+
+    std::string json = Json::writeString(builder, jsonEvent);
+
+    std::ostringstream out;
+    std::istringstream in(json);
+    std::string line;
+
+    while (std::getline(in, line))
+    {
+        out << baseIndent << line << '\n';
+    }
+
+    return out.str();
+}

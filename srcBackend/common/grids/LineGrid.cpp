@@ -117,8 +117,7 @@ unsigned int LineGrid::evaluateWins(const unsigned int betMultiplier,
         unsigned int symbolCount = this->getSymbolCount(scatterSymbol);
         if (symbolCount < payTable.minPaySymbolsVect[scatterSymbol])
             continue;
-        if (unsigned int win = betMultiplier * static_cast<unsigned int>(payLines.lineCount)
-            * payTable.getWin(scatterSymbol, symbolCount))
+        if (unsigned int win = betMultiplier * payTable.getWin(scatterSymbol, symbolCount))
         {
             totalWin += win;
 

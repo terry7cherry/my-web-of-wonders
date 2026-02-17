@@ -12,6 +12,7 @@
 #include "../threadSafeMeters/IntSumMeter.h"
 #include "../threadSafeMeters/DistributionMeter.h"
 #include "../threadSafeMeters/IntMaxMeter.h"
+#include "../rng/MathsRng.h"
 
 /**
  * @brief Base for Events signalling end of phase (base game, bonus, free spins, whole game).
@@ -25,12 +26,14 @@ public:
     /** @brief Name used for output to console and file. */
     inline static std::string phaseName = "Template";
     const unsigned int totalWin;
+    inline static bool countsAsSpinForRnStream = true;
 
     /**
      * @param phaseWin Win for the completed phase.
      */
     explicit PhaseCompleteTemplate(const int phaseWin) : totalWin(phaseWin)
     {
+        if (T::countsAsSpinForRnStream) mathsRng.endSpinSequence(phaseWin);
     }
 
     /**

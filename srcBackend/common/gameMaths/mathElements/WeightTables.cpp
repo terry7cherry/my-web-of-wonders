@@ -95,7 +95,7 @@ int WeightTable::pick() const
     }
     else
     {
-        const int32 rand = mathsRng.getInt(range, szPicker.c_str());
+        const int32 rand = mathsRng.randInt(range, std::string("weight table - ") + szPicker.c_str());
         for (it = pickList.begin(); it != pickList.end(); ++it)
         {
             if (rand < it->range)

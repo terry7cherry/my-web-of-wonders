@@ -124,10 +124,14 @@ export default class StandardGameUI {
         this.app.stop();
 
         // Destroy PIXI internals
+        // IMPORTANT: Do NOT destroy textures/baseTextures here because they are shared
+        // via the global imageMap (loaded once through PIXI.Assets). Destroying them
+        // invalidates those references on subsequent reloads, causing errors like
+        // "texture.baseTexture is undefined" when creating new Sprites.
         this.app.destroy(true, {
             children: true,
-            texture: true,
-            baseTexture: true,
+            texture: false,
+            baseTexture: false,
         });
 
         // Remove canvas from DOM if still attached

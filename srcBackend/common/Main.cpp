@@ -164,6 +164,33 @@ void doMonteCarloStd(const GameMaths& gameMaths, const int bet, const UserConfig
 	                   gameMaths.payTables["default"].symbolNames);
 }
 
+void doRnStreamCheck(const GameMaths& gameMaths, const int bet, const UserConfig& config)
+{
+	config.gameConsole.clearScreen();
+	config.gameConsole.setHeader(config.headerText, true, true);
+
+	std::atomic<uint64_t> nextBatch{0};
+	std::vector<std::jthread> threads;
+
+	Timer simTimer("Monte Carlo");
+	GameCycleReused reused(gameMaths);
+	auto& rnStream = dynamic_cast<RngData&>(*mathsRng.lpRng);
+	GameSession session(bet, gameMaths, config.force);
+
+	do
+	{
+		const GameSession sessionBeforeStart = session;
+		rnStream.startGameSequence();
+		GameCycle gameCycle(session, reused, gameMaths);
+		GameLogic::playGame(gameMaths, gameCycle);
+		rnStream.endGameSequence(gameCycle, session, sessionBeforeStart);
+	}
+	while (rnStream.currentGameIt != rnStream.games.end());
+
+	std::cout << std::endl;
+	simTimer.outputTime();
+}
+
 int frontendMain()
 {
 #ifdef FRONTEND
@@ -220,14 +247,20 @@ int simulatorMain()
 int rnStreamMain()
 {
 	mathsRng.setRng(RngOptions::data);
-	std::filesystem::path filePath = std::filesystem::path(GAME_SOURCE_DIR) / "srcBackend" / "thisTitle" /
-		"parSheets" / "rnStream.csv";
+	UserConfig config = UserConfig::getNewOrCachedConfig(true);
+	const std::filesystem::path filePath = std::filesystem::path(GAME_SOURCE_DIR) / "srcBackend" / "thisTitle"
+		/
+		"parSheets" / config.rnStreamFileName;
 	const int bet = dynamic_cast<RngData*>(mathsRng.lpRng)->openDataFile(filePath);
+	doRnStreamCheck(*config.parSheet.gameMathsVariants[config.betType][config.rtp], bet, config);
 	return 0;
 }
 
 int main()
 {
+#ifdef _WIN32
+	SetConsoleOutputCP(CP_UTF8);
+#endif
 	try
 	{
 #ifdef FRONTEND

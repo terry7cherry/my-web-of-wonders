@@ -16,7 +16,7 @@ namespace TaggedDataHelpers
     int stringToInt(std::string valueStr, const std::string& cellLocation);
     double stringToDouble(std::string valueStr, const std::string& cellLocation);
     bool stringToBool(const std::string& valueStr, const std::string& cellLocation);
-    std::optional<int> tryStringToInt(std::string valueStr);
+    std::optional<int> tryStringToInt(const std::string& valueStr);
 }
 
 typedef std::shared_ptr<TaggedRange> TaggedRangePtr;

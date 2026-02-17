@@ -14,6 +14,7 @@ class GameCycleCompleteEvent : public PhaseCompleteTemplate<GameCycleCompleteEve
 public:
 	/** @brief Name used for stats output. **/
 	inline static std::string phaseName = "Full Game";
+	inline static bool countsAsSpinForRnStream = false;
 
 	/**
 	 * @param totalWin Total won in simulation.

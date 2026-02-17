@@ -125,6 +125,7 @@ export default class Ticker {
         PIXI.Ticker.shared.add(tick);
     }
 
+
     clearText = async (instant) => {
         await this.updateText("⠀", instant);
     };

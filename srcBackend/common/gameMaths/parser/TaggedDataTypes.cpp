@@ -6,8 +6,6 @@
 #include "TaggedDataTypes.h"
 
 
-#include "../../grids/Grid.h"
-
 /******************************************/
 /* Helper functions                       */
 /******************************************/
@@ -75,30 +73,42 @@ namespace TaggedDataHelpers
         }
     }
 
-    std::optional<int> tryStringToInt(std::string valueStr)
+    std::optional<int> tryStringToInt(const std::string& valueStr)
     {
-        valueStr.erase(std::ranges::remove(valueStr, ',').begin(), valueStr.end());
+        const char* begin = valueStr.c_str();
+        char* end = nullptr;
 
-        try
-        {
-            size_t pos = 0;
-            const double val = std::stod(valueStr, &pos);
+        errno = 0;
+        const double val = std::strtod(begin, &end);
 
-            std::string remaining = valueStr.substr(pos);
-            std::erase_if(remaining, ::isspace);
+        // No conversion performed
+        if (end == begin)
+            return std::nullopt;
 
-            if (!remaining.empty())
-                return {};
+        // Overflow/underflow reported by strtod
+        if (errno == ERANGE)
+            return std::nullopt;
 
-            if (val != static_cast<double>(static_cast<int>(val)))
-                return {};
+        // Reject NaN/Inf
+        if (!std::isfinite(val))
+            return std::nullopt;
 
-            return static_cast<int>(val);
-        }
-        catch (std::exception)
-        {
-            return {};
-        }
+        // Ensure the rest is only whitespace (same idea as your erase_if + empty check)
+        while (*end != '\0' && std::isspace(static_cast<unsigned char>(*end)))
+            ++end;
+        if (*end != '\0')
+            return std::nullopt;
+
+        // Must be an integer value (accepts "12" and "12.0", rejects "12.3")
+        if (std::trunc(val) != val)
+            return std::nullopt;
+
+        // Must fit in int
+        if (val < static_cast<double>(std::numeric_limits<int>::min()) ||
+            val > static_cast<double>(std::numeric_limits<int>::max()))
+            return std::nullopt;
+
+        return static_cast<int>(val);
     }
 
     double stringToDouble(std::string valueStr, const std::string& cellLocation)

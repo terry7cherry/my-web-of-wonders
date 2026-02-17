@@ -7,15 +7,16 @@
 class UserConfig
 {
 public:
-    UserConfig();
+    UserConfig(bool rnStream = false);
 
-    explicit UserConfig(const std::string& cachedConfig);
-    static UserConfig getNewOrCachedConfig();
+    explicit UserConfig(const std::string& cachedConfig, bool rnStream = false);
+    static UserConfig getNewOrCachedConfig(bool rnStream = false);
 
     inline static Console gameConsole;
     inline static std::string headerText = "";
     uint64_t simSize;
     ParSheet parSheet;
+    std::string rnStreamFileName;
     int rtp;
     std::string betType;
     Forces::SimForce force;
@@ -23,10 +24,10 @@ public:
     int seed;
 
 private:
-    void saveOrUpdateCache() const;
+    void saveOrUpdateCache(bool rnStream = false) const;
 
 
-    static std::vector<std::string> getCachedConfigLines();
+    static std::vector<std::string> getCachedConfigLines(bool rnStream = false);
 
     static std::vector<std::string> split(const std::string& line);
 
@@ -35,13 +36,16 @@ private:
 
     static std::optional<size_t> getUserCachedConfigChoice(
         const std::vector<std::vector<std::string>>& choices,
-        const std::string& title);
+        const std::string& title,
+        bool rnStream = false);
 
     static std::optional<unsigned int> getUserInputAsInt(const std::string& title, const std::string& prompt);
 
     static ParSheet getUserParSheetChoice();
 
-    static int getUserRtpChoice(const ParSheet& parSheet);
+    static std::string getUserRnStreamFileChoice();
+
+    static int getUserRtpChoice(const ParSheet& parSheet, bool rnStream = false);
 
     static std::string getUserBetTypeChoice(const ParSheet& parSheet);
 

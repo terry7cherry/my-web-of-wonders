@@ -23,7 +23,7 @@ struct GameCycleReused;
 struct GameCycleBase
 {
     GameSession& session;
-#ifdef FRONTEND
+#if defined(FRONTEND) || defined(RN_STREAM)
     std::vector<BasicEvent*> events;
 #endif
 
@@ -49,7 +49,7 @@ struct GameCycleBase
     void recordEvent(Args&&... args)
         requires std::derived_from<T, BasicEvent> && std::constructible_from<T, Args...>
     {
-#ifdef FRONTEND
+#if defined(FRONTEND) || defined(RN_STREAM)
         T* e = new T(std::forward<Args>(args)...);
         events.push_back(e);
 #else

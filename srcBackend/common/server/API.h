@@ -48,6 +48,11 @@ namespace API
                                                   GameSession& session,
                                                   int forceIndex);
 
+    std::pair<GameCycle, uint32_t> playRnStreamGame(const GameMaths& maths,
+                                                    GameCycleReused& reused,
+                                                    GameSession& session,
+                                                    const std::string& rnStreamStr);
+
     Json::Value getJsonFromRequest(const drogon::HttpRequestPtr& request);
 
     Json::Value getForceOptionsForBetType(const std::string& betType);

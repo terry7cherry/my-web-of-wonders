@@ -18,5 +18,5 @@ Json::Value GameMaths::toJson() const
 
 std::string GameMaths::getFrontendMathsSheetName()
 {
-    return "ways.xlsx";
+    return "test.xlsx";
 }

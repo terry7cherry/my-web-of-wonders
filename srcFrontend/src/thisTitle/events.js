@@ -67,4 +67,7 @@ export default {
             game.ui.currentPhase.grid.updateGrid(reelSymbolArray)
         ]);
     },
+    "rnStreamProblem": async ({shortMessage, longMessage}, game) => {
+        await game.reportRnStreamProblem(shortMessage, longMessage);
+    }
 };

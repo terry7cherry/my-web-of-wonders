@@ -41,51 +41,54 @@ public:
 		if (option == RngOptions::kiss)
 			lpRng = new RngKiss();
 		else if (option == RngOptions::data)
+		{
+			matchRandoms = true;
 			lpRng = new RngData();
+		}
 		else throw std::invalid_argument("MathsRng.setRng() - invalid option.");
 	}
 
-	uint32 setSeed(void)
+	uint32 setSeed() const
 	{
 		lpRng->setSeed();
 		return getSeed();
 	}
 
-	uint32 setSeed(int newSeed)
+	uint32 setSeed(const int newSeed) const
 	{
 		lpRng->setSeed(newSeed);
 		return getSeed();
 	}
 
-	// return current seed vlaue
-	uint32 getSeed(void) { return lpRng->getSeed(); }
+	// return current seed value
+	uint32 getSeed() const { return lpRng->getSeed(); }
 
 	// Basic methods
 
 	// returns integer in [0,range-1] for range < 2^32
-	uint32 randInt(const uint32 range, [[maybe_unused]] std::string sz = "")
+	uint32 randInt(const uint32 range, const std::string& sz = "") const
 	{
-		return lpRng->randInt(range);
+		return lpRng->randInt(range, sz);
 	}
 
 	// returns integer in [low,high] for low >= 0, high < 2^32
-	uint32 getInt(const uint32 low, const uint32 high)
+	uint32 getInt(const uint32 low, const uint32 high) const
 	{
 		const uint32 range = high + 1 - low;
 		return low + randInt(range);
 	}
 
 	// returns integer in [low,high] for low >= 0, high < 2^32
-	uint32 randInt(const uint32 low, const uint32 high)
+	uint32 randInt(const uint32 low, const uint32 high) const
 	{
 		const uint32 range = high + 1 - low;
 		return low + randInt(range);
 	}
 
 	// returns integer in [0,range-1] for range < 2^32
-	uint32 getInt(const uint32 range, [[maybe_unused]] std::string sz = "") const
+	uint32 getInt(const uint32 range, const std::string& sz = "") const
 	{
-		return lpRng->randInt(range);
+		return lpRng->randInt(range, sz);
 	}
 
 	// returns true if random value (0 to range-1) < passVal
@@ -93,7 +96,7 @@ public:
 	bool getPass(const uint32 passVal, const uint32 range,
 	             [[maybe_unused]] std::string sz = "") const
 	{
-		uint32 pick = lpRng->randInt(range);
+		const uint32 pick = lpRng->randInt(range);
 		return (pick < passVal);
 	}
 
@@ -104,17 +107,22 @@ public:
 	//};
 	// returns true if random value (0 to data.range-1) < data.passVal
 	// e.g. getPass({32, 1000}) has a 3.2% chance of returning true
-	bool getPass(PassStruct data)
+	bool getPass(const PassStruct& data) const
 	{
 		uint32 pick = lpRng->randInt(data.range);
 		return (pick < data.passVal);
 	}
 
 	// function added for easy conversion from kew code
-	bool getPass(FailStruct data)
+	bool getPass(const FailStruct& data) const
 	{
-		uint32 pick = lpRng->randInt(data.range);
+		const uint32 pick = lpRng->randInt(data.range);
 		return (pick >= data.failVal);
+	}
+
+	void endSpinSequence(const int mathsWin) const
+	{
+		if (matchRandoms) dynamic_cast<RngData*>(lpRng)->endSpinSequence(mathsWin);
 	}
 };
 

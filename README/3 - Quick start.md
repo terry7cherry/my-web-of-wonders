@@ -223,7 +223,8 @@ The available templates are:
   automates the creation of distributions and stats.
 - **SpinsCompleteEventTemplate**: Like PhaseCompleteEventTemplate, but specifically for free spins type
   phases, where a number of spins are awarded and more may be retriggered during the phase. Provides all the
-  stats provided by PhaseCompleteEventTemplate plus some more specific ones.
+  stats provided by PhaseCompleteEventTemplate plus some more specific ones. (When using this event template,
+  make sure you are passing the total win for your phase into the constructor.)
 
 When making your own Events that include stats, bear in mind that the simulator is multithreaded and so your
 meters must be thread safe. A number of threadsafe meters are provided in

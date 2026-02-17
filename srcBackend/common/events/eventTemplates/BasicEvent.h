@@ -52,6 +52,28 @@ public:
         return Json::nullValue;
     };
 
+    virtual std::string prettyPrint(const std::string& baseIndent)
+    {
+        Json::Value jsonEvent = toJson();
+        if (jsonEvent.isNull()) return "";
+        Json::StreamWriterBuilder builder;
+        builder["indentation"] = "  "; // two spaces (default is 3)
+
+
+        std::string json = Json::writeString(builder, jsonEvent);
+
+        std::ostringstream out;
+        std::istringstream in(json);
+        std::string line;
+
+        while (std::getline(in, line))
+        {
+            out << baseIndent << line << '\n';
+        }
+
+        return out.str();
+    }
+
 protected:
     template <
         typename Iterable,

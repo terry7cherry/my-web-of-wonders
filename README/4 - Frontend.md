@@ -296,6 +296,8 @@ required by the frontend. You can add anything else that you require in the fron
 object is available in event handlers on `game.maths`, and in GameUI.js via `maths` in the constructor and
 `this.maths` in the other functions.
 
+This file is also where you choose the maths sheet that will be used by the frontend.
+
 ## Session Stats
 
 ### srcFrontend/src/thisTitle/sessionStats.js

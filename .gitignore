@@ -5,6 +5,7 @@
 /uploads/
 # Config cache
 /srcBackend/common/config/cache.txt
+/srcBackend/common/config/rnCache.txt
 # Defunct
 /srcBackend/common/defunct
 # Frontend

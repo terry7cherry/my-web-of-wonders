@@ -51,6 +51,38 @@ public:
     {
     }
 
+    std::string prettyPrint(const std::string& baseIndent) override
+    {
+        Json::Value jsonEvent = toJson();
+        Json::Value grid = jsonEvent["reelSymbolArray"];
+        Json::Value prettyGrid(Json::arrayValue);
+        for (int i = 0; i < numRows; i++)
+        {
+            prettyGrid[i] = "";
+        }
+        for (const auto& reel : grid)
+            for (int i = 0; i < numRows; i++)
+                prettyGrid[i] = prettyGrid[i].asString() + reel[i].asString() + std::string(
+                    5 - reel[i].asString().size(), ' ');
+        jsonEvent["reelSymbolArray"] = prettyGrid;
+
+        Json::StreamWriterBuilder builder;
+        builder["indentation"] = "  "; // two spaces (default is 3)
+
+        std::string json = Json::writeString(builder, jsonEvent);
+
+        std::ostringstream out;
+        std::istringstream in(json);
+        std::string line;
+
+        while (std::getline(in, line))
+        {
+            out << baseIndent << line << '\n';
+        }
+
+        return out.str();
+    }
+
 protected :
     /**
      * @brief Serialize common grid data to JSON for derived events.

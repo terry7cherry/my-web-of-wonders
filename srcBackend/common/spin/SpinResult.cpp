@@ -12,7 +12,8 @@ SpinResult::SpinResult(const ReelSet& reelSet, const bool randomSpin)
         for (size_t reelNum = 0; reelNum < stopIndexVect.size(); ++reelNum)
         {
             stopIndexVect[reelNum] = mathsRng.randInt(
-                static_cast<uint32>(reelSet.reelSizeVect[reelNum]));
+                static_cast<uint32>(reelSet.reelSizeVect[reelNum]),
+                "reel stop - reel " + std::to_string(reelNum));
         }
 }
 
@@ -23,7 +24,8 @@ SpinResult::SpinResult(const ReelSet& reelSet, const std::vector<size_t>& spinVe
     for (const size_t reelNum : spinVect)
     {
         stopIndexVect[reelNum] = mathsRng.
-            randInt(static_cast<uint32>(reelSet.reelSizeVect[reelNum]));
+            randInt(static_cast<uint32>(reelSet.reelSizeVect[reelNum]),
+                    "reel stop - reel " + std::to_string(reelNum) + " - spun reels specified");
     }
 }
 
@@ -39,7 +41,7 @@ SpinResult::SpinResult(const ReelSet& reelSet, const std::vector<bool>& lockedVe
         if (!isLocked)
         {
             stopIndexVect[reelNum] = mathsRng.randInt(
-                static_cast<uint32>(reelSet.reelSizeVect[reelNum]));
+                static_cast<uint32>(reelSet.reelSizeVect[reelNum]), "reel stop - reel " + std::to_string(reelNum) + " - locked reels specified");
         }
     }
 }

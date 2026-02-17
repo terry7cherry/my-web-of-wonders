@@ -13,6 +13,7 @@
 #include "../common/events/ReelSpinEvent.h"
 #include "../common/events/WinAnalysisEvent.h"
 #include "../common/events/GridUpdateEvent.h"
+#include "../common/events/SpinCompleteEvent.h"
 
 namespace GameLogic
 {
@@ -71,7 +72,11 @@ namespace GameLogic
              cycle.fsSpinsPlayed < cycle.fsInitialSpins + cycle.fsRetriggerSpins;
              cycle.fsSpinsPlayed++
         )
-            cycle.freeSpinsWin += doOneFreeSpin(maths, cycle);
+        {
+            unsigned int freeSpinWin = doOneFreeSpin(maths, cycle);
+            cycle.recordEvent<SpinCompleteEvent>(freeSpinWin);
+            cycle.freeSpinsWin += freeSpinWin;
+        }
 
         return cycle.freeSpinsWin;
     }
@@ -84,8 +89,6 @@ namespace GameLogic
 
     void checkForFreeSpinsTrigger(const GameMaths& maths, GameCycle& cycle)
     {
-        cycle.fsTrigger = false;
-        return;
         cycle.baseNumScatters = countBaseScatters(maths, cycle);
         cycle.fsInitialSpins = maths.awards["fsStartSpins"][cycle.baseNumScatters];
         if (cycle.fsInitialSpins) cycle.fsTrigger = true;

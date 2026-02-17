@@ -542,7 +542,7 @@ std::vector<int> Grid::replaceRandomSymbols(const Symbol newSymbol, const int co
 	for (int i = 0; i < count; i++)
 	{
 		const uint32 index = mathsRng.getInt(static_cast<uint32_t>(gridPosOptions.size()),
-		                                     "replaceRandomSymbolsIndex");
+		                                     "replace random symbols");
 		int gridPos = gridPosOptions[index];
 		gridPosOptions.erase(gridPosOptions.begin() + index);
 		gridPosVect.push_back(gridPos);

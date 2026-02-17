@@ -56,8 +56,8 @@ export default class ApiClient {
         return responseJson;
     }
 
-    static async getNewGameCycle(session, forceIndex, seed) {
-        const jsonBody = {session, forceIndex, seed};
+    static async getNewGameCycle(session, forceIndex, seed, rnStream) {
+        const jsonBody = {session, forceIndex, seed, rnStream};
         const response = await fetch("/api/spin", {
             method: "POST",
             headers: {

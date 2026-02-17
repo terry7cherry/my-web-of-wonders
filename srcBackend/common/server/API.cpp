@@ -117,12 +117,16 @@ void API::handleSpinRequest(const drogon::HttpRequestPtr& request,
 
 	Json::Value forceIndexJson = requestJson["forceIndex"];
 	Json::Value seedJson = requestJson["seed"];
+	Json::Value rnStream = requestJson["rnStream"];
 
-	const auto [cycle, seed] = !seedJson.isNull()
-		                           ? playFixedSeedGame(maths, reused, session, seedJson.asUInt())
-		                           : forceIndexJson.isNull()
-		                           ? playNaturalGame(maths, reused, session)
-		                           : playForcedGame(maths, reused, session, forceIndexJson.asInt());
+	const auto [cycle, seed] =
+		!rnStream.isNull()
+			? playRnStreamGame(maths, reused, session, rnStream.asString())
+			: !seedJson.isNull()
+			? playFixedSeedGame(maths, reused, session, seedJson.asUInt())
+			: forceIndexJson.isNull()
+			? playNaturalGame(maths, reused, session)
+			: playForcedGame(maths, reused, session, forceIndexJson.asInt());
 	Json::Value result;
 	Json::Value eventsArray(Json::arrayValue);
 	for (Json::ArrayIndex i = 0; i < cycle.events.size(); ++i)
@@ -268,6 +272,7 @@ std::pair<GameCycle, uint32_t> API::playFixedSeedGame(const GameMaths& maths,
                                                       GameSession& session,
                                                       const uint32_t seed)
 {
+	mathsRng.setRng(RngOptions::kiss);
 	mathsRng.setSeed(seed);
 	GameCycle cycle(session, reused, maths);
 	GameLogic::playGame(maths, cycle);
@@ -281,10 +286,25 @@ std::pair<GameCycle, uint32_t> API::playNaturalGame(const GameMaths& maths,
 {
 	static std::mt19937 seedGenerator{std::random_device{}()};
 	uint32_t seed = seedGenerator();
+	mathsRng.setRng(RngOptions::kiss);
 	mathsRng.setSeed(seed);
 	GameCycle cycle(session, reused, maths);
 	GameLogic::playGame(maths, cycle);
 	return {cycle, seed};
+}
+
+std::pair<GameCycle, uint32_t> API::playRnStreamGame(const GameMaths& maths, GameCycleReused& reused,
+                                                     GameSession& session,
+                                                     const std::string& rnStreamStr)
+{
+	mathsRng.setRng(RngOptions::data);
+	GameCycle cycle(session, reused, maths);
+	auto& rngData = dynamic_cast<RngData&>(*mathsRng.lpRng);
+	rngData.gameCyclePtr = &cycle;
+	RngDataGame rngDataGame(rnStreamStr);
+	rngData.startGameSequence(&rngDataGame);
+	GameLogic::playGame(maths, cycle);
+	return {cycle, 0};
 }
 
 std::pair<GameCycle, uint32_t> API::playForcedGame(const GameMaths& maths,
@@ -307,6 +327,7 @@ std::pair<GameCycle, uint32_t> API::playForcedGame(const GameMaths& maths,
 	do
 	{
 		const uint32_t seed = seedGenerator();
+		mathsRng.setRng(RngOptions::kiss);
 		mathsRng.setSeed(seed);
 		GameCycle cycle(session, reused, maths);
 		GameLogic::playGame(maths, cycle);

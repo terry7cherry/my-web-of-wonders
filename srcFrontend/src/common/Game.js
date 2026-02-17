@@ -6,6 +6,7 @@ import events from "../thisTitle/events.js";
 import ApiClient from "./utils/ApiClient.js";
 import toCurrency from "./utils/toCurrency.js";
 import GameUI from "../thisTitle/GameUI.js";
+import Button from "../common/uiElements/Button.js";
 
 export default class Game {
 
@@ -50,6 +51,7 @@ export default class Game {
         await this.shell.init(this.rtps, this.state.betTypes);
         this.setUpBetTypeSelector();
         this.setUpRtpSelector();
+        this.setUpRnStreamButton();
     }
 
     async getMathsAndCreateUI() {
@@ -90,6 +92,25 @@ export default class Game {
         })
     }
 
+    setUpRnStreamButton() {
+        /** @type {HTMLButtonElement} */
+        const spinButton = document.getElementById("rn-stream-spin");
+        spinButton.addEventListener("click", (async () => {
+            /** @type {HTMLInputElement} */
+            const rnStreamBox = document.getElementById("rn-stream");
+            let rnStream = rnStreamBox.value;
+            this.session = JSON.parse(rnStream.split("|")[0]);
+            await this.setBetType(this.session.betType);
+            this.state.rtp = this.session.rtp;
+            this.state.bet = this.session.bet;
+            document.getElementById("rtp-selector").value = this.state.rtp;
+            //await document.getElementById("rtp-selector").onchange();
+            this.ui.configPanel.betSelector.updateBet(this.state.bet);
+            rnStream = rnStream.split("|").slice(1).join("|");
+            await this.play({rnStream});
+        }).bind(this));
+    }
+
     async setBetType(betType) {
         /** @type {HTMLSelectElement} */
         const selector = document.getElementById("bet-type-selector");
@@ -101,6 +122,7 @@ export default class Game {
             const oldBetIndex = this.validBaseBets.indexOf(this.state.bet / previousBetTypeCost);
             const newStake = this.validBaseBets[oldBetIndex] * this.maths.betTypeCost;
             this.updateBet(newStake);
+            //if (selector.value !== betType) selector.value = betType;
         } else {
             selector.value = this.state.betType;
         }
@@ -155,14 +177,14 @@ export default class Game {
         }
     }
 
-    async play({forceIndex, seed}) {
+    async play({forceIndex, seed, rnStream}) {
         if (this.state.running) return;
 
         this.state.running = true;
         this.ui.spinButton.changeColour("#bc4120");
 
         if (!this.session
-            || !(this.session.bet === this.state.bet
+            || !rnStream && !(this.session.bet === this.state.bet
                 && this.session.betType === this.state.betType
                 && this.session.rtp === this.state.rtp
             )
@@ -175,7 +197,7 @@ export default class Game {
             winnings,
             forceName,
             seed: newSeed
-        } = await ApiClient.getNewGameCycle(this.session, forceIndex, seed);
+        } = await ApiClient.getNewGameCycle(this.session, forceIndex, seed, rnStream);
         this.session = session;
         await this.displayGameRound(events, winnings, newSeed, forceName);
 
@@ -295,5 +317,29 @@ export default class Game {
             this.ui.currentPhase.grid.getSymbolImageOrText(symbolName));
     }
 
+    async reportRnStreamProblem(shortMessage, longMessage) {
+        this.ui.spinButton.buttonContainer.eventMode = "none";
+        let continuePressed = false;
+        const continueButton = new Button({
+            x: this.ui.spinButton.buttonContainer.x,
+            y: this.ui.spinButton.buttonContainer.y,
+            width: this.ui.spinButton.buttonContainer.width,
+            height: this.ui.spinButton.buttonContainer.height,
+            parent: this.ui.spinButton.buttonContainer.parent,
+            colour: "#FF0000",
+            onClick: () => {
+                continueButton.buttonContainer.destroy();
+                continuePressed = true
+                this.ui.spinButton.buttonContainer.eventMode = "static";
+            },
+            text: "Continue"
+        });
+        await this.ui.ticker.updateText(shortMessage);
+        longMessage.split("\n").forEach(line =>
+            this.shell.eventHistory.addText(line));
+        await this.ui.ticker.updateText("Check event history for details.", false, undefined, true);
+        await this.ui.ticker.waitUntilFalse(() => !continuePressed, 100);
+
+    }
 
 }
