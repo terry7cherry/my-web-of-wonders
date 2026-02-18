@@ -22,6 +22,9 @@ export default class Grid {
                     simultaneousWinLineAnimations,
                     winLineColour,
                     waysWinColour,
+                    isHoldAndSpin,
+                    holdAndSpinBlankSymbols,
+                    weightedDisplayReelSet
                 }) {
         this.reelWidth = Math.round(width / numReels);
         this.symbolHeight = Math.round(height / numRows);
@@ -45,11 +48,14 @@ export default class Grid {
             width: this.width,
             height: this.height
         });
-        this.reels = this.createReels();
-        this.getReelStartingPositions();
         this.simultaneousWinLineAnimations = simultaneousWinLineAnimations;
         this.winLineColour = winLineColour;
         this.waysWinColour = waysWinColour;
+        this.isHoldAndSpin = isHoldAndSpin;
+        this.holdAndSpinBlankSymbols = holdAndSpinBlankSymbols;
+        this.weightedDisplayReelSet = weightedDisplayReelSet;
+        this.reels = this.createReels();
+        this.getReelStartingPositions();
     }
 
     createReels() {
@@ -67,10 +73,16 @@ export default class Grid {
     }
 
     getReelStartingPositions() {
-        this.reels.forEach((reel, r) => {
-            const symbols = this.getRandomSymbols(r, this.numRows);
-            symbols.forEach(symbol => this.addSymbolToBottomOfReel(r, symbol));
-        });
+        if (this.isHoldAndSpin)
+            this.reels.forEach((_, r) => {
+                for (let i = 0; i < this.numRows; i++)
+                    this.addSymbolToBottomOfReel(r, this.holdAndSpinBlankSymbols[0])
+            })
+        else
+            this.reels.forEach((_, r) => {
+                const symbols = this.getRandomSymbols(r, this.numRows);
+                symbols.forEach(symbol => this.addSymbolToBottomOfReel(r, symbol));
+            });
     }
 
     getRandomSymbols(reelNum, numSymbols) {
@@ -88,7 +100,6 @@ export default class Grid {
             const singleReel = typeof this.weightedDisplayReelSet[0].symbol !== "undefined";
             const reel = singleReel ? this.weightedDisplayReelSet : this.weightedDisplayReelSet[reelNum];
             const totalWeight = reel.map(({weight}) => weight).reduce((a, b) => a + b, 0);
-            const symbols = [];
             for (let i = 0; i < numSymbols; i++) {
                 const random = Math.floor(Math.random() * totalWeight);
                 let runningTotal = 0;
@@ -102,11 +113,16 @@ export default class Grid {
         return symbols;
     }
 
-    spinReels(symbols, stickyReels, stickyApertures) {
+    spinReels(symbols, stickyReels, stickyApertures, spinAll) {
         return new Promise(async (resolve, reject) => {
             const spinSound = await this.sound.playAsync("spin");
-            this.setAddedTimePerReel(this.reels, symbols);
-            const reelSpinAnimations = this.getReelSpinAnimations(this.reels, symbols, stickyReels, stickyApertures);
+            let reelSpinAnimations;
+            if (this.isHoldAndSpin) {
+                reelSpinAnimations = this.getHoldAndSpinAnimations(this.reels, symbols, stickyReels, stickyApertures, spinAll);
+            } else {
+                this.setAddedTimePerReel(this.reels, symbols);
+                reelSpinAnimations = this.getReelSpinAnimations(this.reels, symbols, stickyReels, stickyApertures);
+            }
             await Promise.all(reelSpinAnimations)
             await spinSound.stop();
             resolve();
@@ -149,6 +165,23 @@ export default class Grid {
                 resolve();
             })
         }))
+    }
+
+    getHoldAndSpinAnimations(reels, symbols, stickyReels, stickyApertures, spinAll) {
+        return reels.map(
+            (reel, r) => reel.apertures.map((aperture, a) => (async () => {
+                if (!spinAll) {
+                    if (!this.holdAndSpinBlankSymbols.includes(aperture.symbolName)) return;
+                    if (stickyReels?.includes(r) || stickyApertures?.[r]?.includes(a)) return;
+                }
+                const numRandomSymbolsToAdd = Math.floor((4 + Math.random() * 25));
+                const randomSymbols = this.getRandomSymbols(r, numRandomSymbolsToAdd);
+                for (let i = 0; i < numRandomSymbolsToAdd; i++) {
+                    await this.transformSymbol(r, a, randomSymbols[i], 8 + (numRandomSymbolsToAdd - i) * 2);
+                }
+                await this.transformSymbol(r, a, symbols[r][a], 5);
+            })())
+        ).flat()
     }
 
     setAddedTimePerReel(reels, symbols) {

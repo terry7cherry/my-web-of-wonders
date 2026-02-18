@@ -113,7 +113,7 @@ int WeightTable::pick() const
 }
 
 // force result with passed index in the current pickList
-int WeightTable::forcePickIndex(int index)
+int WeightTable::forcePickIndex(const int index)
 {
     for (auto it = pickList.begin(); it == pickList.end() && it != pickList.end(); ++it)
     {
@@ -188,3 +188,80 @@ void WeightTable::cout(void) const
     std::cout << "\r\n";
 }
 
+Json::Value WeightTable::toJson() const
+{
+    Json::Value json(Json::arrayValue);
+    for (const auto& entry : weightVector)
+    {
+        Json::Value jsonEntry(Json::objectValue);
+        jsonEntry["outcome"] = entry.result;
+        jsonEntry["weight"] = entry.weight;
+        json.append(jsonEntry);
+    }
+    return json;
+}
+
+Json::Value ReelSetWeights::toJson(const std::vector<std::string>& symbolNames) const
+{
+    Json::Value json(Json::arrayValue);
+    for (size_t i = 0; i < weightVector.size(); i++)
+    {
+        Json::Value jsonEntry(Json::objectValue);
+        jsonEntry["outcome"] = reelSetVect[i].toJson(symbolNames);
+        jsonEntry["weight"] = weightVector[i].weight;
+        json.append(jsonEntry);
+    }
+    return json;
+}
+
+Json::Value DoubleWeightTable::toJson() const
+{
+    Json::Value json(Json::arrayValue);
+    for (size_t i = 0; i < weightVector.size(); i++)
+    {
+        Json::Value jsonEntry(Json::objectValue);
+        jsonEntry["outcome"] = doubleVect[i];
+        jsonEntry["weight"] = weightVector[i].weight;
+        json.append(jsonEntry);
+    }
+    return json;
+}
+
+Json::Value BoolWeightTable::toJson() const
+{
+    Json::Value json(Json::arrayValue);
+    for (size_t i = 0; i < weightVector.size(); i++)
+    {
+        Json::Value jsonEntry(Json::objectValue);
+        jsonEntry["outcome"] = boolVect[i];
+        jsonEntry["weight"] = weightVector[i].weight;
+        json.append(jsonEntry);
+    }
+    return json;
+}
+
+Json::Value StringWeightTable::toJson() const
+{
+    Json::Value json(Json::arrayValue);
+    for (size_t i = 0; i < weightVector.size(); i++)
+    {
+        Json::Value jsonEntry(Json::objectValue);
+        jsonEntry["outcome"] = stringVect[i];
+        jsonEntry["weight"] = weightVector[i].weight;
+        json.append(jsonEntry);
+    }
+    return json;
+}
+
+Json::Value SymbolWeightTable::toJson(const std::vector<std::string>& symbolNames) const
+{
+    Json::Value json(Json::arrayValue);
+    for (size_t i = 0; i < weightVector.size(); i++)
+    {
+        Json::Value jsonEntry(Json::objectValue);
+        jsonEntry["outcome"] = symbolNames.at(symbolVect[i]);
+        jsonEntry["weight"] = weightVector[i].weight;
+        json.append(jsonEntry);
+    }
+    return json;
+}

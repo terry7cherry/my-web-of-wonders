@@ -54,7 +54,11 @@ export default class GameUI extends StandardGameUI {
                     },
                     {
                         displayReelSet: maths.displayReelSet,
-                        suspenseSymbol: maths.suspenseSymbol
+                        suspenseSymbol: maths.suspenseSymbol,
+                        // isHoldAndSpin: true,
+                        // holdAndSpinBlankSymbols: maths.holdAndSpinBlankSymbols,
+                        // weightedDisplayReelSet: maths.holdAndSpinDisplayReelSet,
+                        // simultaneousWinLineAnimations: true,
                     }),
                 "freeSpins": new PhaseUI(
                     "Free Spins",

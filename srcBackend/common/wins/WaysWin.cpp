@@ -2,6 +2,7 @@
 #include "WaysWin.h"
 
 #include "../headers/types.h"
+#include "../grids/PayGrid.h"
 #include <cstdio>   // for std::snprintf
 
 // basic constructor with no starting win positions
@@ -26,6 +27,7 @@ void WaysWin::resizeVectors(void)
     wildCountVect.resize(maxReels, 0);
     winPosVect.resize(maxReels);
     positions.reserve(maxReels * maxRows);
+    multiplierForReel.resize(maxReels, 1);
     for (int i = 0; i < maxReels; i++)
         winPosVect[i].resize(maxRows, 0);
 }
@@ -39,7 +41,8 @@ void WaysWin::setWildWin(const bool isWild)
 
 // Add new position (reel, row) for the winning symbol. 
 // Parameter isWild identifies the position as a symbol or a wild
-void WaysWin::addPosition(size_t reel, size_t row, bool isWild)
+void WaysWin::addPosition(size_t reel, size_t row, const bool isWild, const unsigned int positionMultiplier,
+                          const MultipliersCombineType combineType)
 {
     positions.emplace_back(reel, row);
     reelCountVect[reel]++;
@@ -49,10 +52,28 @@ void WaysWin::addPosition(size_t reel, size_t row, bool isWild)
     const size_t winIndex = reel + (row * maxReels);
     winMask |= (static_cast<uint64>(1) << winIndex);
     winPosVect[reel][row] = isWild ? 2 : 1;
+    if (positionMultiplier != 1 && multiplierForReel[reel] == 1)
+    {
+        multiplierForReel[reel] = positionMultiplier;
+        multiplier = PayGrid::combineMultipliers(
+            multiplier, positionMultiplier, combineType);
+    }
+}
+
+// Get the apertures and wild state of all positions on a reel.
+std::vector<std::pair<size_t, bool>> WaysWin::getPositionsOnReel(const size_t reel) const
+{
+    std::vector<std::pair<size_t, bool>> positionsOnReel;
+    for (size_t row = 0; row < maxRows; row++)
+    {
+        if (winPosVect[reel][row])
+            positionsOnReel.push_back({row, winPosVect[reel][row] == 2});
+    }
+    return positionsOnReel;
 }
 
 // Calculates the number of winning ways and returns that value
-int WaysWin::setWays(void)
+int WaysWin::setWays()
 {
     ways = wildWays = 1;
     for (oak = 0; oak < maxReels && reelCountVect[oak]; oak++)
@@ -133,5 +154,6 @@ Json::Value WaysWin::toJson(const std::vector<std::string>& symbolNames) const
         position["row"] = row;
         winAsJson["positions"].append(position);
     }
+    winAsJson["ways"] = ways;
     return winAsJson;
 }

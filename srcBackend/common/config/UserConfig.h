@@ -26,7 +26,6 @@ public:
 private:
     void saveOrUpdateCache(bool rnStream = false) const;
 
-
     static std::vector<std::string> getCachedConfigLines(bool rnStream = false);
 
     static std::vector<std::string> split(const std::string& line);

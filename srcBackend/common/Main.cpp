@@ -12,6 +12,8 @@
 #include "console/Console.h"
 
 // Game includes
+#include <random>
+
 #include "../thisTitle/state/GameCycle.h"
 #include "../thisTitle/GameLogic.h"
 #include "../thisTitle/state/GameSession.h"
@@ -223,6 +225,7 @@ int simulatorMain()
 	{
 		for (int rtp : parSheet.rtps)
 		{
+			if (!config.seedChoice.has_value()) config.seed = std::random_device{}();
 			GameMaths& gameMaths = *parSheet.gameMathsVariants[config.betType][rtp];
 			const int bet = static_cast<int>(gameMaths.minBet * gameMaths.betTypeCost);
 			doMonteCarloStdMultiThread(gameMaths, bet, config);

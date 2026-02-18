@@ -56,6 +56,7 @@ void Grid::reset()
 		}
 	}
 	clearSpinLock();
+	resetMultipliers();
 }
 
 // Set all multipliers to 1
@@ -68,10 +69,11 @@ void Grid::resetMultipliers()
 			multiplierVect[reel][row] = 1;
 		}
 	}
+	multipliersSet = false;
 }
 
 // Convert linear index to {reel,row}
-std::vector<size_t> Grid::getGridPosition(size_t index) const
+std::vector<size_t> Grid::getGridPosition(const size_t index) const
 {
 	size_t row = index / maxReels;
 	size_t reel = index - (row * maxReels);
@@ -79,7 +81,7 @@ std::vector<size_t> Grid::getGridPosition(size_t index) const
 }
 
 // Convert {reel,row} to linear index
-size_t Grid::getGridIndex(size_t reel, size_t row) const
+size_t Grid::getGridIndex(const size_t reel, const size_t row) const
 {
 	return (row * maxReels) + reel;
 }

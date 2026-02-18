@@ -7,6 +7,7 @@
       <w>jsoncpp</w>
       <w>memcpy</w>
       <w>rtps</w>
+      <w>vect</w>
     </words>
   </dictionary>
 </component>

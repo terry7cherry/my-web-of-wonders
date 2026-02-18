@@ -25,9 +25,14 @@ namespace Forces
             [](const GameCycle& cycle)
             {
                 return cycle.totalWin >= 25000;
-            },
-            {"bonusBuy"}
-        )
-
+            }
+        ),
+        FrontendForce(
+            "Win",
+            [](const GameCycle& cycle)
+            {
+                return cycle.totalWin > 0;
+            }
+        ),
     };
 }

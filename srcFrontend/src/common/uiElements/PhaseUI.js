@@ -37,6 +37,9 @@ export default class PhaseUI {
      * @param {number} [colours.backgroundColour=0x1099bb] - PIXI app background colour for MGame etc.
      * @param {number} [grid.numReels] - Override numReels in maths.
      * @param {number} [grid.numRows] - Override numRows in maths.
+     * @param {boolean} [grid.isHoldAndSpin] - Set this grid to hold and spin mode.
+     * @param {Array<string>} [grid.holdAndSpinBlankSymbols] - Array of symbol names that should not lock on spin. (First element will be used as starting symbol for grid.)
+     * @param {Array<Object>} [grid.weightedDisplayReelSet] - For hold and spin (mostly). A symbol weight table to use for spinning animations.
      * @param {Array<Array<number>>} [grid.displayReelSet] - Reel set for spinning animations.
      * @param {Function} [grid.symbolColourMapper] - Where no symbol images (imageMap) is provided. Function that takes symbolCode and returns colour in hex format (#ffffff).
      * @param {boolean} [grid.simultaneousWinLineAnimations=false] - Whether to animate win lines simultaneously.
@@ -160,6 +163,9 @@ export default class PhaseUI {
             imageMap: imageMap,
             suspenseSymbol: this.gridOptions.suspenseSymbol,
             simultaneousWinLineAnimations: this.gridOptions.simultaneousWinLineAnimations,
+            isHoldAndSpin: this.gridOptions.isHoldAndSpin,
+            holdAndSpinBlankSymbols: this.gridOptions.holdAndSpinBlankSymbols,
+            weightedDisplayReelSet: this.gridOptions.weightedDisplayReelSet,
             winLineColour: this.colours.winLineColour ?? 0xf80000,
             waysWinColour: this.colours.waysWinColour ?? 0xf80000,
         });

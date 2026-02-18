@@ -362,8 +362,10 @@ void RngData::reportProblem(const Problem problem, RngDataGame& game,
 #endif
 }
 
-void RngData::outputGameToConsole(const RngDataGame& gameToOutput, const GameCycle& gameCycle,
-                                  const GameSession& session, const GameSession& sessionBeforeStart)
+void RngData::outputGameToConsole(const RngDataGame& gameToOutput [[maybe_unused]],
+                                  const GameCycle& gameCycle[[maybe_unused]],
+                                  const GameSession& session[[maybe_unused]],
+                                  const GameSession& sessionBeforeStart[[maybe_unused]])
 {
 #ifdef RN_STREAM
 	std::cout <<

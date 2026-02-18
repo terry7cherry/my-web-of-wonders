@@ -58,9 +58,9 @@ export default class ShellUI {
 
     addWinsToHistory(wins) {
         this.eventHistory.addText("Wins:")
-        for (const {symbol, oak, multiplier, win, totalWin, winType} of wins)
+        for (const {symbol, oak, multiplier, win, totalWin, winType, ways} of wins)
             this.eventHistory.addText(
-                `&#9;- ${winType} win: ${symbol}x${oak} for ${toCurrency(win)}${
+                `&#9;- ${winType === "ways" ? ways + " " : ""}${winType} win: ${symbol}x${oak} for ${toCurrency(win)}${
                     multiplier !== 1
                         ? ` x ${multiplier} = ${toCurrency(totalWin)}`
                         : ``

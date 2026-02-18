@@ -12,6 +12,9 @@
 /*******************************************************************/
 class WaysWin : public Win
 {
+protected:
+	std::vector<unsigned int> multiplierForReel;
+
 public:
 	// grid data - used for sizing win vectors
 	size_t maxReels;
@@ -62,7 +65,11 @@ public:
 
 	// Add new position (reel, row) for the winning symbol. 
 	// Parameter isWild identifies the position as a symbol or a wild
-	void addPosition(size_t reel, size_t row, bool isWild);
+	void addPosition(size_t reel, size_t row, bool isWild, unsigned int positionMultiplier = 1,
+	                 MultipliersCombineType combineType = MultipliersCombineType::multiply);
+
+	// For each positions on reel, returns a pair consisting of the row and an isWild bool.
+	std::vector<std::pair<size_t, bool>> getPositionsOnReel(size_t reel) const;
 
 	// Calculates the number of winning ways and returns that value
 	// Call once, after all reels have been checked

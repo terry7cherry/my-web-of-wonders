@@ -15,11 +15,6 @@ enum class symbolMatchTypes
     exact, greater, less, greaterEqual, lessEqual
 };
 
-enum class GridDataTypes
-{
-    symbol, multiplier
-};
-
 /**
  * @brief Mutable grid buffer used to apply spins, locks, and multipliers.
  */
@@ -29,6 +24,12 @@ protected:
     std::map<Symbol, std::string> mTextMap;
     std::map<int, short> mColourMap;
     Console* lpConsole = nullptr;
+    std::vector<std::vector<unsigned int>> multiplierVect; // [reel][row]
+    bool multipliersSet = false;
+    std::vector<bool> lockedReelVect;
+    std::vector<bool> reelHasStickySymbolVect;
+    std::vector<std::vector<bool>> stickySymbolVect;
+    std::vector<std::vector<Symbol>> reelSymbolVect; // [reel][row]
 
 public:
     /************************************/
@@ -44,11 +45,6 @@ public:
     // state
     /************************************/
 
-    std::vector<bool> lockedReelVect;
-    std::vector<bool> reelHasStickySymbolVect;
-    std::vector<std::vector<bool>> stickySymbolVect;
-    std::vector<std::vector<Symbol>> reelSymbolVect; // [reel][row]
-    std::vector<std::vector<unsigned int>> multiplierVect; // [reel][row]
 
     /**
      * @brief Construct a grid of given dimensions.
@@ -98,7 +94,7 @@ public:
     /************************************/
 
     /**
-     * @brief Set all grid symbols to `SYMBOL_NONE` (max uint8_t value).
+     * @brief Set all grid symbols to `SYMBOL_NONE` (max uint8_t value) and reset multipliers to 1.
      */
     void reset();
 
@@ -332,6 +328,7 @@ public:
     void setMultiplier(const size_t reel, const size_t row, const int val)
     {
         multiplierVect[reel][row] = val;
+        multipliersSet = multipliersSet || (val != 1);
     }
 
     /**
@@ -342,6 +339,7 @@ public:
     void setMultiplier(const std::vector<size_t>& gridPos, const int val)
     {
         setMultiplier(gridPos[0], gridPos[1], val);
+        multipliersSet = multipliersSet || (val != 1);
     }
 
     /**
@@ -352,6 +350,7 @@ public:
     void setMultiplier(const size_t index, const int val)
     {
         setMultiplier(getGridPosition(index), val);
+        multipliersSet = multipliersSet || (val != 1);
     }
 
     /**************************************************/

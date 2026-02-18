@@ -132,6 +132,8 @@ public:
      * @brief Dump current table to stdout.
      */
     void cout() const;
+
+    Json::Value toJson() const;
 };
 
 /**
@@ -160,6 +162,8 @@ public:
      * @brief Pick a double value using weights.
      */
     double pick() const { return doubleVect[WeightTable::pick()]; }
+
+    Json::Value toJson() const;
 };
 
 /**
@@ -188,6 +192,8 @@ public:
      * @brief Pick a bool value using weights.
      */
     bool pick() const { return boolVect[WeightTable::pick()]; }
+
+    Json::Value toJson() const;
 };
 
 /**
@@ -217,6 +223,8 @@ public:
      * @brief Pick a `ReelSet` using weights.
      */
     const ReelSet& pick() const { return reelSetVect[WeightTable::pick()]; }
+
+    Json::Value toJson(const std::vector<std::string>& symbolNames) const;
 };
 
 /**
@@ -245,6 +253,7 @@ public:
      * @brief Pick a string using weights.
      */
     std::string pick() const { return stringVect[WeightTable::pick()]; }
+    Json::Value toJson() const;
 };
 
 /**
@@ -273,4 +282,6 @@ public:
      * @brief Pick a symbol using weights.
      */
     Symbol pick() const { return symbolVect[WeightTable::pick()]; }
+
+    Json::Value toJson(const std::vector<std::string>& symbolNames) const;
 };

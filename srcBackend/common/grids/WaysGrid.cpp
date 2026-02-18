@@ -96,13 +96,51 @@ int WaysGrid::evaluateWins(const unsigned int betMultiplier,
         }
     }
 
+    if (multipliersSet)
+    {
+    }
+
     int spinWin = 0;
     for (auto& win : winsToProcess)
     {
         if (const int winVal = win->setWin(payTable, betMultiplier))
         {
-            spinWin += winVal;
-            winVector.emplace_back(std::move(win));
+            if (multipliersSet)
+            {
+                std::vector<std::unique_ptr<WaysWin>> winCopies;
+                winCopies.emplace_back(std::make_unique<WaysWin>(win->symbol, win->maxReels, win->maxRows));
+                for (size_t reel = 0; reel < win->oak; ++reel)
+                {
+                    const auto positions = win->getPositionsOnReel(reel);
+                    std::unordered_map<unsigned int, std::vector<std::pair<size_t, bool>>> multiplierMap;
+                    for (const auto& pos : positions)
+                        multiplierMap[multiplierVect[reel][pos.first]].push_back(pos);
+                    const size_t winsToCopy = winCopies.size();
+                    for (size_t i = 1; i < multiplierMap.size(); ++i)
+                        for (size_t j = 0; j < winsToCopy; ++j)
+                            winCopies.emplace_back(std::make_unique<WaysWin>(*winCopies[j]));
+                    size_t multiplierIndex = 0;
+                    for (const auto& [multiplier, positionsWithMultiplier] : multiplierMap)
+                    {
+                        for (const auto& [row, isWild] : positionsWithMultiplier)
+                            for (size_t j = 0; j < winsToCopy; ++j)
+                                winCopies[j + multiplierIndex * winsToCopy]->addPosition(
+                                    reel, row, isWild, multiplier, combineType);
+                        ++multiplierIndex;
+                    }
+                }
+                winVector.reserve(winVector.size() + winCopies.size());
+                for (auto& winCopy : winCopies)
+                {
+                    spinWin += winCopy->setWin(payTable, betMultiplier);
+                    winVector.emplace_back(std::move(winCopy));
+                }
+            }
+            else
+            {
+                spinWin += winVal;
+                winVector.emplace_back(std::move(win));
+            }
         }
     }
     return spinWin;

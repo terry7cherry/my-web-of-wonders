@@ -100,7 +100,9 @@ void API::startAPIServer()
 	std::cout << "Go to localhost:8080 in your browser" << std::endl;
 #endif
 
-	app().run();
+	app()
+		.setThreadNum(std::max(2u, std::thread::hardware_concurrency() - 2))
+		.run();
 }
 
 
@@ -334,8 +336,8 @@ std::pair<GameCycle, uint32_t> API::playForcedGame(const GameMaths& maths,
 		if (condition(cycle)) return {cycle, seed};
 		attempts++;
 	}
-	while (attempts < 100'000'000);
-	throw std::runtime_error("Force " + std::to_string(forceIndex) + " failed after 1b runs.");
+	while (attempts < 10'000'000);
+	throw std::runtime_error("Force " + std::to_string(forceIndex) + " failed after 10m runs.");
 }
 
 

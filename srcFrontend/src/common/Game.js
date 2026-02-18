@@ -191,15 +191,20 @@ export default class Game {
         )
             this.session = await ApiClient.getNewSession(this.session, this.state.bet, this.state.betType, this.state.rtp);
 
-        const {
-            session,
-            events,
-            winnings,
-            forceName,
-            seed: newSeed
-        } = await ApiClient.getNewGameCycle(this.session, forceIndex, seed, rnStream);
-        this.session = session;
-        await this.displayGameRound(events, winnings, newSeed, forceName);
+        try {
+            const {
+                session,
+                events,
+                winnings,
+                forceName,
+                seed: newSeed
+            } = await ApiClient.getNewGameCycle(this.session, forceIndex, seed, rnStream);
+            this.session = session;
+            await this.displayGameRound(events, winnings, newSeed, forceName);
+        } catch (e) {
+            await this.ui.ticker.updateText(e.message);
+        }
+
 
         this.state.running = false;
         this.ui.spinButton.changeColour(0x0000ff);
