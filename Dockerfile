@@ -47,8 +47,9 @@ RUN cmake -B build -S . \
     -G Ninja \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_TOOLCHAIN_FILE=${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake \
+    -DCMAKE_CXX_FLAGS="-w" \
     -DFRONTEND=ON && \
-    cmake --build build --target cpp-game
+    cmake --build build --target cpp-game -j$(nproc)
 
 
 # ============================
