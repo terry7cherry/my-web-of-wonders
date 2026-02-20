@@ -70,7 +70,7 @@ struct GameSession : GameSessionBase
      *
      * \param jsonSession JSON object produced by \c toJson().
      */
-    GameSession(const Json::Value& jsonSession)
+    GameSession(const Json::Value& jsonSession) // NOLINT(google-explicit-constructor)
         : GameSessionBase(jsonSession)
     // Initialise all persistent values from the json here. E.g.
     // jackpotValue(jsonSession["jackpotValue"].asInt()),
