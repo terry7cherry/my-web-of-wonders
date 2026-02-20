@@ -39,7 +39,7 @@ export default class PhaseUI {
      * @param {number} [grid.numRows] - Override numRows in maths.
      * @param {boolean} [grid.isHoldAndSpin] - Set this grid to hold and spin mode.
      * @param {Array<string>} [grid.holdAndSpinBlankSymbols] - Array of symbol names that should not lock on spin. (First element will be used as starting symbol for grid.)
-     * @param {Array<Object>} [grid.weightedDisplayReelSet] - For hold and spin (mostly). A symbol weight table to use for spinning animations.
+     * @param {Array<{weight: number, outcome: string}>} [grid.weightedDisplayReelSet] - For hold and spin (mostly). A symbol weight table to use for spinning animations.
      * @param {Array<Array<number>>} [grid.displayReelSet] - Reel set for spinning animations.
      * @param {Function} [grid.symbolColourMapper] - Where no symbol images (imageMap) is provided. Function that takes symbolCode and returns colour in hex format (#ffffff).
      * @param {boolean} [grid.simultaneousWinLineAnimations=false] - Whether to animate win lines simultaneously.

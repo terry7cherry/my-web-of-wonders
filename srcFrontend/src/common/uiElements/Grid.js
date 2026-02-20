@@ -98,6 +98,7 @@ export default class Grid {
             }
         } else if (this.weightedDisplayReelSet) {
             const singleReel = typeof this.weightedDisplayReelSet[0].symbol !== "undefined";
+            /** @type {Array<{weight: number, outcome: string}>} */
             const reel = singleReel ? this.weightedDisplayReelSet : this.weightedDisplayReelSet[reelNum];
             const totalWeight = reel.map(({weight}) => weight).reduce((a, b) => a + b, 0);
             for (let i = 0; i < numSymbols; i++) {
@@ -106,8 +107,8 @@ export default class Grid {
                 const outcome = reel.find(({weight}) => {
                     runningTotal += weight;
                     return random < runningTotal;
-                });
-                symbols.push(outcome.symbol);
+                }).outcome;
+                symbols.push(outcome);
             }
         } else throw new Error("No display reel set found. displayReelSet or weightedDisplayReelSet must be set in game constructor.")
         return symbols;

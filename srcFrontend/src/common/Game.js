@@ -23,6 +23,7 @@ export default class Game {
             this.imageMap = await importImageMap();
             await this.buildShellUI();
             await this.getMathsAndCreateUI();
+            this.session = await ApiClient.getNewSession(this.session, this.state.bet, this.state.betType, this.state.rtp);
             this.state.autoPlayOn = false;
             this.state.numSpins = 0;
             this.freeSpins = {};
@@ -77,6 +78,8 @@ export default class Game {
         this.state.betType = selector.value;
         selector.addEventListener("change", async () => {
             await this.setBetType(selector.value);
+            this.session = await ApiClient.getNewSession(this.session, this.state.bet, this.state.betType, this.state.rtp);
+            this.ui.updateUiAndStateToMatchSession(this.session, this.state);
         });
     }
 
@@ -89,23 +92,27 @@ export default class Game {
             this.state.rtp = parseInt(selector.value);
             this.ui.destroy();
             await this.getMathsAndCreateUI();
+            this.session = await ApiClient.getNewSession(this.session, this.state.bet, this.state.betType, this.state.rtp);
+            this.ui.updateUiAndStateToMatchSession(this.session, this.state);
         })
     }
 
     setUpRnStreamButton() {
         /** @type {HTMLButtonElement} */
-        const spinButton = document.getElementById("rn-stream-spin");
-        spinButton.addEventListener("click", (async () => {
+        const rnStreamForm = document.getElementById("rn-stream-form");
+        rnStreamForm.addEventListener("submit", (async (e) => {
+            e.preventDefault();
+            if (this.running) return;
             /** @type {HTMLInputElement} */
             const rnStreamBox = document.getElementById("rn-stream");
             let rnStream = rnStreamBox.value;
+            if (!rnStream.length) return;
             this.session = JSON.parse(rnStream.split("|")[0]);
-            await this.setBetType(this.session.betType);
             this.state.rtp = this.session.rtp;
-            this.state.bet = this.session.bet;
             document.getElementById("rtp-selector").value = this.state.rtp;
-            //await document.getElementById("rtp-selector").onchange();
-            this.ui.configPanel.betSelector.updateBet(this.state.bet);
+            await this.setBetType(this.session.betType);
+            //this.session = await ApiClient.getNewSession(this.session, this.session.bet, this.session.betType, this.state.rtp);
+            this.ui.updateUiAndStateToMatchSession(this.session, this.state);
             rnStream = rnStream.split("|").slice(1).join("|");
             await this.play({rnStream});
         }).bind(this));
@@ -122,7 +129,7 @@ export default class Game {
             const oldBetIndex = this.validBaseBets.indexOf(this.state.bet / previousBetTypeCost);
             const newStake = this.validBaseBets[oldBetIndex] * this.maths.betTypeCost;
             this.updateBet(newStake);
-            //if (selector.value !== betType) selector.value = betType;
+            if (selector.value !== betType) selector.value = betType;
         } else {
             selector.value = this.state.betType;
         }

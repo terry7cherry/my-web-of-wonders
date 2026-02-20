@@ -348,4 +348,11 @@ export default class StandardGameUI {
             phase.build(this.maths, this.phaseContainer, this.bottomTickerContainer, soundPlayer, this.colours.tickerTextColour ?? 0x000000, imageMap);
         });
     }
+
+    updateUiAndStateToMatchSession(session, state) {
+        state.bet = session.bet;
+        state.betType = session.betType;
+        state.rtp = session.rtp;
+        this.configPanel.betSelector.updateBet(this.state.bet);
+    }
 }

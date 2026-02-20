@@ -101,4 +101,26 @@ export default class GameUI extends StandardGameUI {
         // });
         // (You must ensure you have created the panel by passing a height/width for it in the layout property for the relevant PhaseUI constructor.)
     }
+
+    updateUiAndStateToMatchSession(session, state) {
+        super.updateUiAndStateToMatchSession(session, state);
+        // Use this method to update the UI to match the current session.
+        // Where you have persistent game elements reflected in the UI, you will update the UI elements when
+        // events trigger that should change them, and your changes will persist between spins.
+        // However, there are two situations where this falls down:
+        //  - When the user changes the bet type (or the rtp), the UI reloads and all UI elements reset.
+        //    This is fine if persistence is locked to the bet type (so changing the bet type resets all
+        //    persistent values) but this may not always be the case. This method allows you to resolve that
+        //    problem. Before the UI is reloaded, the frontend requests a new session from the backend based
+        //    on the current one and using the correct bet locking rules for the game. This method is then
+        //    called with the new session, so you can add code here to update the UI to match the new session.
+        //  - When running using RN stream in the backend on a game with persistence, you may want to play
+        //    a particular problem game in the frontend to help diagnose the problem. The backend gives you a
+        //    string containing the session details and RN stream that you can enter in the frontend. However,
+        //    if you have persistent UI elements, they will not match the correct starting state for the
+        //    problem game cycle. Again this method will be triggered before the game starts and allows you
+        //    to update the UI to match the problem game.
+        // Note if you are storing anything important on the state object you can also update that to match
+        // the session here.
+    }
 }
