@@ -15,12 +15,8 @@
 #include "TaggedRange.h"
 #include "TaggedDataTypes.h"
 #include "../GameMaths.h"
-#include <absl/container/flat_hash_map.h>
 #include "../TypeConfig.h"
 #include "../../utils/Timer.h"
-//template <typename T>
-//using TypeConfig = absl::flat_hash_map<std::string, T>;
-//using TypeConfig = std::unordered_map<std::string, T>;
 
 
 /**
@@ -74,7 +70,7 @@ public:
             {
                 if (range.height() != 1) continue;
                 const std::string value = sheet.cell(range.top_left()).value<std::string>();
-                const bool looksLikeJson = value.starts_with("{") && value.ends_with("}");
+                const bool looksLikeJson = value.starts_with("{") && value.ends_with("}"); //NOLINT
                 if (looksLikeJson)
                 {
                     Json::Value jsonTag = parseJsonObjectOrReturnNull(value);
@@ -434,6 +430,9 @@ public:
                 addRelevantElementsToConfigForType(taggedBoolWeightTables, gameMathsPtr->boolWeightTables,
                                                    rtp,
                                                    betType);
+                addRelevantElementsToConfigForType(taggedStringWeightTables, gameMathsPtr->stringWeightTables,
+                                                   rtp,
+                                                   betType);
                 addRelevantElementsToConfigForType(taggedReelSets, gameMathsPtr->reelSets, rtp, betType);
                 addRelevantElementsToConfigForType(taggedPayLines, gameMathsPtr->payLines, rtp, betType);
                 addRelevantElementsToConfigForType(taggedIntThresholdTables,
@@ -579,7 +578,7 @@ public:
      */
     static void validateBetTypeCost(const double cost, const int minBet)
     {
-        // Check if cost * minbet is integer.
+        // Check if cost * minBet is integer.
         double intPart;
         if (std::modf(cost * minBet, &intPart) != 0.0)
         {
@@ -591,9 +590,11 @@ public:
 
 private
 :
+    std::vector<std::shared_ptr<TaggedRange>> taggedRanges;
+    std::vector<std::shared_ptr<TaggedBetTypeMap>> taggedBetTypes;
+    std::vector<std::shared_ptr<TaggedRtpMap>> taggedRtpMaps;
     std::vector<std::shared_ptr<TaggedSymbol>> taggedSymbols;
     std::vector<std::shared_ptr<TaggedSymbolVector>> taggedSymbolVectors;
-    std::vector<std::shared_ptr<TaggedRange>> taggedRanges;
     std::vector<std::shared_ptr<TaggedInt>> taggedInts;
     std::vector<std::shared_ptr<TaggedDouble>> taggedDoubles;
     std::vector<std::shared_ptr<TaggedString>> taggedStrings;
@@ -603,8 +604,6 @@ private
     std::vector<std::shared_ptr<TaggedSymbolMap>> taggedSymbolMaps;
     std::vector<std::shared_ptr<TaggedStringMap>> taggedStringMaps;
     std::vector<std::shared_ptr<TaggedBoolMap>> taggedBoolMaps;
-    std::vector<std::shared_ptr<TaggedBetTypeMap>> taggedBetTypes;
-    std::vector<std::shared_ptr<TaggedRtpMap>> taggedRtpMaps;
     std::vector<std::shared_ptr<TaggedIntWeightTable>> taggedIntWeightTables;
     std::vector<std::shared_ptr<TaggedStringWeightTable>> taggedStringWeightTables;
     std::vector<std::shared_ptr<TaggedDoubleWeightTable>> taggedDoubleWeightTables;
