@@ -26,7 +26,7 @@ GameSessionBase::GameSessionBase(const Json::Value& jsonSession)
 
 int GameSessionBase::getBetMultiplier(const int bet, const GameMaths& maths)
 {
-    const double multiplier = bet / maths.minBet / maths.betTypeCost;
+    const double multiplier = bet / static_cast<int>(maths.minBet * maths.betTypeCost + 0.5);
     double intPart;
     if (std::modf(multiplier, &intPart) == 0.0) return static_cast<int>(multiplier);
     throw std::runtime_error(
