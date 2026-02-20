@@ -54,7 +54,7 @@ struct GameSession : GameSessionBase
      */
     GameSession(const int bet,
                 const GameMaths& maths,
-                const GameSession oldSession [[maybe_unused]])
+                const GameSession& oldSession [[maybe_unused]])
         : GameSession(bet, maths, Forces::ForceNone)
     {
         // Copy any persistent data that SHOULD NOT BE bet locked from the oldSession. E.g.
