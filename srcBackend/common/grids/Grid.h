@@ -23,7 +23,6 @@ class Grid
 protected:
     std::map<Symbol, std::string> mTextMap;
     std::map<int, short> mColourMap;
-    Console* lpConsole = nullptr;
     std::vector<std::vector<unsigned int>> multiplierVect; // [reel][row]
     bool multipliersSet = false;
     std::vector<bool> lockedReelVect;
