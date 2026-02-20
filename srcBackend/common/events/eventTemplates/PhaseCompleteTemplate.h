@@ -5,14 +5,14 @@
  */
 
 #include <string>
-#include <inttypes.h>
+#include <cinttypes>
 #include <filesystem>
 
 #include "BasicEvent.h"
 #include "../threadSafeMeters/IntSumMeter.h"
 #include "../threadSafeMeters/DistributionMeter.h"
 #include "../threadSafeMeters/IntMaxMeter.h"
-#include "../rng/MathsRng.h"
+#include "../../rng/MathsRng.h"
 
 /**
  * @brief Base for Events signalling end of phase (base game, bonus, free spins, whole game).
