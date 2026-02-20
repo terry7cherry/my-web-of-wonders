@@ -89,6 +89,10 @@ export default class Game {
         selector.selectedIndex = 0;
         this.state.rtp = parseInt(selector.value);
         selector.addEventListener("change", async () => {
+            if (this.state.running) {
+                selector.value = this.state.rtp;
+                return;
+            }
             this.state.rtp = parseInt(selector.value);
             this.ui.destroy();
             await this.getMathsAndCreateUI();
