@@ -150,8 +150,10 @@
         </div>
         <h3>RN Stream</h3>
         <div class="rn-stream-row">
-            <input id="rn-stream" type="text" placeholder="Enter RN stream..."/>
-            <button id="rn-stream-spin">Spin</button>
+            <form id="rn-stream-form" onsubmit="event.preventDefault();">
+                <input id="rn-stream" type="text" placeholder="Enter RN stream..."/>
+                <button id="rn-stream-spin" type="submit">Spin</button>
+            </form>
         </div>
     </div>
 </div>
