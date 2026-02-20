@@ -3,17 +3,24 @@
 This document is intended to help you get started creating games with this template.
 
 Before you start, make sure you've completed the setup guide (1a/1b) in this folder, and use the spreadsheet
-parser docs (2) to prepare your PAR sheet.
+parser docs (2) to prepare your PAR sheet. The spreadsheet parser doc is an important part of this guide so
+please read it before starting here.
+
+You do not need to read this guide all at once, but please read the overview and recommendations before you
+get started. Then you can come back to specific sections as they become relevant. Please read the relevant
+section in full when you do so.
 
 ## Overview
 
 Code for the simulator (srcBackend) is split into two categories.
 
-- common: shared code between games, not to be edited.
+- common: shared code between games, NOT TO BE EDITED.
 - thisTitle: game-specific code.
 
 By only editing or adding files in thisTitle, we can ensure that anyone familiar with this template can easily
-understand all games, since they know that they only need to look at the files in thisTitle.
+understand all games, since they know that they only need to look at the files in thisTitle. If you're not
+sure how to achieve something without editing files in common/, please ask. The existing classes will often
+include the functionality you need, and if not they can be extended.
 
 This guide goes through each of the files in the thisTitle folder, explaining what they do and how to edit
 them.
@@ -31,25 +38,28 @@ possible to help others understand the game flow easily, and minimise the potent
 few recommendations to help with achieving this. If you look at the template code in GameLogic.cpp, you'll see
 how they are applied.
 
-1. **Keep functions short and focused:** Most functions contain only 2–5 lines of code. The fewer the better.
-   This makes it easy to see at a glance what a function does.
-2. **Give functions descriptive names:** Don't worry if they become long, but make sure that you update them
+1. **Make your maths sheet the SINGLE SOURCE OF TRUTH:** Don't hardcode any data but import it all from the
+   spreadsheet. Don't copy and paste values to spreadsheet parser input, use formulas to import them. This
+   eliminates a common source of bugs and leaves no doubt that the information you pass to the server team is
+   identical to what is used in your sim.
+2. **Keep functions short and focused:** Most functions contain only 2–5 lines of code. The fewer, the
+   better. This makes it easy to see at a glance what a function does.
+3. **Give functions descriptive names:** Don't worry if they become long, but make sure that you update them
    if you change the logic in the function.
-3. **Avoid text comments where possible:** Text comments should absolutely be included if the code wouldn't be
+4. **Avoid text comments where possible:** Text comments should absolutely be included if the code isn't
    easy to understand without them, but if you can use 1. and 2. above to clarify the code, this is preferable
    because:
     - it is easy to forget to update text comments when the code they describe changes.
     - the reader will usually read the code as well as the comments, so it takes longer to understand the
       code.
-4. **Avoid theme-specific language in function and variable names:** E.g., instead of "Fisherman" say
+5. **Avoid theme-specific language in function and variable names:** E.g., instead of "Fisherman" say
    "collectionSymbol". This makes your code more reusable if a new theme is applied later.
-5. **Do not refer to symbols by their index or symbol names in code:** Use a symbol type in the spreadsheet to
+6. **Do not refer to symbols by their index or symbol names in code:** Use a symbol type in the spreadsheet to
    define the symbol used in a certain case (or a symbolWeightTable to choose a symbol randomly) and refer to
-   this in your code. This means if the symbol names are changed later or more symbols are added to the
+   this in your code. (E.g., your spreadsheet can contain a value of symbol type with name "expandingWild" and
+   value "W1".) This means if the symbol names are changed later or more symbols are added to the
    pay table (maybe when someone uses your game as a base for a new game in the future) everything will still
    work.
-6. **Make your maths sheet the single source of truth:** Don't copy and paste values to spreadsheet parser
-   input, use formulas to import them. This eliminates a common source of bugs.
 
 ### Common tasks
 
@@ -79,18 +89,21 @@ cycle.grid.evalutateWins(cycle.session.betMultiplier);
 #### Other common grid tasks
 
 The Grid object has a large number of other useful and well-documented functions for tasks like counting or
-expanding symbols etc. If you just type "cycle.grid.", a list of these will pop up and as you move down the
-list with the arrow keys you'll see descriptions of what each does.
+expanding symbols etc. If you just type "cycle.grid.", a list of these will pop up and, as you move down the
+list with the arrow keys, you'll see descriptions of what each does.
 
 ### Recording events
 
-Events serve two purposes:
+Events serve three purposes:
 
 - Allow stats to be recorded.
 - Provide information to frontend about what has happened in the game.
-  You will need to record an event whenever you want to record a stat or update the frontend, and a single
-  event can do both where appropriate.
-  Record events as follows:
+- Update the RN stream runner (documented later) with the winnings for individual spins.
+
+You will need to record an event whenever you want to record a stat or update the frontend, and a single
+event can do both where appropriate.
+
+Record events as follows:
 
 ```
 cycle.recordEvent<EventClassName>(params, for, event);
@@ -102,13 +115,13 @@ your own events, see the section on events further down in this guide.
 ## state/GameCycle.h
 
 The GameCycle object stores all game state information for the current cycle (paid game round). It is
-recommended to add member variables to this object for any state information. While this may not be strictly
-necessary for logic purposes it is a good idea because:
+recommended to add member variables to this object for any state information rather than using local
+variables. While this may not always be strictly necessary for logic purposes, it is a good idea because:
 
 - If you ever want to create a force (for the frontend) that guarantees a certain state, this information must
   be on the GameCycle.
-- Most of your GameLogic functions can just take cycle as a parameter and you know you always have access to
-  any state info you might need.
+- Most of your GameLogic functions can just take cycle as a parameter, giving you access to any state info you
+  might need.
 
 Add any extra member variables you need into the GameCycle struct and either initialise them inline or use the
 constructor (if they need initialising with values from maths, for example).
@@ -122,7 +135,7 @@ The GameCycleReused struct speeds up simulation by reusing heavy objects (like G
 them every cycle. You can include and use a different type of Grid here (like WaysGrid), just make sure you
 also update the reference in the GameCycle struct.
 
-If your game uses other heavy objects, you can include them here too.
+If your game uses additional grids or other heavy objects, you can include them here too.
 
 ## GameSession.h
 
@@ -145,7 +158,7 @@ cycle.session.betType;
 cycle.session.simForce;
 ```
 
-GameSession is also the place where any persistent state is stored. You only need to edit GameSession.h if
+GameSession is also the place where any **persistent state** is stored. You only need to edit GameSession.h if
 your game has persistence (state that does not reset after each paid game
 cycle). You will find the instructions for how to do so within GameSession.h.
 
@@ -161,7 +174,7 @@ Forces are a way to guarantee certain outcomes. There are two types of forces:
 
 To implement a sim force, you must create a logic branch in your GameLogic.cpp file that depends on
 cycle.session.simForce (this is set to 0 when no force is selected). See the example for ForceFreeSpins in the
-template GameLogic code.
+doBaseGame method of the template GameLogic code.
 
 You will also need to add your new force in forces/simForces.h. You will need to add it as a new entry in the
 SimForce enum, and also add a string name to the simForceNames vector. This name will appear as an option in
@@ -170,19 +183,22 @@ the CLI when you run a sim.
 ### Frontend Forces
 
 Frontend forces work by running the game randomly over and over again until a certain condition is met, then
-this game is presented in the frontend.
+presenting this game in the frontend.
 
 Frontend forces only need to be added in forces/frontendForces.h.
 
-Follow the pattern in this file when you add a new force. The FrontendForce class takes two parameters to its
-constructor:
+Follow the pattern in this file when you add a new force. The FrontendForce class takes two required
+parameters to its
+constructor and an optional third:
 
 - A string name to be displayed in the force list in the front end.
 - A function that takes a GameCycle object and returns true if that cycle meets the condition for the force.
+- (Optionally) A vector of bet types where this force should be available. It will be available for all bet
+  types if this parameter is not specified.
 
-Note that 100 million attempts will be made to find a cycle that meets the condition. If no matching cycle is
-found, an error is shown in the frontend. For forces that are too rare to be found within this time, the
-player is free to try again.
+Note that 10 million attempts will be made to find a cycle that meets the condition. If no matching cycle is
+found, an error is shown in the frontend. For forces that are too rare to be found within this time, the user
+is free to try again.
 
 ## stats/StatsOutput.h and stats/StatsOutput.cpp
 
@@ -205,11 +221,11 @@ For a new Event class:
 
 - It must inherit from BasicEvent or one of the templates in srcBackend/common/events/eventTemplates.
 - It must have a static updateMeters method with a function signature (parameters) EXACTLY the same as the
-  signature of its constructor. This can be empty if no stats are required for the event.
+  signature of its constructor. This method can be empty if no stats are required for the event.
 - If the event needs to be visualised on the frontend, it must have a toJson method that returns a JSON
   object (Json::Value).
 
-Note that when extending one of the templates, you must also pass the child class name as a template
+**NOTE:** when extending one of the templates, you must also pass the child class name as a template
 parameter.
 See how this is done in FreeSpinsCompleteEvent, for example.
 
@@ -217,14 +233,14 @@ The available templates are:
 
 - **GridEventTemplate**: for events where the frontend needs the array of symbols in the grid. (Note:
   **GridUpdateEvent** is derived from this and the frontend handles this event automatically. The new grid is
-  compared to the old one, and the changed positions are updated with a scrolling animation. The message
+  compared to the old one, and the changed positions are updated with a scrolling animation. The `message`
   passed into the Event constructor is also displayed in the ticker simultaneously.)
 - **PhaseCompleteEventTemplate**: for events at the end of a game phase (free spins, bonus, etc.). This event
   automates the creation of distributions and stats.
 - **SpinsCompleteEventTemplate**: Like PhaseCompleteEventTemplate, but specifically for free spins type
   phases, where a number of spins are awarded and more may be retriggered during the phase. Provides all the
   stats provided by PhaseCompleteEventTemplate plus some more specific ones. (When using this event template,
-  make sure you are passing the total win for your phase into the constructor.)
+  make sure you edit the three parameter constructor to get the `totalWin` from this phase from `cycle`.)
 
 When making your own Events that include stats, bear in mind that the simulator is multithreaded and so your
 meters must be thread safe. A number of threadsafe meters are provided in

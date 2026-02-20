@@ -48,8 +48,8 @@ follows a rule:
 
 - Primitives (numbers, strings, booleans, null, undefined), are passed by value. This means a copy is made and
   changing the argument within the function does not modify the original variable.
-- All other objects (including arrays) are passed by reference. This means that changing the argument within
-  the function will also change the original variable.
+- All other types (including object, arrays, and functions) are passed by reference. This means that changing
+  the variable within the function will also change the original variable.
 
 ### Functions are objects
 
@@ -172,8 +172,8 @@ handlers:
   the blue session stats box and above the two scroll boxes at the bottom of the page.) It includes:
     - `game.ui.currentPhase`: A reference to the UI of the phase being played right now. (Includes the grid,
       and
-      any added top, bottom, or side panels, as well as balance or spins left tickers for the phase). You will
-      need:
+      any added top, bottom, or side panels for the phase, as well as balance or spins left tickers for the
+      phase). You will need:
         - `game.ui.currentPhase.balance`: You must update the phase balance when wins are awarded with
           `game.ui.currentPhase.balance.increment(winnings)`. At the end of the phase this balance will be
           compared with the phase winnings sent by the server and an error shown if they do not match. This
@@ -192,8 +192,8 @@ handlers:
             - `addBackgroundToSymbol(reelNum, symbolNum, colour)`: Adds a coloured background to a symbol for
               highlighting purposes (will only be visible if the symbol has some transparency).
             - `removeBackgroundFromSymbol(reelNum, symbolNum)`: Removes any added background.
-            - `addFrameToSymbol(reelNum, symbolNum, colour, width)`: Adds a frame on top the symbol aperture
-              for highlighting purposes.
+            - `addFrameToSymbol(reelNum, symbolNum, colour, width)`: Adds a frame on top of the symbol for
+              highlighting purposes.
             - `removeFrameFromSymbol(reelNum, symbolNum)`: Removes any added frame.
             - `addTextToSymbol(reelNum, symbolNum, text, textStyle)`: Adds a text overlay to a symbol.
             - `removeTextFromSymbol(reelNum, symbolNum)`: Removes any added text overlay.
@@ -202,12 +202,12 @@ handlers:
       winnings in the ticker. (This is automatically called when a new phase begins or when the round ends but
       the winnings check is not carried out in this case, so it should ideally be called explicitly when the
       PhaseCompleteEvent is triggered.)
-    - `game.ui.setPhase(phaseName)`: A function that hides the current phase and shows the phase with the
-      given name, while also initialising the balance for the new phase.
+    - `game.ui.setPhase(phaseName)`: A function that hides the UI for the current phase and shows the UI for
+      the phase with the given name, while also initialising the balance for the new phase.
     - `game.ui.ticker`: The large ticker that appears to the right of the Spin buttons, used to explain game
       events as they happen. Use `game.ui.ticker.updateText(text)` to update the text with a scrolling
       animation.
-- `game.shell`: The shell UI, comprised all the UI elements around the PIXI app. The key properties you may
+- `game.shell`: The shell UI, comprised of all the UI elements around the PIXI app. The key properties you may
   need are:
     - `game.shell.eventHistory`: The text box at the bottom of the page that displays all events. Anything you
       display in the main ticker with `game.ui.ticker.updateText()` will also be displayed here automatically.
@@ -223,15 +223,15 @@ handlers:
 ### Custom animations
 
 You can do simple animations of elements using the moveElement function that is included in events.js. For
-more complex animations, speak to Gabriel.
+more complex animations, speak to Gabriel or the dedicated frontend resource.
 
 ## UI
 
 ### srcFrontend/src/thisTitle/GameUI.js
 
-This file is where the UI is customised for your game. The UI is divided into two parts, the global UI (which
-stays visible regardless of what phase is being played) and the phase UI (which is specific to the current
-phase).
+This file is where you can customise the UI for your game. The UI is divided into two parts, the global UI (
+which stays visible regardless of what phase is being played) and the phase UI (which is specific to the
+current phase).
 
 ### Global UI
 
@@ -242,9 +242,9 @@ you will see the options available. The most important ones concern top, bottom,
 
 If you set `topPanelHeight`, `bottomPanelHeight`, `leftPanelWidth`, or `rightPanelWidth` in `layout`, a panel
 will be created in which you can add additional UI elements. The rest of the UI elements will be automatically
-moved to accommodate your panel. The panel will be visible throughout the game.
-You can give the panel a background colour by adding the `topPanelColour`, `bottomPanelColour`,
-`leftPanelColour`, or `rightPanelColour` properties in `colours`.
+moved to accommodate your panel. The panel will be visible throughout the game and available on
+game.ui.topPanel etc. You can give the panel a background colour by adding the `topPanelColour`,
+`bottomPanelColour`, `leftPanelColour`, or `rightPanelColour` properties in `colours`.
 
 To add UI elements to these panels, scroll down to the `async init(dependencies)` function and add your UI
 elements after the call to `super.init()`.
@@ -253,11 +253,11 @@ The prebuilt UI elements you can add include:
 
 - `Button`: A rectangular button with a colour, some text, and an (optional) onClick action.
 - `NiceText`: Formatted text (like the game title).
-- `Panel`: A rectangular panel with a background colour.
-- `Ticker`: A text box that can be updated with new text and a scrolling animation.
+- `Panel`: A rectangular panel with a background colour which you can add other elements inside.
+- `Ticker`: A text box that can be updated with new text and a scrolling animation (like the balance ticker).
 - `MaskedContainer`: A container with a mask so its child elements are only visible within its bounds.
 
-The constructor for each of these elements is an object that takes a parent (e.g. this.topPanel), x and y
+The constructor for each of these elements takes an object including a parent (e.g. this.topPanel), x and y
 position (relative to top left of parent element), width, height, and other parameters specific to the
 element.
 
@@ -274,7 +274,8 @@ appear here with an id and a phase constructor. The phase constructor has four a
 - `layout`: Similar to global UI.
 - `colours`: Similar to global UI.
 - `grid`: Specifies options related to the grid:
-    - `displayReelSet`: The reelset to be used for spin animations.
+    - `displayReelSet`: The reelset to be used for spin animations. Note how this is passed from the backend
+      in Math Config below.
     - `suspenseSymbol`: When two or more of this symbol have appeared on the grid, the remaining reels will
       spin slower.
     - `simultaneousWinLineAnimations`: For games with large numbers of win lines, displays all wins
@@ -282,6 +283,11 @@ appear here with an id and a phase constructor. The phase constructor has four a
     - `numReels` and `numRows`: These are set from `maths.numReels` and `maths.numRows` by default but can be
       overridden.
     - `isHoldAndSpin`: If true, constructs a grid where each symbol spins separately on a minireel.
+    - `holdAndSpinBlankSymbols`: An array of symbol names (strings) that should not be locked during spins.
+      The first of these will be used to fill the starting grid before the initial spin.
+    - `weightedDisplayReelSet`: A different type of reelset to be used for spinning animations, where each
+      symbol is chosen from a weighted distribution. Must be an array of objects each containing weight
+      (number) and outcome (string) properties. Can also be an array of these arrays, one for each reel.
 
 Note that Phase UIs can also have top, bottom, and side panels created in the same way as global UI. However,
 adding elements to these panels must be done in the `buildPhaseUIs()` function after the call the

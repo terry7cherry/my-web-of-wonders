@@ -22,7 +22,7 @@ hosting.
 
 1) Run:
    ```
-   docker run --rm -p 8080:8080 cpp-game-image
+   docker run --rm -p 8080:8080 cpp-game-name
    ```
 2) Open your browser at:
    ```

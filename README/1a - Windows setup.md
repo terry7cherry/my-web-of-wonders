@@ -14,7 +14,7 @@
     - In install options, tick "Desktop development with C++".
 - CLion 2025.2.5+
 - Git
-- Node.js 20+ (LTS) – installer from https://nodejs.org
+- Node.js 20+ (LTS)
     - Download the Windows .msi from https://nodejs.org
     - Run the installer (accept defaults)
     - In a new PowerShell/Command Prompt:
@@ -47,9 +47,7 @@
 #### Project setup (for each new game)
 
 1) Use terraform (or ask Terry/Gabriel) to create a new repo from the cpp-template-game template.
-
 2) Clone your fork
-
     - Clone by HTTP or SSH. On the repo page for your forked repo, click the green "Code" button. Then copy
       the
       URI under "Clone with HTTPS" or "Clone with SSH".
@@ -61,7 +59,6 @@
       ```
     - You can use Sourcetree if you prefer.
     - Another projects folder is fine, but this one is recommended to avoid problems with long paths.
-
 3) Set up the frontend
     - In the repo root:
       ```
@@ -69,21 +66,17 @@
       npm install
       npm run build
       ```
-
 4) Open in CLion
-
     - Start CLion.
     - Open the folder `C:\Projects\cpp-{your-game-name}`.
-
 5) Select Toolchain:
     - Go to: File → Settings → Build, Execution, Deployment → Toolchains
     - Add a "Visual Studio" toolchain if not already present.
     - Make the Visual Studio toolchain the default.
     - CLion should detect the VS compiler and bundled CMake/Ninja.
-
 6) Enable CMake presets:
     - Go to: File → Settings → Build, Execution, Deployment → CMake
-    - Ensure all four `windows-*` presets are enabled.
+    - Ensure all 6 `windows-*` presets are enabled.
 7) Test the sim:
     - In the top-right configuration selector, choose `windows-sim`.
     - Click the Run/Build button to ensure it compiles.
@@ -91,3 +84,5 @@
     - Select the `windows-frontend` config.
     - Build and run.
     - Open the browser at the 'Local' URL printed in the run output by the backend and try a few spins.
+9) Add template as remote to allow getting updates in future:
+    - `git remote add upstream <copied URI from step 2>`

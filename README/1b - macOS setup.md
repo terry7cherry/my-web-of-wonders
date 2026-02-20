@@ -65,9 +65,7 @@
 #### Project setup (for each new game)
 
 1) Use terraform (or ask Terry/Gabriel) to create a new repo from the cpp-template-game template.
-
 2) Clone your fork.
-
     - Clone by HTTP or SSH. On the repo page for your forked repo, click the green "Code" button. Then copy
       the
       URI under "Clone with HTTPS" or "Clone with SSH".
@@ -79,7 +77,6 @@
       ```
     - You can use Sourcetree if you prefer.
     - Another projects folder is fine, but this is recommended to avoid problems with long paths.
-
 3) Set up the frontend
     - In the repo root:
       ```
@@ -88,30 +85,25 @@
       npm run build
       ```
 4) Open in CLion
-
     - Start CLion.
     - Open the folder `~/Projects/cpp-{your-game-name}`.
-
 5) Replace `VCPKG_ROOT`
     - In `CMakePresets.json`, replace each occurrence of `$env{VCPKG_ROOT}` with the path returned by:
       ```
       echo "$VCPKG_ROOT"
       ```
-
 6) Select toolchain
     - File → Settings → Build, Execution, Deployment → Toolchains
     - Use the default "macOS" toolchain (Apple Clang).
     - Ensure CMake and Ninja are detected (CLion usually finds `/opt/homebrew/bin/ninja`).
-
 7) Enable CMake presets
-
     - File → Settings → Build, Execution, Deployment → CMake
     - Enable all the `macos-*` presets by ticking the check boxes.
-
 8) Test the sim
-
     - In the configuration selector, choose: `macos-sim` then Build/Run.
 9) Test the frontend:
     - Select `macos-frontend` (or equivalent) and Run.
     - Open your browser at the URL printed by the server (typically `http://localhost:5173`).
+10) Add template as remote to allow getting updates in future:
+    - `git remote add upstream <copied URI from step 2>`
 
