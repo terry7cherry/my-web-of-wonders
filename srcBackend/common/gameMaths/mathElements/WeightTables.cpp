@@ -55,7 +55,7 @@ void WeightTable::setWeightVector(std::vector<int> sourceVector)
 }
 
 // Re-create pickList from the original weightVector
-void WeightTable::reset(void)
+void WeightTable::reset()
 {
     pickList.clear();
     for (size_t i = 0; i < weightVector.size(); i++)
@@ -65,7 +65,7 @@ void WeightTable::reset(void)
 }
 
 // calculate the pick data for the current pickList
-void WeightTable::updateList(void)
+void WeightTable::updateList()
 {
     range = 0;
     minVal = INT32_MAX;
@@ -83,19 +83,25 @@ void WeightTable::updateList(void)
     }
 }
 
+
 // get a result from the current pickList
 int WeightTable::pick() const
 {
-    auto it = pickList.end();
-    if (pickList.size() == 0)
+    std::list<WeightData>::const_iterator it;
+
+    if (pickList.empty())
+    {
         printf("\r\nWeightTable.pick(): No items available to pick from\r\n");
-    else if (pickList.size() == 1) //don't use random if only one pick left (for GDM matching)
+        throw std::runtime_error("WeightTable::pickWeightDataObject: pickList is empty");
+    }
+    else if (pickList.size() == 1) // don't use random if only one pick left (for GDM matching)
     {
         it = pickList.begin();
     }
     else
     {
-        const int32 rand = mathsRng.randInt(range, std::string("weight table - ") + szPicker.c_str());
+        const int32 rand = mathsRng.randInt(range,
+                                            std::string("weight table - ") + szPicker.c_str());
         for (it = pickList.begin(); it != pickList.end(); ++it)
         {
             if (rand < it->range)
@@ -104,12 +110,52 @@ int WeightTable::pick() const
         if (it == pickList.end())
         {
             reportError("WeightTable::pick", "RNG value is out of required range");
-            return -1;
+            throw std::runtime_error(
+                "WeightTable::pickWeightDataObject: RNG value out of required range");
         }
     }
 
-
     return it->result;
+}
+
+int WeightTable::pickWithLimits()
+{
+    std::list<WeightData>::iterator it;
+
+    if (pickList.empty())
+    {
+        printf(
+            "\r\nWeightTable.pick(): No items available to pick from. It may be all that limits have been used up.\r\n");
+        throw std::runtime_error("WeightTable::pickWeightDataObject: pickList is empty");
+    }
+    if (pickList.size() == 1) // don't use random if only one pick left (for GDM matching)
+    {
+        it = pickList.begin();
+    }
+    else
+    {
+        const int32 rand = mathsRng.randInt(range,
+                                            std::string("weight table - ") + szPicker.c_str());
+        for (it = pickList.begin(); it != pickList.end(); ++it)
+        {
+            if (rand < it->range)
+                break;
+        }
+        if (it == pickList.end())
+        {
+            reportError("WeightTable::pick", "RNG value is out of required range");
+            throw std::runtime_error(
+                "WeightTable::pickWeightDataObject: RNG value out of required range");
+        }
+    }
+
+    const int result = it->result;
+    if (it->limit > 0)
+    {
+        it->limit--;
+        if (it->limit == 0) removeItem(it, true);
+    }
+    return result;
 }
 
 // force result with passed index in the current pickList
@@ -126,7 +172,7 @@ int WeightTable::forcePickIndex(const int index)
 }
 
 // force result with passed result from the current pickList
-int WeightTable::forcePickResult(int result)
+int WeightTable::forcePickResult(const int result)
 {
     for (auto it = pickList.begin(); it == pickList.end() && it != pickList.end(); ++it)
     {

@@ -4,7 +4,10 @@
  * @brief Weighted random selection tables for ints, doubles, bools, strings, symbols, and reel sets.
  */
 #include "../../headers/pch.h"
+#include "../../rng/MathsRng.h"
 #include "ReelSet.h"
+#include <json/json.h>
+
 
 // Create a vector of this structure to define WeightTable
 // The First 2 items are required:
@@ -77,11 +80,18 @@ public:
      */
     void updateList();
 
+
     /**
      * @brief Randomly pick a result according to weights.
      * @return Picked result value.
      */
     int pick() const;
+
+    /**
+     * @brief Randomly pick a result according to weights.
+     * @return Picked result value.
+     */
+    int pickWithLimits();
 
     /**
      * @brief Force-pick by active-item index in the current pick list.
@@ -163,6 +173,11 @@ public:
      */
     double pick() const { return doubleVect[WeightTable::pick()]; }
 
+    /**
+     * @brief Pick a double value using weights and decrement limits.
+     */
+    double pickWithLimits() { return doubleVect[WeightTable::pickWithLimits()]; }
+
     Json::Value toJson() const;
 };
 
@@ -192,6 +207,11 @@ public:
      * @brief Pick a bool value using weights.
      */
     bool pick() const { return boolVect[WeightTable::pick()]; }
+
+    /**
+     * @brief Pick a bool value using weights and decrement limits.
+     */
+    bool pickWithLimits() { return boolVect[WeightTable::pickWithLimits()]; }
 
     Json::Value toJson() const;
 };
@@ -224,6 +244,11 @@ public:
      */
     const ReelSet& pick() const { return reelSetVect[WeightTable::pick()]; }
 
+    /**
+     * @brief Pick a `ReelSet` using weights and decrement limits.
+     */
+    const ReelSet& pickWithLimits() { return reelSetVect[WeightTable::pickWithLimits()]; }
+
     Json::Value toJson(const std::vector<std::string>& symbolNames) const;
 };
 
@@ -253,6 +278,12 @@ public:
      * @brief Pick a string using weights.
      */
     std::string pick() const { return stringVect[WeightTable::pick()]; }
+
+    /**
+     * @brief Pick a string using weights and decrement limits.
+     */
+    std::string pickWithLimits() { return stringVect[WeightTable::pickWithLimits()]; }
+
     Json::Value toJson() const;
 };
 
@@ -282,6 +313,11 @@ public:
      * @brief Pick a symbol using weights.
      */
     Symbol pick() const { return symbolVect[WeightTable::pick()]; }
+
+    /**
+     * @brief Pick a symbol using weights and decrement limits.
+     */
+    Symbol pickWithLimits() { return symbolVect[WeightTable::pickWithLimits()]; }
 
     Json::Value toJson(const std::vector<std::string>& symbolNames) const;
 };

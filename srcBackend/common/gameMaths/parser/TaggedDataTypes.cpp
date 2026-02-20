@@ -314,8 +314,9 @@ ReelSetWeights TaggedReelSetWeights::parseTable(const TaggedRange& taggedRange,
                                                 const std::unordered_map<std::string, ReelSet>&
                                                 reelSetMap)
 {
-    std::vector<int> weightVector;
+    std::vector<WeightData> weightVector;
     std::vector<ReelSet> reelSetVect;
+    const bool hasLimits = taggedRange.width == 3;
     for (size_t rowNum = 1; rowNum < taggedRange.data.size(); rowNum++)
     {
         const auto& row = taggedRange.data[rowNum];
@@ -326,15 +327,36 @@ ReelSetWeights TaggedReelSetWeights::parseTable(const TaggedRange& taggedRange,
             );
 
         reelSetVect.push_back(reelSetMap.at(row[0]));
+
+        int weight;
         try
         {
-            weightVector.push_back(
-                TaggedDataHelpers::stringToInt(row[1], taggedRange.getCellLocationString(rowNum, 1)));
+            weight = TaggedDataHelpers::stringToInt(row[1], taggedRange.getCellLocationString(rowNum, 1));
         }
         catch (std::exception& e)
         {
             throw std::runtime_error(
                 "Error parsing weight in reelSetWeightTable '" + taggedRange.name + ". Error: " + e.what());
+        }
+
+        if (hasLimits)
+        {
+            int limit;
+            try
+            {
+                limit = TaggedDataHelpers::stringToInt(row[2], taggedRange.getCellLocationString(rowNum, 2));
+            }
+            catch (std::exception& e)
+            {
+                throw std::runtime_error(
+                    "Error parsing limit in reelSetWeightTable '" + taggedRange.name +
+                    "'. Limit must be an int. Error: " + e.what());
+            }
+            weightVector.emplace_back(static_cast<int>(rowNum - 1), weight, limit);
+        }
+        else
+        {
+            weightVector.emplace_back(static_cast<int>(rowNum - 1), weight);
         }
     }
     return {weightVector, reelSetVect, taggedRange.name};
@@ -347,6 +369,7 @@ ReelSetWeights TaggedReelSetWeights::parseTable(const TaggedRange& taggedRange,
 WeightTable TaggedIntWeightTable::parseWeightTable(const TaggedRange& taggedRange)
 {
     std::vector<WeightData> weightVector;
+    const bool hasLimits = taggedRange.width == 3;
     for (size_t rowNum = 1; rowNum < taggedRange.data.size(); rowNum++)
     {
         const auto& row = taggedRange.data[rowNum];
@@ -373,7 +396,23 @@ WeightTable TaggedIntWeightTable::parseWeightTable(const TaggedRange& taggedRang
             throw std::runtime_error(
                 "Error parsing weight in weightTable '" + taggedRange.name + ". Error: " + e.what());
         }
-        weightVector.emplace_back(outcome, weight);
+        if (hasLimits)
+        {
+            int limit;
+            try
+            {
+                limit = TaggedDataHelpers::stringToInt(row[2], taggedRange.getCellLocationString(rowNum, 2));
+            }
+            catch (std::exception& e)
+            {
+                throw std::runtime_error(
+                    "Error parsing limit in weightTable '" + taggedRange.name +
+                    ". Limit must be an int. Error: " + e.what()
+                );
+            }
+            weightVector.emplace_back(outcome, weight, limit);
+        }
+        else weightVector.emplace_back(outcome, weight);
     }
     return WeightTable(weightVector, taggedRange.name);
 }
@@ -384,8 +423,9 @@ WeightTable TaggedIntWeightTable::parseWeightTable(const TaggedRange& taggedRang
 
 DoubleWeightTable TaggedDoubleWeightTable::parseWeightTable(const TaggedRange& taggedRange)
 {
-    std::vector<int> weightVector;
+    std::vector<WeightData> weightVector;
     std::vector<double> outcomeVector;
+    const bool hasLimits = taggedRange.width == 3;
     for (size_t rowNum = 1; rowNum < taggedRange.data.size(); rowNum++)
     {
         const auto& row = taggedRange.data[rowNum];
@@ -410,10 +450,27 @@ DoubleWeightTable TaggedDoubleWeightTable::parseWeightTable(const TaggedRange& t
             throw std::runtime_error(
                 "Error parsing weight in doubleWeightTable '" + taggedRange.name + ". Error: " + e.what());
         }
-        weightVector.push_back(weight);
+        if (hasLimits)
+        {
+            int limit;
+            try
+            {
+                limit = TaggedDataHelpers::stringToInt(row[2], taggedRange.getCellLocationString(rowNum, 2));
+            }
+            catch (std::exception& e)
+            {
+                throw std::runtime_error(
+                    "Error parsing limit in weightTable '" + taggedRange.name +
+                    ". Limit must be an int. Error: " + e.what()
+                );
+            }
+            weightVector.emplace_back(static_cast<int>(rowNum - 1), weight, limit);
+        }
+        else
+            weightVector.emplace_back(static_cast<int>(rowNum - 1), weight);
         outcomeVector.push_back(outcome);
     }
-    return DoubleWeightTable(weightVector, outcomeVector, taggedRange.name);
+    return {weightVector, outcomeVector, taggedRange.name};
 }
 
 /******************************************/
@@ -422,8 +479,9 @@ DoubleWeightTable TaggedDoubleWeightTable::parseWeightTable(const TaggedRange& t
 
 StringWeightTable TaggedStringWeightTable::parseWeightTable(const TaggedRange& taggedRange)
 {
-    std::vector<int> weightVector;
+    std::vector<WeightData> weightVector;
     std::vector<std::string> outcomeVector;
+    const bool hasLimits = taggedRange.width == 3;
     for (size_t rowNum = 1; rowNum < taggedRange.data.size(); rowNum++)
     {
         const auto& row = taggedRange.data[rowNum];
@@ -437,10 +495,27 @@ StringWeightTable TaggedStringWeightTable::parseWeightTable(const TaggedRange& t
             throw std::runtime_error(
                 "Error parsing weight in stringWeightTable '" + taggedRange.name + ". Error: " + e.what());
         }
-        weightVector.push_back(weight);
+        if (hasLimits)
+        {
+            int limit;
+            try
+            {
+                limit = TaggedDataHelpers::stringToInt(row[2], taggedRange.getCellLocationString(rowNum, 2));
+            }
+            catch (std::exception& e)
+            {
+                throw std::runtime_error(
+                    "Error parsing limit in weightTable '" + taggedRange.name +
+                    ". Limit must be an int. Error: " + e.what()
+                );
+            }
+            weightVector.emplace_back(static_cast<int>(rowNum) - 1, weight, limit);
+        }
+        else
+            weightVector.emplace_back(static_cast<int>(rowNum) - 1, weight);
         outcomeVector.push_back(row[0]);
     }
-    return StringWeightTable(weightVector, outcomeVector, taggedRange.name);
+    return {weightVector, outcomeVector, taggedRange.name};
 }
 
 /******************************************/
@@ -451,11 +526,13 @@ SymbolWeightTable TaggedSymbolWeightTable::parseWeightTable(const TaggedRange& t
                                                             const std::unordered_map<std::string, Symbol>&
                                                             symbolIndexMap)
 {
-    std::vector<int> weightVector;
+    std::vector<WeightData> weightVector;
     std::vector<Symbol> outcomeVector;
+    const bool hasLimits = taggedRange.width == 3;
     for (size_t rowNum = 1; rowNum < taggedRange.data.size(); rowNum++)
     {
         const auto& row = taggedRange.data[rowNum];
+
         int weight;
         try
         {
@@ -466,7 +543,27 @@ SymbolWeightTable TaggedSymbolWeightTable::parseWeightTable(const TaggedRange& t
             throw std::runtime_error(
                 "Error parsing weight in symbolWeightTable '" + taggedRange.name + ". Error: " + e.what());
         }
-        weightVector.push_back(weight);
+
+        if (hasLimits)
+        {
+            int limit;
+            try
+            {
+                limit = TaggedDataHelpers::stringToInt(row[2], taggedRange.getCellLocationString(rowNum, 2));
+            }
+            catch (std::exception& e)
+            {
+                throw std::runtime_error(
+                    "Error parsing limit in symbolWeightTable '" + taggedRange.name +
+                    "'. Limit must be an int. Error: " + e.what());
+            }
+            weightVector.emplace_back(static_cast<int>(rowNum - 1), weight, limit);
+        }
+        else
+        {
+            weightVector.emplace_back(static_cast<int>(rowNum - 1), weight);
+        }
+
         const std::string& valueStr = row[0];
         const auto intOptional = TaggedDataHelpers::tryStringToInt(valueStr);
         if (intOptional.has_value()) outcomeVector.push_back(static_cast<Symbol>(intOptional.value()));
@@ -481,7 +578,7 @@ SymbolWeightTable TaggedSymbolWeightTable::parseWeightTable(const TaggedRange& t
                     ". Unsure this symbol is in the pay table, even if it doesn't pay.");
         }
     }
-    return SymbolWeightTable(weightVector, outcomeVector, taggedRange.name);
+    return {weightVector, outcomeVector, taggedRange.name};
 }
 
 /******************************************/
@@ -490,12 +587,13 @@ SymbolWeightTable TaggedSymbolWeightTable::parseWeightTable(const TaggedRange& t
 
 BoolWeightTable TaggedBoolWeightTable::parseWeightTable(const TaggedRange& taggedRange)
 {
-    std::vector<int> weightVector;
+    std::vector<WeightData> weightVector;
     std::vector<bool> outcomeVector;
+    const bool hasLimits = taggedRange.width == 3;
     for (size_t rowNum = 1; rowNum < taggedRange.data.size(); rowNum++)
     {
         const auto& row = taggedRange.data[rowNum];
-        double outcome;
+        bool outcome;
         int weight;
         try
         {
@@ -516,10 +614,27 @@ BoolWeightTable TaggedBoolWeightTable::parseWeightTable(const TaggedRange& tagge
             throw std::runtime_error(
                 "Error parsing weight in boolWeightTable '" + taggedRange.name + ". Error: " + e.what());
         }
-        weightVector.push_back(weight);
+        if (hasLimits)
+        {
+            int limit;
+            try
+            {
+                limit = TaggedDataHelpers::stringToInt(row[2], taggedRange.getCellLocationString(rowNum, 2));
+            }
+            catch (std::exception& e)
+            {
+                throw std::runtime_error(
+                    "Error parsing limit in weightTable '" + taggedRange.name +
+                    ". Limit must be an int. Error: " + e.what()
+                );
+            }
+            weightVector.emplace_back(static_cast<int>(rowNum - 1), weight, limit);
+        }
+        else
+            weightVector.emplace_back(static_cast<int>(rowNum - 1), weight);
         outcomeVector.push_back(outcome);
     }
-    return BoolWeightTable(weightVector, outcomeVector, taggedRange.name);
+    return {weightVector, outcomeVector, taggedRange.name};
 }
 
 /******************************************/
