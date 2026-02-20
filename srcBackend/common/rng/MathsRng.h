@@ -54,10 +54,9 @@ public:
 		return getSeed();
 	}
 
-	uint32 setSeed(const int newSeed) const
+	void setSeed(const uint32_t newSeed) const
 	{
 		lpRng->setSeed(newSeed);
-		return getSeed();
 	}
 
 	// return current seed value
@@ -109,7 +108,7 @@ public:
 	// e.g. getPass({32, 1000}) has a 3.2% chance of returning true
 	bool getPass(const PassStruct& data) const
 	{
-		uint32 pick = lpRng->randInt(data.range);
+		const uint32 pick = lpRng->randInt(data.range);
 		return (pick < data.passVal);
 	}
 
