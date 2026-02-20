@@ -3,10 +3,10 @@
 #include "Rng.h"
 #include "CSVIterator.h"
 #include "../utils/utils.h"
-#include "../../thisTitle/state/GameCycle.h"
-#include "../../thisTitle/state/GameSession.h"
-
-;
+#include <json/json.h>
+// Forward declarations to avoid pulling gameplay/state (and grids) into most TUs via this header
+struct GameCycle;
+struct GameSession;
 
 enum Problem
 {
