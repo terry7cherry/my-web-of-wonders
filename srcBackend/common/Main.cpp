@@ -187,7 +187,7 @@ void doRnStreamCheck(const GameMaths& gameMaths, const int bet, const UserConfig
 		GameLogic::playGame(gameMaths, gameCycle);
 		rnStream.endGameSequence(gameCycle, session, sessionBeforeStart);
 	}
-	while (rnStream.currentGameIt != rnStream.games.end());
+	while (!rnStream.noMoreGames());
 
 	std::cout << std::endl;
 	simTimer.outputTime();
@@ -237,9 +237,9 @@ int simulatorMain()
 		GameMaths& gameMaths = *parSheet.gameMathsVariants[config.betType][config.rtp];
 		const int bet = static_cast<int>(gameMaths.minBet * gameMaths.betTypeCost);
 #ifdef SINGLETHREAD
-		doMonteCarloStd(gameMaths, bet, config);
+	doMonteCarloStd(gameMaths, bet, config);
 #else
-		doMonteCarloStdMultiThread(gameMaths, bet, config);
+	doMonteCarloStdMultiThread(gameMaths, bet, config);
 #endif
 	}
 #endif

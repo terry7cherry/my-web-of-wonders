@@ -302,7 +302,7 @@ std::pair<GameCycle, uint32_t> API::playRnStreamGame(const GameMaths& maths, Gam
 	mathsRng.setRng(RngOptions::data);
 	GameCycle cycle(session, reused, maths);
 	auto& rngData = dynamic_cast<RngData&>(*mathsRng.lpRng);
-	rngData.gameCyclePtr = &cycle;
+	rngData.setGameCycle(&cycle);
 	RngDataGame rngDataGame(rnStreamStr);
 	rngData.startGameSequence(&rngDataGame);
 	GameLogic::playGame(maths, cycle);

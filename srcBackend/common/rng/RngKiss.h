@@ -6,7 +6,9 @@
 
 class RngKiss : public Rng
 {
-public:
+	friend class MathsRng;
+
+protected:
 	/**********************************************/
 	// Implement the virtual methods
 	/**********************************************/

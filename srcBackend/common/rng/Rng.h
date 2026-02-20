@@ -12,7 +12,9 @@
 // Other implementations should inherit from this class and replace all the virtual methods
 class Rng
 {
-public:
+	friend class MathsRng;
+
+protected:
 	virtual ~Rng() = default;
 	uint32 seed = 0;
 
@@ -64,7 +66,6 @@ public:
 	// return current seed value
 	uint32 getSeed(void) const { return seed; }
 
-protected:
 	static uint32 hash(time_t t, clock_t c)
 	{
 		// Get a uint32 from t and c
