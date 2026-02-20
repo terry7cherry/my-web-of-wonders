@@ -173,9 +173,9 @@ void API::handleNewSessionRequest(const drogon::HttpRequestPtr& request,
 
 	const int bet = requestJson["bet"].asInt();
 
-	const GameSession newSession = requestJson["session"].isNull()
+	const GameSession newSession = requestJson["oldSession"].isNull()
 		                               ? GameSession(bet, maths)
-		                               : GameSession(bet, maths, requestJson["session"]);
+		                               : GameSession(bet, maths, requestJson["oldSession"]);
 
 	const Json::Value jsonResponse = newSession.toJson();
 	const auto resp = drogon::HttpResponse::newHttpJsonResponse(jsonResponse);
