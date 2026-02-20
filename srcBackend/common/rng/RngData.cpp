@@ -63,7 +63,7 @@ RngDataSpin::RngDataSpin(const std::string& spinString)
 
 uint32_t RngData::randInt(const uint32_t range, const std::string& sz)
 {
-	if (!currentSpinIt->used) startSpinSequence();
+	if (currentSpinIt != currentGamePtr->spins.end() && !currentSpinIt->used) startSpinSequence();
 	if (currentSpinIt == currentGamePtr->spins.end()) return 0;
 	if (rnStreamIt == currentSpinIt->rnStream.end())
 	{
@@ -355,7 +355,7 @@ void RngData::reportProblem(const Problem problem, RngDataGame& game,
 	game.hasProblem = true;
 
 	std::cout << std::endl << std::endl;
-	std::cerr << "Problem with game " + std::to_string(game.gameNum);
+	std::cerr << "Problem with Game " + std::to_string(game.gameNum);
 	if (spinProvided) std::cerr << ", Spin " + std::to_string(spinIt->spinNum);
 	std::cerr << ": ";
 	std::cerr << longMessage << std::endl;
@@ -369,10 +369,13 @@ void RngData::outputGameToConsole(const RngDataGame& gameToOutput [[maybe_unused
 {
 #ifdef RN_STREAM
 	std::cout <<
-		"\n\tIf there is no persistence or persistence doesn't matter here, you can play this game in the\n\tthe frontend by putting the following in RN Stream text box and press spin:"
+		"\n\tYou can play this game in the frontend by putting the following in RN Stream text box and pressing spin:"
 		<<
 		std::endl;
 	std::cout << "\t\t" << gameToOutput.toString(sessionBeforeStart) << std::endl;
+	std::cout <<
+		"\t(If you have UI elements that reflect persistence, ensure you have the updateUiAndStateToMatchSession method in GameUI configured."
+		<< std::endl;
 	std::cout << "\n\tSESSION BEFORE GAME: " << std::endl;
 	prettyPrintJson(sessionBeforeStart.toJson(), "\t\t");
 	std::cout << std::endl << "\n\tEVENTS: " << std::endl;
