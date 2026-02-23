@@ -4,6 +4,7 @@
 #include "CSVIterator.h"
 #include "../utils/utils.h"
 #include <json/json.h>
+#include <filesystem>
 // Forward declarations to avoid pulling gameplay/state (and grids) into most TUs via this header
 struct GameCycle;
 struct GameSession;
