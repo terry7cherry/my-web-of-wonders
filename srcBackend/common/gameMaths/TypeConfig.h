@@ -56,6 +56,16 @@ public:
     }
 
     /**
+     * @brief Check if a config element with this name exists.
+     * @param key Name of config element (concatenated from "name" parameter and first column value with "." separator for some types.
+     * @return Does this key exist?
+     */
+    bool contains(const std::string& key) const
+    {
+        return data.contains(key);
+    }
+
+    /**
      * @brief Access value by key with helpful error if missing.
      * @param key Name of config element (concatenated from "name" parameter and first column value with "." separator for some types.
      * @throws std::runtime_error if the key is not found.

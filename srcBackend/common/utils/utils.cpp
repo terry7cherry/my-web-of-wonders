@@ -118,3 +118,16 @@ void showAverageWin(const std::string& szTitle, const std::vector<uint64_t>& win
 	else
 		printf("empty]\r\n");
 }
+
+std::string addThousandsSeparator(const uint64_t n)
+{
+	std::stringstream ss;
+	if (n < 1000)
+	{
+		ss << std::to_string(n);
+	}
+	else
+		ss << addThousandsSeparator(n / 1000) << "," << std::setw(3) << std::setfill('0') <<
+			std::to_string(n % 1000);
+	return ss.str();
+}

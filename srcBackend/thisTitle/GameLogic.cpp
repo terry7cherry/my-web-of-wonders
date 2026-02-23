@@ -22,7 +22,7 @@ namespace GameLogic
         doBaseGame(maths, cycle);
         doFreeSpinsIfTriggered(maths, cycle);
 
-        cycle.recordEvent<GameCycleCompleteEvent>(cycle.totalWin);
+        cycle.recordEvent<GameCycleCompleteEvent>(cycle.totalWin, maths, cycle.session.bet);
         return cycle.totalWin;
     }
 

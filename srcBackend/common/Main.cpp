@@ -25,6 +25,7 @@
 #include "server/API.h"
 #include "events/threadSafeMeters/MeterUpdate.h"
 #include "config/UserConfig.h"
+#include "utils/utils.h"
 
 Console gameConsole;
 
@@ -33,14 +34,57 @@ int reportCountLimit = 100 * MILLION;
 int reportCount = reportAtCount;
 
 
-void showRtpReport(const uint64_t gamesPlayed, const uint64_t totalBet, const uint64_t simSize)
+void showRtpReport(const uint64_t gamesPlayed, const uint64_t totalBet, const uint64_t simSize,
+                   const bool winCapSet, Timer simTimer)
 {
-	std::printf("\033[1A\r%s%10" PRIu64 " spins. %.2f%% complete. " "RTP", "\n", gamesPlayed,
+	// Header with spins and percent complete
+	std::printf("\033[1A\r%s%10" PRIu64 " spins. %.2f%% complete. ", "\n", gamesPlayed,
 	            static_cast<double>(100 * static_cast<long double>(gamesPlayed) / static_cast<long double>(
 		            simSize)));
+
+	// Insert ETA between % complete and RTP, based on elapsed time since sim start
+	if (gamesPlayed > 0 && simSize > gamesPlayed)
+	{
+		const auto now = std::chrono::high_resolution_clock::now();
+		const auto elapsed = now - simTimer.tStart;
+		const long double elapsedSec = std::chrono::duration_cast<std::chrono::duration<long double>>(elapsed)
+			.count();
+		const long double perGameSec = elapsedSec / static_cast<long double>(gamesPlayed);
+		const long double remainingGames = static_cast<long double>(simSize - gamesPlayed);
+		long double etaSecLD = perGameSec * remainingGames;
+		if (etaSecLD < 0)
+			etaSecLD = 0;
+		const long long etaSec = static_cast<long long>(etaSecLD + 0.5L); // round to nearest second
+		const long long h = etaSec / 3600;
+		const long long m = (etaSec % 3600) / 60;
+		const long long s = etaSec % 60;
+		std::printf("ETA: %lld:%02lld:%02lld. ", h, m, s);
+	}
+
+	// Continue with RTP output
+	std::printf("RTP");
 	const long double percent = static_cast<long double>(GameCycleCompleteEvent::eventTotalWin.global()) * 100
 		/ static_cast<double>(totalBet);
-	std::printf(": %s=%6.2Lf%%", "total", percent);
+	std::printf(": %s=%.2Lf%%", "total", percent);
+	if (!winCapSet) return;
+
+	const long double cappedPercent = static_cast<long double>(GameCycleCompleteEvent::cappedTotalWin.
+			global()) * 100
+		/ static_cast<double>(totalBet);
+	std::printf(", %s=%.2Lf%%", "capped", cappedPercent);
+
+	const long double lostToCap = static_cast<long double>(
+		GameCycleCompleteEvent::eventTotalWin.global() -
+		GameCycleCompleteEvent::cappedTotalWin.global()
+	) * 100 / static_cast<double>(totalBet);
+	std::printf(", %s=%.3Lf%%", "lost to cap", lostToCap);
+
+	const uint64_t capHitCount = GameCycleCompleteEvent::capHitCount.global();
+	std::printf(". %s=", "Cap hit rate");
+	if (!capHitCount)
+		std::printf("Inf");
+	else
+		std::printf("%s", addThousandsSeparator(gamesPlayed / capHitCount).c_str());
 }
 
 void threadWorker(const std::stop_token& st,
@@ -89,6 +133,8 @@ void doMonteCarloStdMultiThread(const GameMaths& gameMaths, const int bet, const
 	std::atomic<uint64_t> nextBatch{0};
 	std::vector<std::jthread> threads;
 
+	const bool winCapSet = gameMaths.ints.contains("winCap");
+
 	threads.reserve(threadCount);
 	Timer simTimer("Monte Carlo");
 
@@ -110,7 +156,7 @@ void doMonteCarloStdMultiThread(const GameMaths& gameMaths, const int bet, const
 		const uint64_t current = GameCycleCompleteEvent::eventTotalHits.global();
 		if (current != last_seen)
 		{
-			showRtpReport(current, bet * current, config.simSize);
+			showRtpReport(current, bet * current, config.simSize, winCapSet, simTimer);
 			last_seen = current;
 		}
 		std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -118,7 +164,8 @@ void doMonteCarloStdMultiThread(const GameMaths& gameMaths, const int bet, const
 	std::cout << std::endl;
 	simTimer.outputTime();
 	Stats::outputStats(config.simSize, gameMaths.betType, gameMaths.rtp, bet,
-	                   gameMaths.payTables["default"].symbolNames);
+	                   gameMaths.payTables["default"].symbolNames,
+	                   gameMaths.ints.contains("winCap") ? gameMaths.ints["winCap"] : 0);
 }
 
 void doMonteCarloStd(const GameMaths& gameMaths, const int bet, const UserConfig& config)
@@ -128,6 +175,7 @@ void doMonteCarloStd(const GameMaths& gameMaths, const int bet, const UserConfig
 
 	GameCycleReused reused(gameMaths);
 
+	const bool winCapSet = gameMaths.ints.contains("winCap");
 
 	GameSession session(bet, gameMaths, config.force);
 
@@ -146,7 +194,7 @@ void doMonteCarloStd(const GameMaths& gameMaths, const int bet, const UserConfig
 		if (--reportCount == 0)
 		{
 			int64_t gamesPlayed = gameCount + 1;
-			showRtpReport(gamesPlayed, bet * gamesPlayed, config.simSize);
+			showRtpReport(gamesPlayed, bet * gamesPlayed, config.simSize, winCapSet, simTimer);
 			if ((reportAtCount != reportCountLimit) && (gamesPlayed == (10 * reportAtCount)))
 				reportAtCount *= 10;
 			reportCount = reportAtCount;
@@ -163,7 +211,8 @@ void doMonteCarloStd(const GameMaths& gameMaths, const int bet, const UserConfig
 	printf("\n");
 	simTimer.outputTime();
 	Stats::outputStats(config.simSize, gameMaths.betType, gameMaths.rtp, bet,
-	                   gameMaths.payTables["default"].symbolNames);
+	                   gameMaths.payTables["default"].symbolNames,
+	                   gameMaths.ints.contains("winCap") ? gameMaths.ints["winCap"] : 0);
 }
 
 void doRnStreamCheck(const GameMaths& gameMaths, const int bet, const UserConfig& config)
@@ -237,9 +286,9 @@ int simulatorMain()
 		GameMaths& gameMaths = *parSheet.gameMathsVariants[config.betType][config.rtp];
 		const int bet = static_cast<int>(gameMaths.minBet * gameMaths.betTypeCost);
 #ifdef SINGLETHREAD
-	doMonteCarloStd(gameMaths, bet, config);
+		doMonteCarloStd(gameMaths, bet, config);
 #else
-	doMonteCarloStdMultiThread(gameMaths, bet, config);
+		doMonteCarloStdMultiThread(gameMaths, bet, config);
 #endif
 	}
 #endif
