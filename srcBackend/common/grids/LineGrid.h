@@ -23,9 +23,6 @@ protected:
     const PayLines& payLines;
 
 public:
-    std::string szBlankWin;
-
-
     /**
      * @brief Construct grid with dimensions, pay table, and payline set.
      * @param reels Number of reels.
@@ -37,10 +34,8 @@ public:
              const PayLines& payLines) : PayGrid(reels, rows, payTable),
                                          payLines(payLines)
     {
-        szBlankWin = std::string(MAX_LINE_TEXT_LEN, ' ');
-        winVector.reserve(100);
-        winVector.clear();
         winVector.reserve(payLines.lineCount);
+        winVector.clear();
     }
 
     /**
@@ -105,31 +100,6 @@ public:
      * @return Total win after multipliers.
      */
     unsigned int applyWinMultipliers(MultipliersCombineType combineType);
-
-    /****************************************/
-    // Display methods
-    /****************************************/
-
-    /**
-     * @brief Clear display area and render wins to console.
-     * @param startRow Start console row to begin printing.
-     * @param col Start console column.
-     * @param showTitle If true, show a header.
-     * @param showDirection If true, include direction arrows.
-     * @return Number of rows printed.
-     */
-    int showWins(int startRow, int col, bool showTitle = true, bool showDirection = false) const;
-
-
-    /**
-     * @brief Get formatted winning-line text rows.
-     * @param symbolMap Map from symbol to display string.
-     * @param showDirection If true, include direction arrows.
-     * @return Vector of text lines.
-     */
-    std::vector<std::string> getWinTextVect(const std::map<Symbol, std::string>& symbolMap,
-                                            bool showDirection = false) const;
-
 
     /**
      * @brief Get a payline definition by index.

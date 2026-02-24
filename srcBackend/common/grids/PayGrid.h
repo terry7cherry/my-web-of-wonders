@@ -10,8 +10,6 @@
 #include "../wins/Win.h"
 #include <memory>
 
-extern Console gameConsole;
-
 
 /**
  * @brief Grid that stores payTable pointer and performs win analysis with efficient quick win checks.

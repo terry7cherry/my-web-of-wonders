@@ -1,8 +1,6 @@
 #include "WaysGrid.h"
 
 
-// game globals declared elsewhere
-extern Console gameConsole;
 
 WaysGrid::WaysGrid(const GameMaths& maths)
     : WaysGrid(maths.ints.at("numReels"), maths.ints.at("numRows"), maths.payTables.at("default"))
@@ -163,21 +161,6 @@ int WaysGrid::setWinMultiplier(const Symbol symbol, const int multiplier) const
     return newWin;
 }
 
-std::vector<std::string> WaysGrid::getWinTextVect(const std::map<Symbol, std::string>& symbolMap) const
-{
-    std::vector<std::string> winTextVect;
-    for (auto& win : winVector)
-        winTextVect.push_back(win->getWinText(symbolMap));
-    return winTextVect;
-}
-
-std::vector<std::string> WaysGrid::getWinTextVect() const
-{
-    std::vector<std::string> winTextVect;
-    for (auto& win : winVector)
-        winTextVect.push_back(win->getWinText(mTextMap));
-    return winTextVect;
-}
 
 std::vector<std::vector<std::vector<int>>> WaysGrid::getWinPosVect() const
 {
