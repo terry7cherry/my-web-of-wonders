@@ -18,7 +18,6 @@ class GridUpdateEvent : public GridEventTemplate<GridUpdateEvent>
 {
 public:
     /** @brief Message to display in frontend ticker while grid updates. **/
-    inline static std::string phaseName = "Grid Update";
     std::string message;
 
     /**

@@ -69,5 +69,8 @@ export default {
     },
     "rnStreamProblem": async ({shortMessage, longMessage}, game) => {
         await game.reportRnStreamProblem(shortMessage, longMessage);
+    },
+    "cascade": async ({removedSymbols, reelSymbolArray}, game) => {
+        await game.ui.currentPhase.grid.cascade(removedSymbols, reelSymbolArray);
     }
 };

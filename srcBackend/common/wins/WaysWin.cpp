@@ -97,52 +97,6 @@ int WaysWin::setWin(const PayTable& payTable, const int betMultiplier)
     return totalWin;
 }
 
-// Generates text that describes the WayWin
-// returns string in the format, "3 H1(100) x2 Ways [x2 multiplier ] = 400"
-std::string WaysWin::getWinText(std::string szSymbol) const
-{
-    char buffer[120];
-
-    // remove spaces from symbol
-    const auto end_pos = std::ranges::remove(szSymbol, ' ').begin();
-    szSymbol.erase(end_pos, szSymbol.end());
-
-    int space = 120;
-    int size = std::snprintf(buffer, space, "%d %s(%d) x%d Ways ",
-                             oak, szSymbol.c_str(), win, ways);
-    if (size < 0) size = 0;
-    if (size > space) size = space;
-    space -= size;
-
-    if (multiplier > 1 && space > 0)
-    {
-        int added = std::snprintf(&buffer[size], space, "x%d multiplier ", multiplier);
-        if (added < 0) added = 0;
-        if (added > space) added = space;
-        size += added;
-        space -= added;
-    }
-
-    if (space > 0)
-    {
-        int added = std::snprintf(&buffer[size], space, "= %d", totalWin);
-        if (added < 0) added = 0;
-        if (added > space) added = space;
-        size += added;
-        space -= added;
-    }
-
-    return std::string(buffer, size);
-}
-
-// Generates text that describes the WayWin
-// returns string in the format, "3 H1(100) x2 ways [x2 multiplier ] = 400"
-std::string WaysWin::getWinText(const std::map<int, std::string>& symbolMap) const
-{
-    const std::string szSymbol = symbolMap.at(symbol);
-    return getWinText(szSymbol);
-}
-
 Json::Value WaysWin::toJson(const std::vector<std::string>& symbolNames) const
 {
     Json::Value winAsJson = Win::toJson(symbolNames);

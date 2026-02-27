@@ -11,7 +11,7 @@
 
 /**
  * @brief Base template for events where the frontend needs to receive the grid.
- * @attention When extending this class, you MUST pass the child class name as a template parameter to get separate stats. You must also set phaseName (use ReelSpinEvent as a guide).
+ * @attention When extending this class, you MUST pass the child class name as a template parameter to get separate stats.
  * @tparam T Derived event type providing `phaseName`.
  */
 template <typename T>

@@ -65,7 +65,7 @@ export default class Ticker {
             });
             this.container.addChild(textObject);
             this.currentText = textObject;
-            this.wait(resolve, pause);
+            Ticker.wait(resolve, pause);
         });
     }
 
@@ -106,14 +106,14 @@ export default class Ticker {
                 this.currentText.destroy({children: true, texture: true, baseTexture: true});
                 this.currentText = newText;
                 this.isAnimating = false;
-                this.wait(resolve, pause);
+                Ticker.wait(resolve, pause);
             })
         });
     }
 
 
-    wait(resolve, pause) {
-        const pauseInFrames = pause / 1000 * 60;
+    static wait(resolve, pause, frames) {
+        const pauseInFrames = frames ? pause : pause / 1000 * 60;
         let elapsedFrames = 0;
         const tick = (delta) => {
             elapsedFrames += delta;

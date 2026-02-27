@@ -8,6 +8,7 @@
 #include "../gameMaths/mathElements/ReelSet.h"
 #include "../spin/SpinResult.h"
 #include "../gameMaths/GameMaths.h"
+#include "../wins/Win.h"
 
 
 enum class symbolMatchTypes
@@ -29,6 +30,8 @@ protected:
     std::vector<bool> reelHasStickySymbolVect;
     std::vector<std::vector<bool>> stickySymbolVect;
     std::vector<std::vector<Symbol>> reelSymbolVect; // [reel][row]
+    std::unique_ptr<SpinResult> spinResultPtr;
+    std::vector<size_t> cascadedSymbolsPerReel;
 
 public:
     /************************************/
@@ -546,4 +549,37 @@ public:
      * @return Number of reels where replacements occurred.
      */
     int replaceNotSymbol(Symbol excludedSym, Symbol symNew);
+
+    /************************************/
+    // Grid processing - cascade
+    /************************************/
+
+    /**
+     * @brief Remove symbols in specified positions, tumble any symbols above down, and fill blank spaces at top of grid with the appropriate symbols from the reelset originally used for the spin.
+     * @param symbolsToRemove Reel-row pairs representing symbols to remove.
+     */
+    void cascadeSymbols(std::vector<std::pair<size_t, size_t>> symbolsToRemove);
+
+    /**
+     * @brief Remove all symbols involved in passed wins, tumble any symbols above down, and fill blank spaces at top of grid with appropriate symbols from the reelset originally used for the spin.
+     * @param wins Wins from which to remove positions.
+     * @return Vector of symbol positions removed as reel-row pairs.
+     */
+    std::vector<std::pair<size_t, size_t>> cascadeWins(const std::vector<std::unique_ptr<Win>>& wins);
+
+    /**
+     * @brief Remove symbols in specified positions.
+     * @param symbolsToRemove Reel-row pairs representing symbols to remove.
+     * @param sorted Are the passed symbols already sorted by row descending?
+     * @return Vector containing number of symbols removed on each reel.
+     */
+    std::vector<size_t> removeSymbols(std::vector<std::pair<size_t, size_t>>& symbolsToRemove,
+                                      bool sorted = false);
+
+    /**
+    * @brief Add specified number of symbols to the top of each reel with the appropriate symbols from the reelset originally used for the spin.
+    * @param symbolsPerReel Number of symbols to add to each reel.
+    */
+    void addSymbolsToTopOfReels(const std::vector<size_t>& symbolsPerReel);
 };
+

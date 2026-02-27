@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "Grid.h"
 #include "../rng/MathsRng.h"
 #include "../gameMaths/GameMaths.h"
@@ -57,6 +58,7 @@ void Grid::reset()
 	}
 	clearSpinLock();
 	resetMultipliers();
+	cascadedSymbolsPerReel.resize(maxReels, 0);
 }
 
 // Set all multipliers to 1
@@ -175,6 +177,7 @@ void Grid::applySpin(const SpinResult& spinResult, const bool getLockedReels)
 			setSymbolsForReel(reelNum, &spinResult.reelSet, spinResult.stopIndexVect[reelNum]);
 		}
 	}
+	spinResultPtr = std::make_unique<SpinResult>(std::move(spinResult));
 }
 
 void Grid::setSymbolsForReel(const size_t reelNum, const ReelSet* reelSetPtr, const size_t reelStop)
@@ -602,4 +605,77 @@ int Grid::replaceNotSymbol(const Symbol excludedSym, const Symbol symNew)
 			count++;
 	}
 	return count;
+}
+
+/************************************/
+// Grid processing - cascade
+/************************************/
+
+void Grid::cascadeSymbols(std::vector<std::pair<size_t, size_t>> symbolsToRemove)
+{
+	const std::vector<size_t> symbolsRemovedPerReel = removeSymbols(symbolsToRemove);
+	addSymbolsToTopOfReels(symbolsRemovedPerReel);
+}
+
+std::vector<std::pair<size_t, size_t>> Grid::cascadeWins(const std::vector<std::unique_ptr<Win>>& wins)
+{
+	using Position = std::pair<size_t, size_t>;
+	std::vector<Position> symbolsToRemove;
+
+	size_t totalPositions = 0;
+	for (const auto& win : wins)
+		totalPositions += win->positions.size();
+	symbolsToRemove.reserve(totalPositions);
+
+	for (const auto& win : wins)
+		symbolsToRemove.insert(symbolsToRemove.end(), win->positions.begin(), win->positions.end());
+
+	std::ranges::sort(symbolsToRemove, [](const auto& a, const auto& b)
+	{
+		if (a.second != b.second)
+			return a.second > b.second;
+		return a.first < b.first;
+	});
+
+	symbolsToRemove.erase(std::ranges::unique(symbolsToRemove).begin(), symbolsToRemove.end());
+
+	const std::vector<size_t> symbolsRemovedPerReel = removeSymbols(symbolsToRemove, true);
+	addSymbolsToTopOfReels(symbolsRemovedPerReel);
+
+	return symbolsToRemove;
+}
+
+std::vector<size_t> Grid::removeSymbols(std::vector<std::pair<size_t, size_t>>& symbolsToRemove,
+                                        const bool sorted)
+{
+	if (!sorted)
+		std::ranges::sort(symbolsToRemove, [](const auto& a, const auto& b)
+		{
+			return a.second < b.second;
+		});
+	std::vector<size_t> symbolsRemovedPerReel(maxReels, 0);
+	for (const auto& [reel, row] : symbolsToRemove)
+	{
+		reelSymbolVect[reel].erase(reelSymbolVect[reel].begin() + row);
+		symbolsRemovedPerReel[reel]++;
+	}
+	return symbolsRemovedPerReel;
+}
+
+void Grid::addSymbolsToTopOfReels(const std::vector<size_t>& symbolsPerReel)
+{
+	if (symbolsPerReel.size() != maxReels) [[unlikely]]
+		throw std::runtime_error("addSymbolsToTopOfReels: passed vector size must match number of reels.");
+	for (size_t reel = 0; reel < maxReels; reel++)
+	{
+		if (symbolsPerReel[reel] == 0) continue;
+		using diff_t = std::vector<Symbol>::difference_type;
+		const auto reelSetStartPosition = static_cast<diff_t>((spinResultPtr->stopIndexVect[reel] -
+			symbolsPerReel[reel] - cascadedSymbolsPerReel[reel]) % spinResultPtr->reelSet.reelSizeVect[reel]);
+		const auto& reelSetStartPositionIt = spinResultPtr->reelSet.wrappedBandVect[reel].begin() +
+			reelSetStartPosition;
+		reelSymbolVect[reel].insert(reelSymbolVect[reel].begin(), reelSetStartPositionIt,
+		                            reelSetStartPositionIt + static_cast<diff_t>(symbolsPerReel[reel]));
+		cascadedSymbolsPerReel[reel] += symbolsPerReel[reel];
+	}
 }

@@ -104,6 +104,7 @@ unsigned int LineGrid::evaluateWins(const unsigned int betMultiplier,
                     lineWin.oak = number;
                     lineWin.wildCount = wildCount;
                     lineWin.symbol = symbolToMatch;
+                    lineWin.setPositions();
                     lineWin.direction = WinDirections::left_right;
                     lineWin.winType = "line";
                     winVector.emplace_back(std::make_unique<LineWin>(lineWin));
