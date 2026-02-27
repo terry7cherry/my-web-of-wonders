@@ -49,8 +49,8 @@ protected:
         for (const auto& [reel, row] : removedSymbols)
         {
             Json::Value position;
-            position["reel"] = reel;
-            position["row"] = row;
+            position["reel"] = Json::Value(static_cast<Json::UInt64>(reel));
+            position["row"] = Json::Value(static_cast<Json::UInt64>(row));
             eventDetails["removedSymbols"].append(position);
         }
         return eventDetails;

@@ -21,8 +21,9 @@ public:
         for (const auto& [reel, row] : positions)
         {
             Json::Value position;
-            position["reel"] = reel;
-            position["row"] = row;
+            // Do not remove this cast, Mac needs it.
+            position["reel"] = Json::Value(static_cast<Json::UInt64>(reel));
+            position["row"] = Json::Value(static_cast<Json::UInt64>(row));
             winAsJson["positions"].append(position);
         }
         return winAsJson;

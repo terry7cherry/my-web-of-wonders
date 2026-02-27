@@ -279,7 +279,7 @@ Json::Value BoolWeightTable::toJson() const
     for (size_t i = 0; i < weightVector.size(); i++)
     {
         Json::Value jsonEntry(Json::objectValue);
-        jsonEntry["outcome"] = boolVect[i];
+        jsonEntry["outcome"] = Json::Value(boolVect[i]);
         jsonEntry["weight"] = weightVector[i].weight;
         json.append(jsonEntry);
     }

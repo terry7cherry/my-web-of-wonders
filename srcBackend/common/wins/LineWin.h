@@ -32,7 +32,8 @@ public:
         winAsJson["direction"] = static_cast<int>(direction);
         winAsJson["payLine"] = Json::Value(Json::arrayValue);
         for (const auto& aperture : *payLine)
-            winAsJson["payLine"].append(aperture);
+            winAsJson["payLine"].append(Json::Value(static_cast<Json::UInt64>(aperture)));
+        // Do not remove this case, mac needs it.
         return winAsJson;
     }
 
