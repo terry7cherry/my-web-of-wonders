@@ -104,8 +104,8 @@ Json::Value WaysWin::toJson(const std::vector<std::string>& symbolNames) const
     for (const auto& [reel, row] : positions)
     {
         Json::Value position;
-        position["reel"] = reel;
-        position["row"] = row;
+        position["reel"] = Json::Value(static_cast<Json::UInt64>(reel));
+        position["row"] = Json::Value(static_cast<Json::UInt64>(row));
         winAsJson["positions"].append(position);
     }
     winAsJson["ways"] = ways;
