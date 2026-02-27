@@ -665,6 +665,7 @@ PayTable TaggedPayTable::parsePayTable(const TaggedRange& taggedRange)
     std::vector<Symbol> scatterSymVect;
     std::vector<Symbol> wildSymVect;
     std::vector<Symbol> wildNoSubstVect;
+    std::vector<Symbol> scatterWildSymVect;
     std::vector<std::string> symbolNames;
 
     for (size_t rowNum = 1; rowNum < data.size(); rowNum++)
@@ -704,8 +705,23 @@ PayTable TaggedPayTable::parsePayTable(const TaggedRange& taggedRange)
             wildSymVect.push_back(symbolId);
         else if (payType == "scatter")
             scatterSymVect.push_back(symbolId);
+        else if (payType == "scatterWild")
+        {
+            wildSymVect.push_back(symbolId);
+            scatterWildSymVect.push_back(symbolId);
+        }
+        else if (payType == "scatterWildOnly")
+            scatterWildSymVect.push_back(symbolId);
     }
-    return PayTable(payTableVect, paySymVect, scatterSymVect, wildSymVect, wildNoSubstVect, symbolNames);
+    return {
+        payTableVect,
+        paySymVect,
+        scatterSymVect,
+        wildSymVect,
+        wildNoSubstVect,
+        scatterWildSymVect,
+        symbolNames
+    };
 }
 
 /******************************************/

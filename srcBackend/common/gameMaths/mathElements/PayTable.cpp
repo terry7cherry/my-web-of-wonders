@@ -8,6 +8,7 @@ PayTable::PayTable(
     const std::vector<Symbol>& scatterSymVect,
     const std::vector<Symbol>& wildSymVect,
     const std::vector<Symbol>& wildNoSubstVect,
+    const std::vector<Symbol>& scatterWildSymVect,
     const std::vector<std::string>& symbolNames
 )
     : payData(payData),
@@ -16,6 +17,7 @@ PayTable::PayTable(
       scatterSymVect(scatterSymVect),
       wildSymVect(wildSymVect),
       wildNoSubstVect(wildNoSubstVect),
+      scatterWildSymVect(scatterWildSymVect),
       symbolNames(symbolNames)
 {
     minPaySymbolsVect.resize(payData.size(), SYMBOL_NONE);
@@ -60,6 +62,7 @@ void PayTable::symbolsInit(const unsigned int symbolCount)
         symbolVect[i].mask = (1 << i); // create a mask for all
         symbolVect[i].payMask = 0; // assume not a pay symbol
         symbolVect[i].isWild = false; // assume not wild
+        symbolVect[i].isScatterWild = false;
         symbolVect[i].wildIndex = -1;
         symbolVect[i].isScatter = false; // assume not scatter
         symbolVect[i].scatterIndex = -1;
@@ -89,13 +92,20 @@ void PayTable::symbolsInit(const unsigned int symbolCount)
         symbolVect[symId].wildIndex = i++;
     }
 
+
     // update for scatter symbols
     i = 0;
     for (Symbol symId : scatterSymVect)
     {
         symbolVect[symId].isScatter = true;
         symbolVect[symId].scatterIndex = i++;
-        //scatterWinVect.push_back(new ScatterWin(symId, maxReels));
+    }
+
+    i = 0;
+    for (Symbol symId : scatterWildSymVect)
+    {
+        symbolVect[symId].isScatterWild = true;
+        symbolVect[symId].scatterWildIndex = i++;
     }
 }
 

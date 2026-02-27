@@ -20,6 +20,9 @@ typedef struct
     bool isScatter;
     int scatterIndex;
 
+    bool isScatterWild;
+    int scatterWildIndex;
+
     bool isOverlay;
     int overlayIndex;
 
@@ -40,6 +43,7 @@ public:
     std::vector<unsigned int> minPaySymbolsVect;
     std::vector<Symbol> paySymVect; // symbols that have a payout
     std::vector<Symbol> scatterSymVect; // symbols that are scatters
+    std::vector<Symbol> scatterWildSymVect; // symbols that substitute for any symbol in scatter combinations
     std::vector<Symbol> wildSymVect; // symbols that are wild
     std::vector<Symbol> wildNoSubstVect; // symbols that wilds do not match
     std::vector<SymbolData> symbolVect;
@@ -60,6 +64,7 @@ public:
      * @param scatterSymVect Symbols that pay as scatters.
      * @param wildSymVect Symbols that act as wilds.
      * @param wildNoSubstVect Symbols that wilds do not substitute for.
+     * @param scatterWildSymVect Symbols that act as wilds in scatter combinations.
      * @param symbolNames Human-readable names per symbol index.
      */
     PayTable(
@@ -68,6 +73,7 @@ public:
         const std::vector<Symbol>& scatterSymVect,
         const std::vector<Symbol>& wildSymVect,
         const std::vector<Symbol>& wildNoSubstVect,
+        const std::vector<Symbol>& scatterWildSymVect,
         const std::vector<std::string>& symbolNames
     );
 
@@ -91,6 +97,11 @@ public:
     bool isWild(const Symbol symbolId) const
     {
         return symbolVect[symbolId].isWild;
+    }
+
+    bool isScatterWild(const Symbol symbolId) const
+    {
+        return symbolVect[symbolId].isScatterWild;
     }
 
     bool wildSubstitutes(const Symbol symbolId) const

@@ -113,9 +113,13 @@ unsigned int LineGrid::evaluateWins(const unsigned int betMultiplier,
         }
     }
 
+    unsigned int scatterWildCount = 0;
+    for (Symbol scatterWildSymbol : payTable.scatterWildSymVect)
+        scatterWildCount += this->getSymbolCount(scatterWildSymbol);
+
     for (Symbol scatterSymbol : payTable.scatterSymVect)
     {
-        unsigned int symbolCount = this->getSymbolCount(scatterSymbol);
+        unsigned int symbolCount = this->getSymbolCount(scatterSymbol) + scatterWildCount;
         if (symbolCount < payTable.minPaySymbolsVect[scatterSymbol])
             continue;
         if (unsigned int win = betMultiplier * payTable.getWin(scatterSymbol, symbolCount))
@@ -132,7 +136,8 @@ unsigned int LineGrid::evaluateWins(const unsigned int betMultiplier,
             for (size_t reel = 0; reel < reelSymbolVect.size(); reel++)
             {
                 for (size_t row = 0; row < reelSymbolVect[reel].size(); row++)
-                    if (reelSymbolVect[reel][row] == scatterSymbol)
+                    if (reelSymbolVect[reel][row] == scatterSymbol || payTable.isScatterWild(
+                        reelSymbolVect[reel][row]))
                     {
                         scattersToFind--;
                         scatterWin.positions.emplace_back(reel, row);
