@@ -7,6 +7,7 @@ import ApiClient from "./utils/ApiClient.js";
 import toCurrency from "./utils/toCurrency.js";
 import GameUI from "../thisTitle/GameUI.js";
 import Button from "../common/uiElements/Button.js";
+import Ticker from "./uiElements/Ticker.js";
 
 export default class Game {
 
@@ -219,7 +220,7 @@ export default class Game {
 
         this.state.running = false;
         this.ui.spinButton.changeColour(0x0000ff);
-        if (this.state.autoPlayOn) this.ui.ticker.wait(() => this.ui.spinButton.click(), 600);
+        if (this.state.autoPlayOn) Ticker.wait(() => this.ui.spinButton.click(), 600);
     }
 
     async displayGameRound(events, winnings, seed, forceName) {

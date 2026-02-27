@@ -36,83 +36,16 @@ public:
         return winAsJson;
     }
 
-    std::string getWinText(std::string szSymbol, const bool showDirection) const override
-    {
-        char buffer[MAX_LINE_TEXT_LEN];
-
-        // remove spaces from symbol
-        const auto end_pos = std::ranges::remove(szSymbol, ' ').begin();
-        szSymbol.erase(end_pos, szSymbol.end());
-
-        int space = MAX_LINE_TEXT_LEN;
-        int size = 0;
-
-        if (winType == "line")
-        {
-            if (showDirection)
-            {
-                size = std::snprintf(
-                    buffer, space,
-                    "Line%2d %s: %d %s = %d ",
-                    payLineNum,
-                    (direction == WinDirections::left_right) ? "L-R" : "R-L",
-                    static_cast<int>(oak),
-                    szSymbol.c_str(),
-                    static_cast<int>(win)
-                );
-            }
-            else
-            {
-                size = std::snprintf(
-                    buffer, space,
-                    "Line%2d: %d %s = %d ",
-                    payLineNum,
-                    static_cast<int>(oak),
-                    szSymbol.c_str(),
-                    static_cast<int>(win)
-                );
-            }
-        }
-        else
-        {
-            size = std::snprintf(
-                buffer, space,
-                "Scatter: %d %s = %d ",
-                static_cast<int>(oak),
-                szSymbol.c_str(),
-                static_cast<int>(win)
-            );
-        }
-
-        if (size < 0) size = 0;
-        if (size > space) size = space;
-        space -= size;
-
-        if (multiplier > 1 && space > 0)
-        {
-            int added = std::snprintf(
-                buffer + size, space,
-                "(x%d) = %d",
-                static_cast<int>(multiplier),
-                static_cast<int>(totalWin)
-            );
-            if (added < 0) added = 0;
-            if (added > space) added = space;
-            size += added;
-        }
-
-        return std::string(buffer, size);
-    }
-
-    std::string getWinText(const std::map<Symbol, std::string>& symbolMap,
-                           const bool showDirection) const override
-    {
-        const std::string szSymbol = symbolMap.at(symbol);
-        return getWinText(szSymbol, showDirection);
-    }
-
     std::unique_ptr<Win> clone() const override
     {
         return std::make_unique<LineWin>(*this);
+    }
+
+    void setPositions()
+    {
+        if (payLine == nullptr) [[unlikely]] throw std::runtime_error(
+            "Attempt to set positions on line win before payline is set.");
+        for (size_t reel = 0; reel < oak; reel++)
+            positions.emplace_back(reel, (*payLine)[reel]);
     }
 };

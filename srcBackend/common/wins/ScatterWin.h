@@ -8,7 +8,6 @@ class ScatterWin : public Win
 public:
     const std::vector<size_t>* payLine = nullptr;
     int payLineNum = -1;
-    std::vector<std::pair<size_t, size_t>> positions{};
 
     ScatterWin()
     {

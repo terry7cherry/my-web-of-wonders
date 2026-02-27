@@ -2,6 +2,7 @@ import * as PIXI from "pixi.js";
 import MaskedContainer from "./MaskedContainer.js";
 import Mask from "./Mask.js";
 import moveElement from "../animation/moveElement.js"
+import Ticker from "../uiElements/Ticker.js"
 
 export default class Grid {
     constructor({
@@ -485,5 +486,45 @@ export default class Grid {
         for (let win of waysAndScatterWins) {
             await this.animateScatterOrWaysWin(win);
         }
+    }
+
+    async cascade(removedSymbols, reelSymbolArray) {
+        await this.removeSymbols(removedSymbols);
+        await this.fillReels(reelSymbolArray);
+    }
+
+    async removeSymbols(removedSymbols) {
+        for (let {reel, row} of removedSymbols) {
+            const aperture = this.reels[reel].apertures[row];
+            aperture.container.destroy({
+                children: true,
+                texture: !aperture.symbol.isImage,
+                baseTexture: !aperture.symbol.isImage
+            });
+            this.reels[reel].apertures.splice(row, 1);
+        }
+    }
+
+    async fillReels(reelSymbolArray) {
+        const pixelsPerFrame = 10;
+        await Promise.all(reelSymbolArray.map((newReel, reelNum) => (async () => {
+            const reel = this.reels[reelNum];
+            const newSymbols = newReel.slice(0, newReel.length - reel.apertures.length);
+            const symbolHeight = this.height / newReel.length;
+            newSymbols.reverse().forEach((symbolName, i) => {
+                const symbol = this.getSymbol(symbolName, symbolHeight);
+                symbol.container.y = -symbol.height * (i + 1);
+                reel.apertures.unshift(symbol);
+                reel.container.addChild(symbol.container);
+            })
+            await new Promise(resolve => Ticker.wait(resolve, reelNum * 100));
+            await Promise.all(reel.apertures.map((aperture, row) => {
+                return moveElement({
+                    element: aperture.container,
+                    newY: row * symbolHeight,
+                    pixelsPerFrame
+                });
+            }));
+        })()))
     }
 }
