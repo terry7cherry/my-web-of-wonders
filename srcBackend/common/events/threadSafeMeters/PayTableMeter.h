@@ -19,7 +19,7 @@ class PayTableMeter
 {
 public:
     static constexpr std::size_t MAX_SYMBOLS = 50;
-    static constexpr std::size_t MAX_OAK = 10;
+    static constexpr std::size_t MAX_OAK = 20;
     std::uint64_t global[MAX_SYMBOLS][MAX_OAK]{}; // zero-initialized
 
     PayTableMeter()
