@@ -113,16 +113,8 @@ unsigned int PayTable::getWin(const Symbol symbolIndex, const unsigned int symbo
                               const bool checkLimits) const
 {
     if (checkLimits)
-    {
-        if (symbolIndex < 0 || symbolIndex >= static_cast<int>(payData.size()))
-            std::printf("\r\nError: PayTable::getWin() - symbolIndex (%d) out of bounds", symbolIndex);
-
-        if (symbolCount < minPaySymbolsVect[symbolIndex])
-            std::printf("\r\nError: PayTable::getWin() - symbolCount (%d) has no payout", symbolCount);
-        else if (symbolCount > maxWinSymbols)
-            std::printf("\r\nError: PayTable::getWin() - symbolCount (%d) > maxWinSymbols (%d)",
-                        symbolCount, static_cast<int>(maxWinSymbols));
-    }
+        if (symbolCount > maxWinSymbols)
+            return payData[symbolIndex][maxWinSymbols];
     return payData[symbolIndex][symbolCount];
 }
 

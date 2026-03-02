@@ -17,7 +17,7 @@ unsigned int PayAnywhereGrid::evaluateWins(const unsigned int betMultiplier,
         const unsigned int symbolCount = this->getSymbolCount(scatterSymbol) + scatterWildCount;
         if (symbolCount < payTable.minPaySymbolsVect[scatterSymbol])
             continue;
-        if (const unsigned int win = betMultiplier * payTable.getWin(scatterSymbol, symbolCount))
+        if (const unsigned int win = betMultiplier * payTable.getWin(scatterSymbol, symbolCount, true))
         {
             ScatterWin scatterWin;
             scatterWin.win = win;
