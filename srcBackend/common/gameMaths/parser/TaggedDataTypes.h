@@ -121,7 +121,7 @@ protected:
     };
 };
 
-struct TaggedInt : public TaggedDataCombined<int>
+struct TaggedInt : TaggedDataCombined<int>
 {
     TaggedInt(const TaggedRangePtr& taggedRangePtr, const size_t row)
         : TaggedDataCombined(taggedRangePtr,
@@ -134,7 +134,7 @@ private:
     static int convertValue(const std::string& valueStr, const std::string& cellLocation);
 };
 
-struct TaggedDouble : public TaggedDataCombined<double>
+struct TaggedDouble : TaggedDataCombined<double>
 {
     TaggedDouble(const TaggedRangePtr& taggedRangePtr, const size_t row)
         : TaggedDataCombined(taggedRangePtr,
@@ -148,7 +148,7 @@ private:
                                const std::string& cellLocation);
 };
 
-struct TaggedString : public TaggedDataCombined<std::string>
+struct TaggedString : TaggedDataCombined<std::string>
 {
     TaggedString(const TaggedRangePtr& taggedRangePtr, const size_t row)
         : TaggedDataCombined(taggedRangePtr,
@@ -162,7 +162,7 @@ private:
                                     const std::string& cellLocation);
 };
 
-struct TaggedBool : public TaggedDataCombined<bool>
+struct TaggedBool : TaggedDataCombined<bool>
 {
     TaggedBool(const TaggedRangePtr& taggedRangePtr, const size_t row)
         : TaggedDataCombined(taggedRangePtr,
@@ -174,7 +174,7 @@ struct TaggedBool : public TaggedDataCombined<bool>
     static bool convertValue(const std::string& valueStr, const std::string& cellLocation);
 };
 
-struct TaggedIntMap : public TaggedStringKeyedMap<int>
+struct TaggedIntMap : TaggedStringKeyedMap<int>
 {
     TaggedIntMap(const TaggedRangePtr& taggedRangePtr)
         : TaggedStringKeyedMap(taggedRangePtr, parseMap(*taggedRangePtr, convertValue))
@@ -446,14 +446,27 @@ struct TaggedSymbolMap : TaggedDataMap<std::string, Symbol>
         const TaggedRangePtr& taggedRangePtr,
         const std::unordered_map<std::string, Symbol>& symbolIndexMap)
         : TaggedDataMap(taggedRangePtr, parseMap(*taggedRangePtr,
-            [](const std::string& key, const std::string& /*cellLocation*/)
-            {
-                return key;
-            },
-            [&symbolIndexMap](const std::string& valueStr, const std::string& cellLocation)
-            {
-                return TaggedSymbol::convertValue(valueStr, cellLocation, symbolIndexMap);
-            }))
+                                                 [](const std::string& key,
+                                                    const std::string& /*cellLocation*/)
+                                                 {
+                                                     return key;
+                                                 },
+                                                 [&symbolIndexMap](
+                                                 const std::string& valueStr, const std::string& cellLocation)
+                                                 {
+                                                     return TaggedSymbol::convertValue(
+                                                         valueStr, cellLocation, symbolIndexMap);
+                                                 }))
     {
     }
+};
+
+struct TaggedIntGrid : TaggedDataIndividual<std::vector<std::vector<int>>>
+{
+    TaggedIntGrid(const TaggedRangePtr& taggedRangePtr) :
+        TaggedDataIndividual(taggedRangePtr, parseGrid(*taggedRangePtr))
+    {
+    }
+
+    static std::vector<std::vector<int>> parseGrid(const TaggedRange& taggedRange);
 };

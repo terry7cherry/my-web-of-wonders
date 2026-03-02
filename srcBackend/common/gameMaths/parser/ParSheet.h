@@ -257,6 +257,10 @@ public:
                 taggedBoolWeightTables.push_back(
                     std::make_shared<TaggedBoolWeightTable>(taggedRange));
             }
+            else if (taggedRange->type == "intGrid")
+            {
+                taggedIntGrids.push_back(std::make_shared<TaggedIntGrid>(taggedRange));
+            }
             else if (taggedRange->type == "payTable")
             {
                 taggedPayTables.push_back(
@@ -430,6 +434,7 @@ public:
                 addRelevantElementsToConfigForType(taggedBoolWeightTables, gameMathsPtr->boolWeightTables,
                                                    rtp,
                                                    betType);
+                addRelevantElementsToConfigForType(taggedIntGrids, gameMathsPtr->intGrids, rtp, betType);
                 addRelevantElementsToConfigForType(taggedStringWeightTables, gameMathsPtr->stringWeightTables,
                                                    rtp,
                                                    betType);
@@ -609,6 +614,7 @@ private
     std::vector<std::shared_ptr<TaggedDoubleWeightTable>> taggedDoubleWeightTables;
     std::vector<std::shared_ptr<TaggedSymbolWeightTable>> taggedSymbolWeightTables;
     std::vector<std::shared_ptr<TaggedBoolWeightTable>> taggedBoolWeightTables;
+    std::vector<std::shared_ptr<TaggedIntGrid>> taggedIntGrids;
     std::vector<std::shared_ptr<TaggedReelSet>> taggedReelSets;
     std::vector<std::shared_ptr<TaggedPayTable>> taggedPayTables;
     std::unordered_map<std::string, ReelSet> reelSetMap;

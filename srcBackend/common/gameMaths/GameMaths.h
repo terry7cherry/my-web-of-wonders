@@ -51,6 +51,7 @@ public:
     TypeConfig<DoubleWeightTable> doubleWeightTables{{"doubleWeightTable"}};
     TypeConfig<SymbolWeightTable> symbolWeightTables{{"symbolWeightTable"}};
     TypeConfig<BoolWeightTable> boolWeightTables{{"boolWeightTable"}};
+    TypeConfig<std::vector<std::vector<int>>> intGrids{{"intGrid"}};
     TypeConfig<ReelSet> reelSets{{"reelSet"}};
     TypeConfig<ReelSetWeights> reelSetWeights{{"reelSetWeights"}};
     TypeConfig<PayTable> payTables{{"payTable"}};

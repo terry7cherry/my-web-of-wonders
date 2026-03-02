@@ -803,3 +803,21 @@ std::vector<Symbol> TaggedSymbolVector::convertValue(const std::string& valueStr
     }
     return symbolVector;
 }
+
+std::vector<std::vector<int>> TaggedIntGrid::parseGrid(const TaggedRange& taggedRange)
+{
+    std::vector<std::vector<int>> grid;
+    grid.reserve(taggedRange.data.size());
+    for (size_t rowNum = 1; rowNum < taggedRange.data.size(); rowNum++)
+    {
+        std::vector<int> row;
+        row.reserve(taggedRange.width);
+        for (size_t colNum = 0; colNum < taggedRange.width; colNum++)
+            row.push_back(TaggedDataHelpers::stringToInt(taggedRange.data[rowNum][colNum],
+                                                         taggedRange.getCellLocationString(
+                                                             rowNum, colNum)));
+        grid.push_back(row);
+    }
+
+    return grid;
+}
