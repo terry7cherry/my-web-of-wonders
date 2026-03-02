@@ -97,25 +97,32 @@ void threadWorker(const std::stop_token& st,
 {
 	GameCycleReused reused(gameMaths);
 
-	while (!st.stop_requested())
+	try
 	{
-		const uint64_t batch = nextBatch.fetch_add(1, std::memory_order_relaxed);
-
-		if (batch >= totalBatches)
+		while (!st.stop_requested())
 		{
-			break;
+			const uint64_t batch = nextBatch.fetch_add(1, std::memory_order_relaxed);
+
+			if (batch >= totalBatches)
+			{
+				break;
+			}
+
+			mathsRng.setSeed(static_cast<int>(config.seed + batch));
+
+			GameSession session(bet, gameMaths, config.force);
+
+			for (int i = 0; i < batchSize; i++)
+			{
+				GameCycle gameCycle(session, reused, gameMaths);
+				GameLogic::playGame(gameMaths, gameCycle);
+			}
+			MeterUpdate::triggerUpdate();
 		}
-
-		mathsRng.setSeed(static_cast<int>(config.seed + batch));
-
-		GameSession session(bet, gameMaths, config.force);
-
-		for (int i = 0; i < batchSize; i++)
-		{
-			GameCycle gameCycle(session, reused, gameMaths);
-			GameLogic::playGame(gameMaths, gameCycle);
-		}
-		MeterUpdate::triggerUpdate();
+	}
+	catch (const std::runtime_error& e)
+	{
+		std::cerr << "Error playing game: " << e.what() << std::endl;
 	}
 }
 
