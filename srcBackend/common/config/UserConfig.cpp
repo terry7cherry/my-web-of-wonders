@@ -254,7 +254,7 @@ std::optional<size_t> UserConfig::getUserCachedConfigChoice(
         std::getline(std::cin, choiceString);
         if (choiceString.empty()) return std::nullopt;
     }
-    while (!std::ranges::all_of(choiceString, isdigit) || std::stoi(choiceString) >= choices.size());
+    while (!std::ranges::all_of(choiceString, isdigit) || std::stoi(choiceString) >= choices.size() + 1);
 
     return std::stoi(choiceString);
 }
