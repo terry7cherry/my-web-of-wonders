@@ -52,3 +52,19 @@ unsigned int PayGrid::combineMultipliers(const unsigned int previousMultiplier,
         return newMultiplier;
     return previousMultiplier + newMultiplier;
 }
+
+unsigned int PayGrid::applyGridMultiplier(const MultipliersCombineType combineType,
+                                           const std::optional<int> specialMultiplier)
+{
+    const int applyMultiplier = (specialMultiplier.has_value())
+                                    ? specialMultiplier.value()
+                                    : this->gridMultiplier;
+    unsigned int totalWin = 0;
+    if (applyMultiplier > 1)
+    {
+        for (const auto& i : winVector)
+            totalWin += i->applyMultiplier(applyMultiplier, combineType);
+    }
+    return totalWin;
+}
+

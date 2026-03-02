@@ -56,6 +56,14 @@ public:
 	// Win Analysis
 	/************************************/
 
+    /**
+     * @brief Apply a gridMultiplier (or another multiplier) to all wins.
+     * @param combineType How to combine with existing win-level multipliers.
+     * @param specialMultiplier Optional override multiplier. (Omit to use gridMultiplier)
+     * @return New total win after application.
+     */
+    unsigned int applyGridMultiplier(MultipliersCombineType combineType,
+                                     std::optional<int> specialMultiplier = std::nullopt);
 
 	/**
 	 * @brief Quick pre-check: compute symbol pay-mask across first N reels.

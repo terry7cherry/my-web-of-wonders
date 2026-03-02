@@ -174,21 +174,6 @@ std::vector<std::vector<std::vector<int>>> WaysGrid::getWinPosVect() const
     return winPosVect;
 }
 
-unsigned int WaysGrid::applyGridMultiplier(const MultipliersCombineType combineType,
-                                           const std::optional<int> specialMultiplier)
-{
-    const int applyMultiplier = (specialMultiplier.has_value())
-                                    ? specialMultiplier.value()
-                                    : this->gridMultiplier;
-    unsigned int totalWin = 0;
-    if (applyMultiplier > 1)
-    {
-        for (const auto& i : winVector)
-            totalWin += i->applyMultiplier(applyMultiplier, combineType);
-    }
-    return totalWin;
-}
-
 void WaysGrid::applySpin(const SpinResult& spinResult, const bool getLockedReels)
 {
     Grid::applySpin(spinResult, getLockedReels);

@@ -10,8 +10,6 @@
 #include "../wins/ScatterWin.h"
 #include "../wins/LineWin.h"
 
-#define MAX_LINE_TEXT_LEN 45
-
 /**
  * @brief A pay grid that evaluates line wins using `PayLines` definitions.
  */
@@ -55,13 +53,31 @@ public:
     /************************************/
 
     /**
-     * @brief Reset win buffer, evaluate line wins, and apply line multipliers.
+     * @brief Evaluate line and scatter wins.
+     * @param betMultiplier Line bet multiplier.
+     * @param combineType The strategy for combining multipliers - multiply or add
+     * @return Total win.
+     */
+    unsigned int evaluateWins(unsigned int betMultiplier,
+                              MultipliersCombineType combineType = MultipliersCombineType::multiply);
+
+    /**
+     * @brief Reset win buffer, evaluate line wins, apply line multipliers.
      * @param betMultiplier Line bet multiplier.
      * @param combineType The strategy for combining multipliers - multiply or add
      * @return Total win for all lines.
      */
-    unsigned int evaluateWins(unsigned int betMultiplier,
-                              MultipliersCombineType combineType = MultipliersCombineType::multiply);
+    unsigned int evaluateLineWins(unsigned int betMultiplier,
+                                  MultipliersCombineType combineType = MultipliersCombineType::multiply);
+
+    /**
+    * @brief Evaluate scatter wins and multipliers.
+    * @param betMultiplier Line bet multiplier.
+     * @param combineType The strategy for combining multipliers - multiply or add
+     * @return Total win for scatters.
+*/
+    unsigned int evaluateScatterWins(unsigned int betMultiplier,
+                                     MultipliersCombineType combineType = MultipliersCombineType::multiply);
 
 
     /**
@@ -85,17 +101,7 @@ public:
     int countActiveWinMultipliers() const;
 
     /**
-     * @brief Apply a gridMultiplier (or another multiplier) to all wins.
-     * @param combineType How to combine with existing win-level multipliers.
-     * @param specialMultiplier Optional override multiplier. (Omit to use gridMultiplier)
-     * @return New total win after application.
-     */
-    unsigned int applyGridMultiplier(MultipliersCombineType combineType,
-                                     std::optional<int> specialMultiplier = std::nullopt);
-
-
-    /**
-     * @brief Apply cell multipliers (from `multiplierVect`) to each win.
+     * @brief Apply cell multipliers (from `multiplieLineGrid.hrVect`) to each win.
      * @param combineType How to combine multiple multipliers in a single win.
      * @return Total win after multipliers.
      */

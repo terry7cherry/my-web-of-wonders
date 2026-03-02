@@ -42,9 +42,6 @@ public:
 	//	winPosVect[reel][row]: 0= no win, 1= winning symbol, 2= winning wild
 	std::vector<std::vector<std::vector<int>>> getWinPosVect(void) const;
 
-	unsigned int applyGridMultiplier(const MultipliersCombineType combineType,
-	                                 const std::optional<int> specialMultiplier = std::nullopt);
-
 	void applySpin(const SpinResult& spinResult, bool getLockedReels = false);
 
 private:

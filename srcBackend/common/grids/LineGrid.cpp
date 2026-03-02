@@ -5,25 +5,29 @@
 unsigned int LineGrid::evaluateWins(const unsigned int betMultiplier,
                                     const MultipliersCombineType combineType)
 {
-    unsigned int totalWin = 0;
-
     winVector.clear();
+    unsigned int totalWin = 0;
+    totalWin += evaluateLineWins(betMultiplier, combineType);
+    totalWin += evaluateScatterWins(betMultiplier, combineType);
+    return totalWin;
+}
+
+unsigned int LineGrid::evaluateLineWins(const unsigned int betMultiplier,
+                                        const MultipliersCombineType combineType)
+{
+    unsigned int totalWin = 0;
 
     if ((quickWinMask = quickWinCheck()))
     {
         Symbol symbolToMatch;
-        Symbol startSymbol;
         unsigned int wildCount = 0;
         unsigned int consecutiveWilds;
-        unsigned int number;
-        unsigned int wildMultiplier;
-        unsigned int lineMultiplier;
         const std::vector<SymbolData>& symbolVect = payTable.symbolVect;
         for (int line = 0; line < payLines.lineCount; ++line)
         {
             bool blnCheckLine;
             size_t row = payLines.getRow(line, 0);
-            startSymbol = symbolToMatch = reelSymbolVect[0][row];
+            const Symbol startSymbol = symbolToMatch = reelSymbolVect[0][row];
             const SymbolData& startSymData = symbolVect[startSymbol];
 
             if (startSymData.isScatter && !startSymData.isWild)
@@ -36,8 +40,9 @@ unsigned int LineGrid::evaluateWins(const unsigned int betMultiplier,
                 continue;
             // based on 1st symbol there is no need to check this line
 
-            number = consecutiveWilds = wildCount = 0;
-            wildMultiplier = lineMultiplier = 1;
+            unsigned int number = consecutiveWilds = wildCount = 0;
+            unsigned int wildMultiplier = 1;
+            unsigned int lineMultiplier = 1;
             for (int reel = 0; reel < maxReels; reel++)
             {
                 // start from beginning again to account for multipliers
@@ -88,7 +93,7 @@ unsigned int LineGrid::evaluateWins(const unsigned int betMultiplier,
                     }
                 }
 
-                if (unsigned int win = betMultiplier * payTable.getWin(symbolToMatch, number))
+                if (const unsigned int win = betMultiplier * payTable.getWin(symbolToMatch, number))
                 {
                     totalWin += win * lineMultiplier;
 
@@ -113,25 +118,29 @@ unsigned int LineGrid::evaluateWins(const unsigned int betMultiplier,
         }
     }
 
+    return totalWin;
+}
+
+unsigned int LineGrid::evaluateScatterWins(const unsigned int betMultiplier,
+                                           const MultipliersCombineType combineType)
+{
+    unsigned int totalWin = 0;
+
     unsigned int scatterWildCount = 0;
-    for (Symbol scatterWildSymbol : payTable.scatterWildSymVect)
+    for (const Symbol scatterWildSymbol : payTable.scatterWildSymVect)
         scatterWildCount += this->getSymbolCount(scatterWildSymbol);
 
-    for (Symbol scatterSymbol : payTable.scatterSymVect)
+    for (const Symbol scatterSymbol : payTable.scatterSymVect)
     {
-        unsigned int symbolCount = this->getSymbolCount(scatterSymbol) + scatterWildCount;
+        const unsigned int symbolCount = this->getSymbolCount(scatterSymbol) + scatterWildCount;
         if (symbolCount < payTable.minPaySymbolsVect[scatterSymbol])
             continue;
-        if (unsigned int win = betMultiplier * payTable.getWin(scatterSymbol, symbolCount))
+        if (const unsigned int win = betMultiplier * payTable.getWin(scatterSymbol, symbolCount))
         {
-            totalWin += win;
-
             ScatterWin scatterWin;
-            scatterWin.win = scatterWin.totalWin = win;
-            scatterWin.oak = symbolCount;
-            scatterWin.symbol = scatterSymbol;
-            scatterWin.winType = "scatter";
-
+            scatterWin.win = win;
+            unsigned int scatterMultiplier = 1;
+            unsigned int wildMultiplier = 1;
             unsigned int scattersToFind = symbolCount;
             for (size_t reel = 0; reel < reelSymbolVect.size(); reel++)
             {
@@ -141,15 +150,28 @@ unsigned int LineGrid::evaluateWins(const unsigned int betMultiplier,
                     {
                         scattersToFind--;
                         scatterWin.positions.emplace_back(reel, row);
+                        scatterMultiplier = combineMultipliers(scatterMultiplier, multiplierVect[reel][row],
+                                                               combineType);
+                        if (payTable.isScatterWild(reelSymbolVect[reel][row]))
+                            wildMultiplier = combineMultipliers(wildMultiplier, multiplierVect[reel][row],
+                                                                combineType);
                         if (scattersToFind == 0) break;
                     }
                 if (scattersToFind == 0) break;
             }
+
+            scatterWin.totalWin = win * scatterMultiplier;
+            scatterWin.oak = symbolCount;
+            scatterWin.symbol = scatterSymbol;
+            scatterWin.winType = "scatter";
+
+            totalWin += scatterWin.totalWin;
             winVector.emplace_back(std::make_unique<ScatterWin>(scatterWin));
         }
     }
     return totalWin;
 }
+
 
 int LineGrid::setWinningSymbols()
 {
@@ -258,21 +280,6 @@ int LineGrid::countActiveWinMultipliers() const
     }
 
     return activeCount;
-}
-
-unsigned int LineGrid::applyGridMultiplier(const MultipliersCombineType combineType,
-                                           const std::optional<int> specialMultiplier)
-{
-    const int applyMultiplier = (specialMultiplier.has_value())
-                                    ? specialMultiplier.value()
-                                    : this->gridMultiplier;
-    unsigned int totalWin = 0;
-    if (applyMultiplier > 1)
-    {
-        for (const auto& i : winVector)
-            totalWin += i->applyMultiplier(applyMultiplier, combineType);
-    }
-    return totalWin;
 }
 
 unsigned int LineGrid::applyWinMultipliers(const MultipliersCombineType combineType)

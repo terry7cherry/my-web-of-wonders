@@ -9,9 +9,6 @@
 #include <memory>
 #include <json/json.h>
 
-#define MAX_LINE_TEXT_LEN 45
-
-
 enum class MultipliersCombineType
 {
     none, add, multiply
