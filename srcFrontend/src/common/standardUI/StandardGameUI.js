@@ -55,6 +55,7 @@ export default class StandardGameUI {
     async init({state, maths, soundPlayer, shell, imageMap}) {
         this.state = state;
         this.maths = maths;
+        this.imageMap = imageMap;
         this.setDimensions({
             ...this.layout
         });
