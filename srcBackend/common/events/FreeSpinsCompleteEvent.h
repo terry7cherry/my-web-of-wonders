@@ -41,7 +41,13 @@ public:
 	static void updateMeters(const GameCycle& cycle)
 	{
 		SpinsCompleteTemplate::updateMeters(
-			cycle.totalWin, cycle.fsInitialSpins, cycle.fsSpinsPlayed);
+			cycle.freeSpinsWin, cycle.fsInitialSpins, cycle.fsSpinsPlayed);
+	}
+
+	static void updateMeters(const unsigned int win, const unsigned int initialSpins,
+	                         const unsigned int finalSpins)
+	{
+		SpinsCompleteTemplate::updateMeters(win, initialSpins, finalSpins);
 	}
 
 protected :
