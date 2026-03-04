@@ -49,7 +49,7 @@ export default class Ticker {
         if (instant) {
             await this.setText(textObject, pause ?? 0);
         } else {
-            pause = pause ?? text.length * this.pauseScale;
+            pause = pause ?? Math.pow(text.length, 1 / 2) * this.pauseScale;
             if (!this.currentText) await this.setText(textObject, pause);
             else await this.scrollText(textObject, pause);
         }
