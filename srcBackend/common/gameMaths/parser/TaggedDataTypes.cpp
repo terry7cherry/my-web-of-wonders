@@ -807,16 +807,15 @@ std::vector<Symbol> TaggedSymbolVector::convertValue(const std::string& valueStr
 std::vector<std::vector<int>> TaggedIntGrid::parseGrid(const TaggedRange& taggedRange)
 {
     std::vector<std::vector<int>> grid;
-    grid.reserve(taggedRange.data.size());
-    for (size_t rowNum = 1; rowNum < taggedRange.data.size(); rowNum++)
+    grid.reserve(taggedRange.width);
+    for (size_t colNum = 0; colNum < taggedRange.width; colNum++)
     {
-        std::vector<int> row;
-        row.reserve(taggedRange.width);
-        for (size_t colNum = 0; colNum < taggedRange.width; colNum++)
-            row.push_back(TaggedDataHelpers::stringToInt(taggedRange.data[rowNum][colNum],
-                                                         taggedRange.getCellLocationString(
-                                                             rowNum, colNum)));
-        grid.push_back(row);
+        std::vector<int> reel;
+        for (size_t rowNum = 1; rowNum < taggedRange.data.size(); rowNum++)
+            reel.push_back(TaggedDataHelpers::stringToInt(taggedRange.data[rowNum][colNum],
+                                                          taggedRange.getCellLocationString(
+                                                              rowNum, colNum)));
+        grid.push_back(reel);
     }
 
     return grid;
