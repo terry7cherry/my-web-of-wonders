@@ -656,10 +656,15 @@ std::vector<size_t> Grid::removeSymbols(std::vector<std::pair<size_t, size_t>>& 
 	std::vector<size_t> symbolsRemovedPerReel(maxReels, 0);
 	for (const auto& [reel, row] : symbolsToRemove)
 	{
-		reelSymbolVect[reel].erase(reelSymbolVect[reel].begin() + row);
+		removeOneSymbol(reel, row);
 		symbolsRemovedPerReel[reel]++;
 	}
 	return symbolsRemovedPerReel;
+}
+
+void Grid::removeOneSymbol(const size_t reel, const size_t row)
+{
+	reelSymbolVect[reel].erase(reelSymbolVect[reel].begin() + row);
 }
 
 void Grid::addSymbolsToTopOfReels(const std::vector<size_t>& symbolsPerReel)
@@ -667,15 +672,18 @@ void Grid::addSymbolsToTopOfReels(const std::vector<size_t>& symbolsPerReel)
 	if (symbolsPerReel.size() != maxReels) [[unlikely]]
 		throw std::runtime_error("addSymbolsToTopOfReels: passed vector size must match number of reels.");
 	for (size_t reel = 0; reel < maxReels; reel++)
-	{
-		if (symbolsPerReel[reel] == 0) continue;
-		using diff_t = std::vector<Symbol>::difference_type;
-		const auto reelSetStartPosition = static_cast<diff_t>((spinResultPtr->stopIndexVect[reel] -
-			symbolsPerReel[reel] - cascadedSymbolsPerReel[reel]) % spinResultPtr->reelSet.reelSizeVect[reel]);
-		const auto& reelSetStartPositionIt = spinResultPtr->reelSet.wrappedBandVect[reel].begin() +
-			reelSetStartPosition;
-		reelSymbolVect[reel].insert(reelSymbolVect[reel].begin(), reelSetStartPositionIt,
-		                            reelSetStartPositionIt + static_cast<diff_t>(symbolsPerReel[reel]));
-		cascadedSymbolsPerReel[reel] += symbolsPerReel[reel];
-	}
+		if (symbolsPerReel[reel] > 0)
+			addSymbolsToTopOfOneReel(reel, symbolsPerReel[reel]);
+}
+
+void Grid::addSymbolsToTopOfOneReel(const size_t reel, const size_t numSymbols)
+{
+	using diff_t = std::vector<Symbol>::difference_type;
+	const auto reelSetStartPosition = static_cast<diff_t>((spinResultPtr->stopIndexVect[reel] -
+		numSymbols - cascadedSymbolsPerReel[reel]) % spinResultPtr->reelSet.reelSizeVect[reel]);
+	const auto& reelSetStartPositionIt = spinResultPtr->reelSet.wrappedBandVect[reel].begin() +
+		reelSetStartPosition;
+	reelSymbolVect[reel].insert(reelSymbolVect[reel].begin(), reelSetStartPositionIt,
+	                            reelSetStartPositionIt + static_cast<diff_t>(numSymbols));
+	cascadedSymbolsPerReel[reel] += numSymbols;
 }
