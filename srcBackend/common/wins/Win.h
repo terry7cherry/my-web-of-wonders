@@ -66,7 +66,7 @@ public:
 
 
     // Polymorphic clone to preserve derived data when copying via base pointer
-    virtual std::unique_ptr<Win> clone() const { return std::make_unique<Win>(*this); }
+    virtual std::unique_ptr<Win> clone() const = 0;
 
     virtual Json::Value toJson(const std::vector<std::string>& symbolNames) const
     {
