@@ -581,7 +581,7 @@ public:
      * @param reel Reel on which to remove symbol.
      * @param row Row on which to remove symbol.
      */
-    void removeOneSymbol(size_t reel, size_t row);
+    virtual void removeOneSymbol(size_t reel, size_t row);
 
     /**
     * @brief Add specified number of symbols to the top of each reel with the appropriate symbols from the reelset originally used for the spin.
@@ -594,7 +594,7 @@ public:
      * @param reel Reel to add symbols to.
      * @param numSymbols Number of new symbols to add.
      */
-    void addSymbolsToTopOfOneReel(size_t reel, size_t numSymbols);
+    virtual void addSymbolsToTopOfOneReel(size_t reel, size_t numSymbols);
 };
 
 
