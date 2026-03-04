@@ -189,7 +189,7 @@ export default class StandardGameUI {
     createTicker(shell) {
         this.ticker = new Ticker({
             app: this.app,
-            width: this.layout.width - this.spinButton.buttonWidth,
+            width: this.layout.width - 220,
             height: 100,
             x: 220,
             y: this.layout.height - 150,
