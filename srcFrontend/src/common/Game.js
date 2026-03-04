@@ -215,7 +215,7 @@ export default class Game {
             await this.displayGameRound(events, winnings, newSeed, forceName);
         } catch (e) {
             await this.ui.ticker.updateText(e.message);
-            throw e;
+            console.error(e);
         }
 
 
