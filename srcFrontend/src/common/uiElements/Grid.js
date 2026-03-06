@@ -406,10 +406,8 @@ export default class Grid {
             const reel = this.reels[reelNum];
             const oldAperture = reel.apertures[symbolNum];
             const newAperture = this.getSymbol(newSymbolName, oldAperture.height);
-            const newSymbol = newAperture.symbol;
             newAperture.container.x = oldAperture.container.x;
-            newAperture.container.y = oldAperture.container.y;
-            newSymbol.y = newSymbol.y + oldAperture.height;
+            newAperture.container.y = oldAperture.container.y + oldAperture.height;
             const mask = new Mask({
                 parent: this.container,
                 x: reelNum * this.reelWidth,
@@ -422,22 +420,23 @@ export default class Grid {
             reel.container.addChild(newAperture.container);
             reel.apertures[symbolNum] = newAperture;
             this.addTextBackgroundAndOverlaysToSymbol(reelNum, symbolNum, {textOverlay, frame, background});
-            const oldSymbol = oldAperture.symbol;
             const animateOldSymbol = moveElement({
-                element: oldSymbol,
-                newX: oldSymbol.x,
-                newY: oldSymbol.y - oldAperture.height,
+                element: oldAperture.container,
+                newX: oldAperture.container.x,
+                newY: oldAperture.container.y - oldAperture.height,
                 pixelsPerFrame: speed ?? 4
             })
             const animateNewSymbol = moveElement({
-                element: newSymbol,
-                newX: newSymbol.x,
-                newY: newSymbol.y - newAperture.height,
+                element: newAperture.container,
+                newX: newAperture.container.x,
+                newY: newAperture.container.y - newAperture.height,
                 pixelsPerFrame: speed ?? 4
             })
             Promise.all([animateOldSymbol, animateNewSymbol]).then(() => {
                 oldAperture.container.destroy({
-                    children: true, texture: !oldSymbol.isImage, baseTexture: !oldSymbol.isImage
+                    children: true,
+                    texture: !oldAperture.symbol.isImage,
+                    baseTexture: !oldAperture.symbol.isImage
                 });
                 newAperture.container.mask = null;
                 mask.destroy();
