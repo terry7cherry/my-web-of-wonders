@@ -326,11 +326,17 @@ export default class Grid {
         return new PIXI.Text(text, textStyle ?? this.getSymbolTextStyle(text));
     }
 
-    async updateGrid(newGrid) {
+    /**
+     * Updates only those symbols that have changed with a scrolling animation.
+     * @param {Array<Array<string>>} newGrid - The full grid after update.
+     * @param {SpinOptions} [options] - The options for spinning the reels.
+     * @returns {Promise<unknown>}
+     */
+    async updateGrid(newGrid, options = {}) {
         await Promise.all(this.reels
             .map((reel, r) => reel.apertures.map(({symbolCode}, a) => {
                 if (symbolCode === newGrid[r][a]) return;
-                return this.transformSymbol(r, a, newGrid[r][a]);
+                return this.transformSymbol(r, a, newGrid[r][a], undefined, options);
             }))
             .flat()
             .filter((p) => p));
@@ -553,9 +559,16 @@ export default class Grid {
         }
     }
 
-    async cascade(removedSymbols, reelSymbolArray) {
+    /**
+     * Removes passed symbols and cascades new ones.
+     * @param {Array<{reel:number, row:number}>} removedSymbols - Positions of symbols to remove.
+     * @param {Array<Array<string>>} reelSymbolArray - The symbols on the grid after cascade is complete.
+     * @param {SpinOptions} [options] - The options for spinning the reels.
+     * @returns {Promise<unknown>}
+     */
+    async cascade(removedSymbols, reelSymbolArray, {textOverlays, frames, backgrounds} = {}) {
         await this.removeSymbols(removedSymbols);
-        await this.fillReels(reelSymbolArray);
+        await this.fillReels(reelSymbolArray, {textOverlays, frames, backgrounds});
     }
 
     async removeSymbols(removedSymbols) {
@@ -570,18 +583,27 @@ export default class Grid {
         }
     }
 
-    async fillReels(reelSymbolArray) {
+    async fillReels(reelSymbolArray, {textOverlays, frames, backgrounds}) {
         const pixelsPerFrame = 10;
         await Promise.all(reelSymbolArray.map((newReel, reelNum) => (async () => {
             const reel = this.reels[reelNum];
-            const newSymbols = newReel.slice(0, newReel.length - reel.apertures.length);
+            const newSymbols = newReel.slice(0, newReel.length - reel.apertures.length).reverse();
+            const newTextOverlays = textOverlays?.[reelNum]?.slice(0, newReel.length - reel.apertures.length).reverse();
+            const newFrames = frames?.[reelNum]?.slice(0, newReel.length - reel.apertures.length).reverse();
+            const newBackgrounds = backgrounds?.[reelNum]?.slice(0, newReel.length - reel.apertures.length).reverse();
             const symbolHeight = this.height / newReel.length;
-            newSymbols.reverse().forEach((symbolName, i) => {
+            for (let i = 0; i < newSymbols.length; i++) {
+                const symbolName = newSymbols[i];
                 const symbol = this.getSymbol(symbolName, symbolHeight);
                 symbol.container.y = -symbol.height * (i + 1);
                 reel.apertures.unshift(symbol);
+                this.addTextBackgroundAndOverlaysToSymbol(reelNum, 0, {
+                    textOverlay: newTextOverlays?.[i],
+                    frame: newFrames?.[i],
+                    background: newBackgrounds?.[i]
+                });
                 reel.container.addChild(symbol.container);
-            })
+            }
             await new Promise(resolve => Ticker.wait(resolve, reelNum * 100));
             await Promise.all(reel.apertures.map((aperture, row) => {
                 return moveElement({
