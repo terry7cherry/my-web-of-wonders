@@ -8,7 +8,7 @@
 #include "eventTemplates/GridEventTemplate.h"
 
 /**
- * @brief Reel Spin event that is autohandled in the frontend.
+ * @brief Reel Spin event that is auto-handled in the frontend.
  */
 class ReelSpinEvent : public GridEventTemplate<ReelSpinEvent>
 {

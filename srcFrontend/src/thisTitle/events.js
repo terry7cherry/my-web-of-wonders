@@ -20,6 +20,13 @@ export default {
     "reelSpin": async ({reelSymbolArray}, game) => {
         await game.ui.currentPhase.grid.spinReels(reelSymbolArray);
     },
+    /**
+     * @param {{reelSymbolArray: Array<Array<string>>, stickyPositions: Array<{reel:number, row:number}>}} params
+     * @param game
+     */
+    "reelSpinWithStickySymbols": async ({reelSymbolArray, stickyPositions}, game) => {
+        await game.ui.currentPhase.grid.spinReels(reelSymbolArray, {stickyPositions});
+    },
     "winAnalysis": async ({totalWin, wins}, game) => {
         if (!totalWin) return;
         game.shell.addWinsToHistory(wins);
