@@ -193,11 +193,7 @@ export default class Grid {
                 for (const aperture of oldApertures) {
                     // detach from display tree
                     reel.container.removeChild(aperture.container);
-
-                    // destroy full container hierarchy
-                    aperture.container.destroy({
-                        children: true,
-                    });
+                    this.destroyAperture(aperture);
                 }
 
                 resolve();
@@ -355,7 +351,7 @@ export default class Grid {
     removeBackgroundFromSymbol(reelNum, symbolNum) {
         const aperture = this.reels[reelNum].apertures[symbolNum];
         aperture.backgroundContainer.removeChild(aperture.background);
-        aperture.background.destroy({children: true});
+        aperture.background.destroy();
     }
 
     addFrameToSymbol(reelNum, symbolNum, colour = "0xFFFFFF", width = 8) {
@@ -404,7 +400,7 @@ export default class Grid {
     removeTextFromSymbol(reelNum, symbolNum) {
         const aperture = this.reels[reelNum].apertures[symbolNum];
         aperture.overlayContainer.removeChild(aperture.overlayText);
-        aperture.overlayText.destroy({children: true});
+        aperture.overlayText.destroy({children: true, texture: true, baseTexture: true});
     }
 
     transformSymbol(reelNum, symbolNum, newSymbolName, speed, {textOverlay, frame, background} = {}) {
@@ -439,11 +435,7 @@ export default class Grid {
                 pixelsPerFrame: speed ?? 4
             })
             Promise.all([animateOldSymbol, animateNewSymbol]).then(() => {
-                oldAperture.container.destroy({
-                    children: true,
-                    texture: !oldAperture.symbol.isImage,
-                    baseTexture: !oldAperture.symbol.isImage
-                });
+                this.destroyAperture(oldAperture);
                 newAperture.container.mask = null;
                 mask.destroy();
                 resolve();
@@ -574,11 +566,7 @@ export default class Grid {
     async removeSymbols(removedSymbols) {
         for (let {reel, row} of removedSymbols) {
             const aperture = this.reels[reel].apertures[row];
-            aperture.container.destroy({
-                children: true,
-                texture: !aperture.symbol.isImage,
-                baseTexture: !aperture.symbol.isImage
-            });
+            this.destroyAperture(aperture);
             this.reels[reel].apertures.splice(row, 1);
         }
     }
@@ -613,5 +601,15 @@ export default class Grid {
                 });
             }));
         })()))
+    }
+
+    destroyAperture(aperture) {
+        aperture.overlayContainer.destroy({children: true, texture: true, baseTexture: true});
+
+        aperture.container.destroy({
+            children: true,
+            texture: !aperture.symbol.isImage,
+            baseTexture: !aperture.symbol.isImage
+        });
     }
 }
