@@ -182,7 +182,18 @@ handlers:
             - `game.ui.currentPhase.spinsLeft.update(numSpinsLeft)` or
             - `game.ui.currentPhase.spinsLeft.increment(-1)`.
         - `game.ui.currentPhase.grid`: The grid object has the following methods:
-            - `spinReels(reelSymbolArray)`: Triggers a spin animation landing the passed symbols.
+            - `spinReels(reelSymbolArray)`: Triggers a spin animation landing the passed symbols. You can pass
+              an options object containing any of the following properties:
+                - `spinAll`: Relevant for hold and spin. Ignore locked symbols and spin all mini-reels.
+                - `stickyReels`: Array of reel indexes that should not be spun.
+                - `stickyPositions`: Array of {reel, row} objects representing sticky positions.
+                - `textOverlays`: Text overlays to add to symbols before they spin in. 2d array of either
+                  undefined (no overlay), string (overlay with standard formatting), or {text, textStyle}
+                  objects for formatting options.
+                - `frames`: Add frames to certain symbols before spinning in. 2d array of either undefined,
+                  boolean (true for default frame), or {colour, width} objects for frame options.
+                - `backgrounds`: Add backgrounds to certain symbols before spinning in. 2d array of either
+                  undefined or colour string.
             - `updateGrid(reelSymbolArray)`: Compares the passed symbols to the current grid and updates
               only the changed symbols using a scrolling animation.
             - `animateWins(wins)`: Animates the wins from a WinAnalysisEvent (or similar) using appropriate
