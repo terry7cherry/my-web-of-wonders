@@ -117,9 +117,12 @@ export default class Grid {
 
     /**
      * @typedef {Object} SpinOptions
+     * @property {boolean} [spinAll] - For hold and spin only, spin all mini-reels disregarding locked symbols.
      * @property {Array<number>} [stickyReels] - An array of indexes of reels that should not be spun.
      * @property {Array<{reel: number, row: number}>} [stickyPositions] - An array of {reel, row} objects
-     * @property {boolean} [spinAll] - For hold and spin only, spin all mini-reels disregarding locked symbols.
+     * @property {Array<Array<undefined | string | {text: string, textStyle: Object}>>} [textOverlays] - 2d array of text overlays to be displayed on symbols (either strings, or object with text and textStyle properties.)
+     * @property {Array<Array<undefined | boolean | {[colour]: string, [width]: number}>>} [frames] - 2d array of frame overlays to be displayed on symbols (either true for default, or object with colour and width properties.)
+     * @property {Array<Array<undefined | string>>} [backgrounds] - 2d array of background colours to be add to symbols (or undefined for no background).
      */
 
     /**
@@ -128,15 +131,28 @@ export default class Grid {
      * @param {SpinOptions} [options] - The options for spinning the reels.
      * @returns {Promise<unknown>}
      */
-    spinReels(symbols, {stickyReels, stickyPositions, spinAll} = {}) {
+    spinReels(symbols, {spinAll, stickyReels, stickyPositions, textOverlays, frames, backgrounds} = {}) {
         return new Promise(async (resolve, reject) => {
             const spinSound = await this.sound.playAsync("spin");
             let reelSpinAnimations;
             if (this.isHoldAndSpin) {
-                reelSpinAnimations = this.getHoldAndSpinAnimations(this.reels, symbols, stickyReels, stickyPositions, spinAll);
+                reelSpinAnimations = this.getHoldAndSpinAnimations(this.reels, symbols, {
+                    spinAll,
+                    stickyReels,
+                    stickyPositions,
+                    textOverlays,
+                    frames,
+                    backgrounds
+                });
             } else {
                 this.setAddedTimePerReel(this.reels, symbols);
-                reelSpinAnimations = this.getReelSpinAnimations(this.reels, symbols, stickyReels, stickyPositions);
+                reelSpinAnimations = this.getReelSpinAnimations(this.reels, symbols, {
+                    stickyReels,
+                    stickyPositions,
+                    textOverlays,
+                    frames,
+                    backgrounds
+                });
             }
             await Promise.all(reelSpinAnimations)
             await spinSound.stop();
@@ -144,32 +160,22 @@ export default class Grid {
         });
     }
 
-    spinReelsWithTextOverlays(symbols, stickyReels, stickyPositions, textOverlays, spinAll) {
-        return new Promise(async (resolve, reject) => {
-            const spinSound = await this.sound.playAsync("spin");
-            let reelSpinAnimations;
-            if (this.isHoldAndSpin) {
-                reelSpinAnimations = this.getHoldAndSpinAnimations(this.reels, symbols, stickyReels, stickyPositions, spinAll, textOverlays);
-            } else {
-                this.setAddedTimePerReel(this.reels, symbols);
-                reelSpinAnimations = this.getReelSpinAnimations(this.reels, symbols, stickyReels, stickyPositions, textOverlays);
-            }
-            await Promise.all(reelSpinAnimations)
-            await spinSound.stop();
-            resolve();
-        });
-    }
-
-    getReelSpinAnimations(reels, symbols, stickyReels, stickyPositions, textOverlays) {
+    getReelSpinAnimations(reels, symbols, {stickyReels, stickyPositions, textOverlays, frames, backgrounds}) {
         return reels.map((reel, r) => new Promise((resolve, reject) => {
             if (stickyReels && stickyReels.includes(r)) {
                 return resolve();
             }
             const numRandomSymbolsToAdd = Math.floor((r + reel.addedTime + 1) * (2 + Math.random() * 2));
             this.addRandomSymbolsToReel(reel, r, numRandomSymbolsToAdd);
-            if (textOverlays) textOverlays[r] = textOverlays[r].reverse();
+            if (textOverlays?.[r]) textOverlays[r] = textOverlays[r].reverse();
+            if (frames?.[r]) frames[r] = frames[r].reverse();
+            if (backgrounds?.[r]) backgrounds[r] = backgrounds[r].reverse();
             [...symbols[r]].reverse().forEach((symbol, a) => {
-                this.addSymbolToTopOfReel(r, symbol, this.height / symbols[r].length, textOverlays?.[r]?.[a]);
+                this.addSymbolToTopOfReel(r, symbol, this.height / symbols[r].length, {
+                    textOverlay: textOverlays?.[r]?.[a],
+                    frame: frames?.[r]?.[a],
+                    background: backgrounds?.[r]?.[a]
+                });
             });
             const totalFrames = (r + reel.addedTime + 1) * 20;
             const apertureAnimations = reel.apertures.map((aperture, a) => {
@@ -199,7 +205,14 @@ export default class Grid {
         }))
     }
 
-    getHoldAndSpinAnimations(reels, symbols, stickyReels, stickyPositions, spinAll, textOverlays) {
+    getHoldAndSpinAnimations(reels, symbols, {
+        spinAll,
+        stickyReels,
+        stickyPositions,
+        textOverlays,
+        frames,
+        backgrounds
+    }) {
         return reels.map(
             (reel, r) => reel.apertures.map((aperture, a) => (async () => {
                 if (!spinAll) {
@@ -211,7 +224,11 @@ export default class Grid {
                 for (let i = 0; i < numRandomSymbolsToAdd; i++) {
                     await this.transformSymbol(r, a, randomSymbols[i], 8 + (numRandomSymbolsToAdd - i) * 2);
                 }
-                await this.transformSymbol(r, a, symbols[r][a], 5, textOverlays?.[r]?.[a]);
+                await this.transformSymbol(r, a, symbols[r][a], 5, {
+                    textOverlay: textOverlays ?.[r]?.[a],
+                    frame: frames ?.[r]?.[a],
+                    background: backgrounds ?.[r]?.[a]
+                });
             })())
         ).flat()
     }
@@ -244,13 +261,30 @@ export default class Grid {
         reel.container.addChild(symbol.container);
     }
 
-    addSymbolToTopOfReel(reelNum, symbolName, height, textOverlay) {
+    addSymbolToTopOfReel(reelNum, symbolName, height = this.symbolHeight, {
+        textOverlay,
+        frame,
+        background
+    } = {}) {
         const reel = this.reels[reelNum];
         const symbol = this.getSymbol(symbolName, height);
         symbol.container.y = reel.apertures[0].container.y - symbol.height;
         reel.apertures.unshift(symbol);
         reel.container.addChild(symbol.container);
-        this.addTextToSymbol(reelNum, 0, textOverlay)
+        this.addTextBackgroundAndOverlaysToSymbol(reelNum, 0, {textOverlay, frame, background});
+    }
+
+    addTextBackgroundAndOverlaysToSymbol(reelNum, symbolNum, {textOverlay, frame, background} = {}) {
+        if (textOverlay) {
+            if (typeof textOverlay == "string") this.addTextToSymbol(reelNum, 0, textOverlay)
+            else this.addTextToSymbol(reelNum, 0, textOverlay.text, textOverlay.textStyle);
+        }
+        if (frame) {
+            if (typeof frame == "boolean") this.addFrameToSymbol(reelNum, 0);
+            else this.addFrameToSymbol(reelNum, 0, frame.colour, frame.width);
+        }
+        if (background)
+            this.addBackgroundToSymbol(reelNum, 0, background);
     }
 
     getSymbol(symbolName, height) {
@@ -367,7 +401,7 @@ export default class Grid {
         aperture.overlayText.destroy({children: true});
     }
 
-    transformSymbol(reelNum, symbolNum, newSymbolName, speed, textOverlay) {
+    transformSymbol(reelNum, symbolNum, newSymbolName, speed, {textOverlay, frame, background} = {}) {
         return new Promise((resolve, reject) => {
             const reel = this.reels[reelNum];
             const oldAperture = reel.apertures[symbolNum];
@@ -387,7 +421,7 @@ export default class Grid {
             newAperture.container.mask = mask;
             reel.container.addChild(newAperture.container);
             reel.apertures[symbolNum] = newAperture;
-            this.addTextToSymbol(reelNum, symbolNum, textOverlay);
+            this.addTextBackgroundAndOverlaysToSymbol(reelNum, symbolNum, {textOverlay, frame, background});
             const oldSymbol = oldAperture.symbol;
             const animateOldSymbol = moveElement({
                 element: oldSymbol,
