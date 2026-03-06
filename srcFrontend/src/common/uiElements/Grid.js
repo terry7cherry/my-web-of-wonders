@@ -271,20 +271,20 @@ export default class Grid {
         symbol.container.y = reel.apertures[0].container.y - symbol.height;
         reel.apertures.unshift(symbol);
         reel.container.addChild(symbol.container);
-        this.addTextBackgroundAndOverlaysToSymbol(reelNum, 0, {textOverlay, frame, background});
+        this.addTextBackgroundAndFrameToSymbol(reelNum, 0, {textOverlay, frame, background});
     }
 
-    addTextBackgroundAndOverlaysToSymbol(reelNum, symbolNum, {textOverlay, frame, background} = {}) {
+    addTextBackgroundAndFrameToSymbol(reelNum, symbolNum, {textOverlay, frame, background} = {}) {
         if (textOverlay) {
-            if (typeof textOverlay == "string") this.addTextToSymbol(reelNum, 0, textOverlay)
-            else this.addTextToSymbol(reelNum, 0, textOverlay.text, textOverlay.textStyle);
+            if (typeof textOverlay == "string") this.addTextToSymbol(reelNum, symbolNum, textOverlay)
+            else this.addTextToSymbol(reelNum, symbolNum, textOverlay.text, textOverlay.textStyle);
         }
         if (frame) {
-            if (typeof frame == "boolean") this.addFrameToSymbol(reelNum, 0);
-            else this.addFrameToSymbol(reelNum, 0, frame.colour, frame.width);
+            if (typeof frame == "boolean") this.addFrameToSymbol(reelNum, symbolNum);
+            else this.addFrameToSymbol(reelNum, symbolNum, frame.colour, frame.width);
         }
         if (background)
-            this.addBackgroundToSymbol(reelNum, 0, background);
+            this.addBackgroundToSymbol(reelNum, symbolNum, background);
     }
 
     getSymbol(symbolName, height) {
@@ -425,7 +425,7 @@ export default class Grid {
             newAperture.container.mask = mask;
             reel.container.addChild(newAperture.container);
             reel.apertures[symbolNum] = newAperture;
-            this.addTextBackgroundAndOverlaysToSymbol(reelNum, symbolNum, {textOverlay, frame, background});
+            this.addTextBackgroundAndFrameToSymbol(reelNum, symbolNum, {textOverlay, frame, background});
             const animateOldSymbol = moveElement({
                 element: oldAperture.container,
                 newX: oldAperture.container.x,
@@ -597,7 +597,7 @@ export default class Grid {
                 const symbol = this.getSymbol(symbolName, symbolHeight);
                 symbol.container.y = -symbol.height * (i + 1);
                 reel.apertures.unshift(symbol);
-                this.addTextBackgroundAndOverlaysToSymbol(reelNum, 0, {
+                this.addTextBackgroundAndFrameToSymbol(reelNum, 0, {
                     textOverlay: newTextOverlays?.[i],
                     frame: newFrames?.[i],
                     background: newBackgrounds?.[i]
