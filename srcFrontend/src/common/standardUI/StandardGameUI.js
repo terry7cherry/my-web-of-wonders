@@ -206,6 +206,7 @@ export default class StandardGameUI {
         this.bottomTickerContainer = new PIXI.Container();
         this.bottomTickerContainer.x = 0;
         this.bottomTickerContainer.y = this.layout.height - 50;
+        this.bottomTickerContainer.maxWidth = this.layout.width;
         this.app.stage.addChild(this.bottomTickerContainer);
 
         this.balance = new Ticker({

@@ -103,7 +103,7 @@ export default class PhaseUI {
             parent: bottomTickerContainer,
             width: 200,
             height: 20,
-            x: this.layout.width - 200,
+            x: bottomTickerContainer.maxWidth - 200,
             pauseScale: 0,
             textFormat: {fontFamily: "Arial", fontSize: 100, fill: tickerTextColour ?? 0x000000},
         });
@@ -117,7 +117,7 @@ export default class PhaseUI {
             parent: bottomTickerContainer,
             width: 200,
             height: 20,
-            x: (this.layout.width - 200) / 2,
+            x: (bottomTickerContainer.maxWidth - 200) / 2,
             pauseScale: 3,
             textFormat: {fontFamily: "Arial", fontSize: 100, fill: tickerTextColour ?? 0x000000},
         });
