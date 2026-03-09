@@ -1,3 +1,4 @@
+import * as PIXI from "pixi.js";
 import StandardGameUI from "../common/standardUI/StandardGameUI.js"
 import PhaseUI from "../common/uiElements/PhaseUI.js";
 import Button from "../common/uiElements/Button.js";
