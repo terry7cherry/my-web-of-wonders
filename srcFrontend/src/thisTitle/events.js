@@ -38,15 +38,13 @@ export default {
     },
     "freeSpinsTrigger": async ({spins, multiplier}, game) => {
         game.shell.sessionStats.increment("freespins-sessions");
+        await game.ui.ticker.updateText(`${spins} free spins awarded${
+            multiplier !== 1
+                ? `with x${multiplier} multiplier`
+                : ``
+        }!`);
         await game.ui.setPhase("freeSpins");
-        await Promise.all([
-            game.ui.currentPhase.spinsLeft.update(spins, true),
-            game.ui.ticker.updateText(`${spins} free spins awarded${
-                multiplier !== 1
-                    ? `with x${multiplier} multiplier`
-                    : ``
-            }!`)
-        ]);
+        await game.ui.currentPhase.spinsLeft.update(spins, true);
     },
     "freeSpinsRetrigger": async ({spins, multiplier}, game) => {
         await Promise.all([
