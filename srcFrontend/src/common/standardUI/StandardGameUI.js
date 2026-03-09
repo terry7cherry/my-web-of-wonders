@@ -350,7 +350,7 @@ export default class StandardGameUI {
         });
     }
 
-    updateUiAndStateToMatchSession(session, state) {
+    async updateUiAndStateToMatchSession(session, state) {
         state.bet = session.bet;
         state.betType = session.betType;
         state.rtp = session.rtp;

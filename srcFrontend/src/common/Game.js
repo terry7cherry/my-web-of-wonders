@@ -80,7 +80,7 @@ export default class Game {
         selector.addEventListener("change", async () => {
             await this.setBetType(selector.value);
             this.session = await ApiClient.getNewSession(this.session, this.state.bet, this.state.betType, this.state.rtp);
-            this.ui.updateUiAndStateToMatchSession(this.session, this.state);
+            await this.ui.updateUiAndStateToMatchSession(this.session, this.state);
         });
     }
 
@@ -98,7 +98,7 @@ export default class Game {
             this.ui.destroy();
             await this.getMathsAndCreateUI();
             this.session = await ApiClient.getNewSession(this.session, this.state.bet, this.state.betType, this.state.rtp);
-            this.ui.updateUiAndStateToMatchSession(this.session, this.state);
+            await this.ui.updateUiAndStateToMatchSession(this.session, this.state);
         })
     }
 
@@ -117,7 +117,7 @@ export default class Game {
             document.getElementById("rtp-selector").value = this.state.rtp;
             await this.setBetType(this.session.betType);
             //this.session = await ApiClient.getNewSession(this.session, this.session.bet, this.session.betType, this.state.rtp);
-            this.ui.updateUiAndStateToMatchSession(this.session, this.state);
+            await this.ui.updateUiAndStateToMatchSession(this.session, this.state);
             rnStream = rnStream.split("|").slice(1).join("|");
             await this.play({rnStream});
         }).bind(this));

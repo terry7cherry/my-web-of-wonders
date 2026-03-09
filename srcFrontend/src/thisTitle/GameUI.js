@@ -104,8 +104,8 @@ export default class GameUI extends StandardGameUI {
         // (You must ensure you have created the panel by passing a height/width for it in the layout property for the relevant PhaseUI constructor.)
     }
 
-    updateUiAndStateToMatchSession(session, state) {
-        super.updateUiAndStateToMatchSession(session, state);
+    async updateUiAndStateToMatchSession(session, state) {
+        await super.updateUiAndStateToMatchSession(session, state);
         // Use this method to update the UI to match the current session.
         // Where you have persistent game elements reflected in the UI, you will update the UI elements when
         // events trigger that should change them, and your changes will persist between spins.
