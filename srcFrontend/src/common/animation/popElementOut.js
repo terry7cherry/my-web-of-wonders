@@ -1,16 +1,10 @@
-const getElementPosition = (({element, targetParent}) => {
-    if (element.parent === targetParent) return {x: element.x, y: element.y}
-    const parentPosition = getElementPosition({element: element.parent, targetParent});
-    return {
-        x: element.x + parentPosition.x,
-        y: element.y + parentPosition.y
-    }
-})
+import getCoordinatesInParent from "./getCoordinatesInParent.js";
+
 export default ({
                     element,
                     targetParent
                 }) => {
-    const {x, y} = getElementPosition({element, targetParent});
+    const {x, y} = getCoordinatesInParent({element, targetParent});
     element.x = x;
     element.y = y;
     element.parent.removeChild(element);
