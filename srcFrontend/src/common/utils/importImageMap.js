@@ -1,8 +1,8 @@
 import * as PIXI from "pixi.js";
 
 export default async () => {
-    // Vite: get URLs for all images in /src/symbols at build time
-    const modules = import.meta.glob("../../thisTitle/symbols/*.{png,jpg,jpeg,webp,gif,svg}", {
+    // Vite: get URLs for all images in /src/images at build time
+    const modules = import.meta.glob("../../thisTitle/images/*.{png,jpg,jpeg,webp,gif,svg}", {
         eager: true,
         query: '?url',
         import: 'default'
