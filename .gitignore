@@ -44,13 +44,12 @@ compile_commands.json
 # VS Code
 .vscode/
 # JetBrains (CLion etc)
-.idea/workspace.xml
-.idea/editor.xml
-.idea/shelf/
-.idea/usage.statistics.xml
-.idea/**/dataSources/
-.idea/**/httpRequests/
-.idea/**/dynamic.xml
+.idea
+!.idea/runConfigurations
+!.idea/dictionaries
+!.idea/codeStyles
+!.idea/inspectionProfiles
+!.idea/jsLinters
 # vcpkg
 vcpkg_installed/
 # OS
