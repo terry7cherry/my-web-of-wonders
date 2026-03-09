@@ -212,6 +212,7 @@ export default class Game {
                 seed: newSeed
             } = await ApiClient.getNewGameCycle(this.session, forceIndex, seed, rnStream);
             this.session = session;
+            await this.ui.updateUiAndStateToMatchSession(session, this.state);
             await this.displayGameRound(events, winnings, newSeed, forceName);
         } catch (e) {
             await this.ui.ticker.updateText(e.message);
