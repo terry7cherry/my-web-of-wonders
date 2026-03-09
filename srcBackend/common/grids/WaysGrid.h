@@ -21,7 +21,7 @@ public:
 	~WaysGrid();
 
 	// implements Grid::reset(); and WaysGrid::winVectorReset()
-	void reset();
+	void reset() override;
 
 	/************************************/
 	// Win methods
@@ -42,7 +42,7 @@ public:
 	//	winPosVect[reel][row]: 0= no win, 1= winning symbol, 2= winning wild
 	std::vector<std::vector<std::vector<int>>> getWinPosVect(void) const;
 
-	void applySpin(const SpinResult& spinResult, bool getLockedReels = false);
+	void applySpin(const SpinResult& spinResult, bool getLockedReels = false) override;
 
 private:
 	std::vector<std::unique_ptr<WaysWin>> winsToProcess;

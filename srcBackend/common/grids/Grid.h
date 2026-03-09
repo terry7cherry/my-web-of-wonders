@@ -34,6 +34,8 @@ protected:
     std::vector<size_t> cascadedSymbolsPerReel;
 
 public:
+    virtual ~Grid() = default;
+
     /************************************/
     // generic grid details
     /************************************/
@@ -98,7 +100,7 @@ public:
     /**
      * @brief Set all grid symbols to `SYMBOL_NONE` (max uint8_t value) and reset multipliers to 1.
      */
-    void reset();
+    virtual void reset();
 
     /**
      * @brief Set all grid multipliers to 1.
@@ -116,7 +118,7 @@ public:
      * @param spinResult A reference to a SpinResult object that contains the details of the spin to be applied.
      * @param getLockedReels Reels marked as locked will remain unchanged unless getLockedReels is set to true.
      */
-    void applySpin(const SpinResult& spinResult, bool getLockedReels = false);
+    virtual void applySpin(const SpinResult& spinResult, bool getLockedReels = false);
 
     /**
      * @brief Set reel symbols using reel set and stop index.

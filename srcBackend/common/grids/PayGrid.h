@@ -45,7 +45,7 @@ public:
 	/**
 	 * @brief Reset symbols in parent Grid and
 	 */
-	void reset();
+	void reset() override;
 
 	static unsigned int combineMultipliers(unsigned int previousMultiplier, unsigned int newMultiplier,
 	                                       MultipliersCombineType combineType =
