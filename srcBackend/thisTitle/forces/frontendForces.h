@@ -7,17 +7,17 @@ namespace Forces
 {
     const std::vector frontendForces = {
         FrontendForce(
-            "Free Spins",
+            "Eggwakening",
             [](const GameCycle& cycle)
             {
                 return cycle.fsTrigger;
             }
         ),
         FrontendForce(
-            "50 Free Spins",
+            "Super Eggwakening",
             [](const GameCycle& cycle)
             {
-                return cycle.fsInitialSpins == 50;
+                return cycle.fsCollectorTrigger;
             }
         ),
         FrontendForce(

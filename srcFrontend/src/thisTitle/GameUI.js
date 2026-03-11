@@ -7,6 +7,8 @@ import NiceText from "../common/uiElements/NiceText.js";
 import Panel from "../common/uiElements/Panel.js";
 import MaskedContainer from "../common/uiElements/MaskedContainer.js";
 import Ticker from "../common/uiElements/Ticker.js";
+import collectorPositions from "./collectorPositions.js";
+import moveElement from "../common/animation/moveElement.js";
 
 /**
  * When editing the constructor parameters for this class, particularly the layout, colours, and gridOptions objects,
@@ -20,10 +22,10 @@ export default class GameUI extends StandardGameUI {
             {
                 // Uncomment these and edit the values to add outer panels to the game UI.
                 // These panels will be present throughout all phases of the game.
-                // topPanelHeight: 100,
-                // leftPanelWidth: 100,
-                // rightPanelWidth: 100,
-                // bottomPanelHeight: 100,
+                topPanelHeight: 120,
+                leftPanelWidth: 120,
+                rightPanelWidth: 120,
+                bottomPanelHeight: 120,
             },
             {
                 // Uncomment these to set the colours of panels created above.
@@ -40,10 +42,8 @@ export default class GameUI extends StandardGameUI {
                     {
                         // Uncomment these and edit the values to create phase UI panels.
                         // These panels will only be present during this phase.
-                        // topPanelHeight: 100,
-                        // leftPanelWidth: 100,
-                        // rightPanelWidth: 100,
-                        // bottomPanelHeight: 100
+                        symbolHeight: 120,
+                        reelWidth: 120
                     },
                     {
                         // Changes the colour of the entire background for the duration of this phase.
@@ -61,12 +61,15 @@ export default class GameUI extends StandardGameUI {
                         // holdAndSpinBlankSymbols: maths.holdAndSpinBlankSymbols,
                         // weightedDisplayReelSet: maths.holdAndSpinDisplayReelSet,
                         // simultaneousWinLineAnimations: true,
+
                     }),
                 "freeSpins": new PhaseUI(
                     "Free Spins",
-                    // If hasSpins is true, a "spins left" counter will be shown at the bottom of the screen.
                     true,
-                    {},
+                    {
+                        symbolHeight: 120,
+                        reelWidth: 120
+                    },
                     {backgroundColour: 0x11a878},
                     {
                         suspenseSymbol: maths.suspenseSymbol,
@@ -79,6 +82,24 @@ export default class GameUI extends StandardGameUI {
 
     async init(dependencies) {
         await super.init(dependencies);
+        const mainCollectorTexture = this.imageMap.mainCollector;
+        this.mainCollector = new Image({
+            texture: mainCollectorTexture,
+            width: 100,
+            height: 100,
+            x: -100,
+            y: -100,
+            parent: this.app.stage,
+        })
+        //this.mainCollector = new PIXI.Sprite(mainCollectorTexture);
+        //this.mainCollector.size = 100;
+        //this.mainCollector.scale.set(
+        //    this.mainCollector.size / this.mainCollector.width,
+        //    this.mainCollector.size / this.mainCollector.height
+        //);
+        //this.mainCollector.x = -this.mainCollector.size;
+        //this.mainCollector.y = -this.mainCollector.size;
+        //this.app.stage.addChild(this.mainCollector);
         // Add UI elements to this.topPanel, this.bottomPanel, this.leftPanel, or this.rightPanel here. E.g.
         // this.topPanel.text = new NiceText({
         //     width: 800,
@@ -106,6 +127,11 @@ export default class GameUI extends StandardGameUI {
 
     async updateUiAndStateToMatchSession(session, state) {
         await super.updateUiAndStateToMatchSession(session, state);
+        if (state.mainCollectorPosition !== session.mainCollectorPosition) {
+            state.mainCollectorPosition = session.mainCollectorPosition;
+            const {x, y} = collectorPositions(this)[state.mainCollectorPosition];
+            await moveElement({element: this.mainCollector, newX: x, newY: y, totalFrames: 50});
+        }
         // Use this method to update the UI to match the current session.
         // Where you have persistent game elements reflected in the UI, you will update the UI elements when
         // events trigger that should change them, and your changes will persist between spins.

@@ -1,13 +1,13 @@
 #pragma once
 
-#include "../../common/grids/LineGrid.h"
+#include "../CustomGrid.h"
 #include "../../common/gameMaths/GameMaths.h"
 #include "../../common/state/GameCycleBase.h"
 #include "./GameSession.h"
 
 struct GameCycleReused
 {
-    LineGrid grid; // Use a different Grid class if necessary, e.g., WaysGrid.
+    CustomGrid grid; // Use a different Grid class if necessary, e.g., WaysGrid.
 
     // Add other members here that are very costly to initialise.
     // Initialise them once either in the GameCycleReused initializer list or in the constructor body.
@@ -28,7 +28,7 @@ struct GameCycleReused
 
 struct GameCycle : GameCycleBase
 {
-    LineGrid& grid; // Also update if using a different Grid class.
+    CustomGrid& grid; // Also update if using a different Grid class.
     unsigned int totalWin = 0;
     unsigned int baseGameWin = 0;
     unsigned int freeSpinsWin = 0;
@@ -36,7 +36,12 @@ struct GameCycle : GameCycleBase
     unsigned int fsRetriggerSpins = 0;
     unsigned int fsSpinsPlayed = 0;
     unsigned int baseNumScatters = 0;
+    bool baseCoinsRecorded = false;
+    bool basePayAnywhereRecorded = false;
+    bool fsCollectorsActivated[4] = {};
     bool fsTrigger = false;
+    bool fsCollectorTrigger = false;
+    unsigned int fsInitialSecondaryCollectors = 0;
     // Add other game state variables here.
 
     explicit GameCycle(GameSession& session, GameCycleReused& reused, const GameMaths& maths [[maybe_unused]])

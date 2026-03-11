@@ -7,6 +7,9 @@
 #include <fstream>
 #include <sstream>
 
+#include "../events/BaseCoinsPhaseCompleteEvent.h"
+#include "../events/BasePayAnywherePhaseCompleteEvent.h"
+
 namespace Stats
 {
     void outputStats(const uint64_t simGames, const std::string& betType, const int rtp, const int bet,
@@ -45,6 +48,8 @@ namespace Stats
         GameCycleCompleteEvent::finalReport(buffer, simGames, bet);
         BaseGameCompleteEvent::finalReport(buffer, simGames, bet);
         FreeSpinsCompleteEvent::finalReport(buffer, simGames, bet);
+        BasePayAnywherePhaseCompleteEvent::finalReport(buffer, simGames, bet);
+        BaseCoinsPhaseCompleteEvent::finalReport(buffer, simGames, bet);
         // You can add other phases (features/bonuses etc) to this report.
         // Ensure you have created an event for your phase derived from the PhaseCompleteEvent class.
         // (Copy from common/events/BaseGameCompleteEvent.h, for example).
@@ -63,6 +68,8 @@ namespace Stats
         GameCycleCompleteEvent::maxWinReport(buffer, simGames, bet);
         BaseGameCompleteEvent::maxWinReport(buffer, simGames, bet);
         FreeSpinsCompleteEvent::maxWinReport(buffer, simGames, bet);
+        BasePayAnywherePhaseCompleteEvent::maxWinReport(buffer, simGames, bet);
+        BaseCoinsPhaseCompleteEvent::maxWinReport(buffer, simGames, bet);
         // Follow instructions in outputGeneralStatsReport to add stats for other phases here.
     }
 
