@@ -85,6 +85,62 @@ void WinAnalysisEvent::consoleReportRTP(const uint64_t simGames,
     }
 }
 
+void WinAnalysisEvent::reportRTP(ReportBuffer& buffer,
+                                 const uint64_t simGames,
+                                 const int bet,
+                                 const std::vector<std::string>& symbolNames)
+{
+    // Determine OAK range present
+    std::size_t maxOAK = 0;
+    std::size_t minOAK = PayTableMeter::MAX_OAK;
+    for (int symbolId = 0; symbolId < static_cast<int>(symbolNames.size()); ++symbolId)
+    {
+        for (std::size_t oak = 1; oak <= PayTableMeter::MAX_OAK; ++oak)
+        {
+            if (payTableWinnings.global[symbolId][oak - 1] > 0)
+            {
+                if (oak > maxOAK) maxOAK = oak;
+                if (oak < minOAK) minOAK = oak;
+            }
+        }
+    }
+    if (maxOAK == 0)
+    {
+        minOAK = 1;
+        maxOAK = 1;
+    }
+
+    std::vector<std::string> headers;
+    headers.emplace_back("Symbol");
+    for (std::size_t oak = minOAK; oak <= maxOAK; ++oak)
+    {
+        headers.emplace_back(std::to_string(static_cast<unsigned long long>(oak)) + " OAK");
+    }
+
+    auto pct2 = [](long double v)
+    {
+        char s[64];
+        std::snprintf(s, sizeof(s), "%.2Lf%%", v);
+        return std::string(s);
+    };
+
+    for (std::size_t symbolId = 0; symbolId < symbolNames.size(); ++symbolId)
+    {
+        std::vector<std::string> row;
+        row.push_back(symbolNames[symbolId]);
+        for (std::size_t oak = minOAK; oak <= maxOAK; ++oak)
+        {
+            const auto winnings = payTableWinnings.global[symbolId][oak - 1];
+            long double pct = 0.0L;
+            if (simGames > 0 && bet > 0)
+                pct = static_cast<long double>(winnings) * 100.0L /
+                    (static_cast<long double>(simGames) * bet);
+            row.push_back(pct2(pct));
+        }
+        buffer.addRow("PAYTABLE RTP REPORT", headers, row);
+    }
+}
+
 std::string WinAnalysisEvent::prettyPrint(const std::string& baseIndent)
 {
     Json::Value jsonEvent = toJson();

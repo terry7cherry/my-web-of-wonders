@@ -1,33 +1,49 @@
-#include "StatsOutput.h"
 
 #include "../../common/events/BaseGameCompleteEvent.h"
 #include "../../common/events/GameCycleCompleteEvent.h"
 #include "../../common/events/FreeSpinsCompleteEvent.h"
 #include "../../common/events/WinAnalysisEvent.h"
 #include "../../common/utils/utils.h"
+#include <fstream>
+#include <sstream>
 
 namespace Stats
 {
     void outputStats(const uint64_t simGames, const std::string& betType, const int rtp, const int bet,
                      const std::vector<std::string>& symbolNames, const unsigned int currentWinCap)
     {
-        outputConsoleStats(simGames, bet, symbolNames, currentWinCap);
-        outputFileStats(betType, rtp, bet, simGames);
+        ReportBuffer buffer(simGames, betType, rtp, bet);
+
+        // File outputs for distributions (unchanged behaviour)
+        outputDistributionStats(betType, rtp, bet, simGames, buffer.createSubFolder("Distributions"));
+
+        addGeneralStatsReport(buffer, simGames, bet);
+
+        // Max win from phases
+        GameCycleCompleteEvent::maxWinReport(buffer, simGames, bet);
+        BaseGameCompleteEvent::maxWinReport(buffer, simGames, bet);
+        FreeSpinsCompleteEvent::maxWinReport(buffer, simGames, bet);
+
+        // Paytable RTP
+        WinAnalysisEvent::reportRTP(buffer, simGames, bet, symbolNames);
+
+        // Spins reports (free spins)
+        const uint64_t totalBet = static_cast<uint64_t>(simGames) * static_cast<uint64_t>(bet);
+        FreeSpinsCompleteEvent::appendInitialSpinsReport(buffer, totalBet);
+        FreeSpinsCompleteEvent::appendFinalSpinsReport(buffer, totalBet);
+
+        // Win Cap report via shared helper
+        addWinCapReport(buffer, simGames, bet, currentWinCap);
+
+        // Print to console and write CSV
+        buffer.printConsole();
+        buffer.writeCsv();
     }
 
-    void outputConsoleStats(const uint64_t simGames, const int bet,
-                            const std::vector<std::string>& symbolNames, const unsigned int currentWinCap)
+    void outputDistributionStats(const std::string& betType, const int rtp, const int bet,
+                                 const uint64_t simGames,
+                                 const std::filesystem::path& outputFolder)
     {
-        outputGeneralStatsReport(simGames, bet);
-        outputPayTableRTPReport(simGames, bet, symbolNames);
-        outputMaxWinReport(simGames, bet);
-        outputSpinsReport(simGames, bet);
-        outputWinCappingReport(simGames, bet, currentWinCap);
-    }
-
-    void outputFileStats(const std::string& betType, const int rtp, const int bet, const uint64_t simGames)
-    {
-        const std::filesystem::path outputFolder = createOutputFolder(betType, rtp, bet, simGames);
         GameCycleCompleteEvent::outputDistribution(betType, rtp, bet, false, true, outputFolder);
         BaseGameCompleteEvent::outputDistribution(betType, rtp, bet, false, true, outputFolder);
         FreeSpinsCompleteEvent::outputDistribution(betType, rtp, bet, false, true, outputFolder);
@@ -38,14 +54,11 @@ namespace Stats
         // Call outputDistribution on the new event above.
     }
 
-    void outputGeneralStatsReport(const uint64_t simGames, const int bet)
+    void addGeneralStatsReport(ReportBuffer& buffer, const uint64_t simGames, const int bet)
     {
-        printf("\n\nGENERAL STATS REPORT\n");
-        std::printf("%20s,%12s,%12s,%12s,%12s,%12s,%12s\n",
-                    "Phase", "RTP", "HitRate", "AvgPay", "AvgWin", "WinChance", "WinRate");
-        GameCycleCompleteEvent::finalReport(simGames, bet);
-        BaseGameCompleteEvent::finalReport(simGames, bet);
-        FreeSpinsCompleteEvent::finalReport(simGames, bet);
+        GameCycleCompleteEvent::finalReport(buffer, simGames, bet);
+        BaseGameCompleteEvent::finalReport(buffer, simGames, bet);
+        FreeSpinsCompleteEvent::finalReport(buffer, simGames, bet);
         // You can add other phases (features/bonuses etc) to this report.
         // Ensure you have created an event for your phase derived from the PhaseCompleteEvent class.
         // (Copy from common/events/BaseGameCompleteEvent.h, for example).
@@ -53,35 +66,40 @@ namespace Stats
         // Call finalReport on the new event above.
     };
 
-    void outputPayTableRTPReport(const uint64_t simGames, const int bet,
-                                 const std::vector<std::string>& symbolNames)
+    void addPayTableRTPReport(ReportBuffer& buffer, const uint64_t simGames, const int bet,
+                              const std::vector<std::string>& symbolNames)
     {
-        WinAnalysisEvent::consoleReportRTP(simGames, bet, symbolNames);
+        WinAnalysisEvent::reportRTP(buffer, simGames, bet, symbolNames);
     }
 
-    void outputMaxWinReport(const uint64_t simGames, const int bet)
+    void addMaxWinReport(ReportBuffer& buffer, const uint64_t simGames, const int bet)
     {
-        printf("\n\nMAX WIN REPORT\n");
-        std::printf("%20s,%12s,%12s,%12s\n",
-                    "Phase", "MaxWin (xBet)", "HitRate", "EventRate");
-        GameCycleCompleteEvent::maxWinReport(simGames, bet);
-        BaseGameCompleteEvent::maxWinReport(simGames, bet);
-        FreeSpinsCompleteEvent::maxWinReport(simGames, bet);
+        GameCycleCompleteEvent::maxWinReport(buffer, simGames, bet);
+        BaseGameCompleteEvent::maxWinReport(buffer, simGames, bet);
+        FreeSpinsCompleteEvent::maxWinReport(buffer, simGames, bet);
         // Follow instructions in outputGeneralStatsReport to add stats for other phases here.
     }
 
-    void outputSpinsReport(const uint64_t simGames, const int bet)
+    void addSpinsReport(ReportBuffer& buffer, const uint64_t simGames, const int bet)
     {
-        printf("\n\nSPINS REPORT\n");
-        std::printf("\nPhase: Free Spins\n");
-        FreeSpinsCompleteEvent::outputInitialSpinsReport(simGames * bet);
-        FreeSpinsCompleteEvent::outputFinalSpinsReport(simGames * bet);
+        const uint64_t totalBet = static_cast<uint64_t>(simGames) * static_cast<uint64_t>(bet);
+        FreeSpinsCompleteEvent::appendInitialSpinsReport(buffer, totalBet);
+        FreeSpinsCompleteEvent::appendFinalSpinsReport(buffer, totalBet);
         // To add other phases here the event must derive from SpinsCompleteTemplate.
         // (Copy from FreeSpinsComplete event.)
         // Then follow instructions in outputGeneralStatsReport.
     }
 
-    void outputWinCappingReport(const uint64_t simGames, const int bet, const unsigned int currentWinCap)
+    void outputWinCappingReport(ReportBuffer& buffer, const uint64_t simGames, const int bet,
+                                const unsigned int currentWinCap)
+    {
+        addWinCapReport(buffer, simGames, bet, currentWinCap);
+    }
+
+    void addWinCapReport(ReportBuffer& buffer,
+                         const uint64_t simGames,
+                         const int bet,
+                         const unsigned int currentWinCap)
     {
         const unsigned int winCap[18] = {
             2'000, 3'000, 4'000, 5'000, 6'000, 7'000, 8'000, 9'000, 10'000, 11'000, 12'000, 13'000, 14'000,
@@ -89,8 +107,7 @@ namespace Stats
         };
         int scaledWinCap[18] = {};
         const unsigned int currentScaledCap = currentWinCap * bet;
-        for (size_t i = 0; i < 18; i++)
-            scaledWinCap[i] = winCap[i] * bet;
+        for (int i = 0; i < 18; ++i) scaledWinCap[i] = winCap[i] * bet;
         uint64_t hitCount[18] = {};
         uint64_t currentCapHitCount = 0;
         uint64_t cappedTotalWin[18] = {};
@@ -98,91 +115,89 @@ namespace Stats
         uint64_t totalWin = 0;
         for (const auto& [win, count] : GameCycleCompleteEvent::eventWinDistribution.getSortedData(true))
         {
-            totalWin += win * count;
+            totalWin += static_cast<uint64_t>(win) * count;
             if (currentWinCap > 0)
             {
-                if (win >= currentScaledCap)
+                if (win >= static_cast<int>(currentScaledCap))
                 {
                     currentCapHitCount += count;
-                    currentCapTotalWin += currentScaledCap * count;
+                    currentCapTotalWin += static_cast<uint64_t>(currentScaledCap) * count;
                 }
                 else
-                    currentCapTotalWin += win * count;
+                    currentCapTotalWin += static_cast<uint64_t>(win) * count;
             }
-            for (int i = 0; i < 18; i++)
+            for (int i = 0; i < 18; ++i)
             {
                 if (win >= scaledWinCap[i])
                 {
                     hitCount[i] += count;
-                    cappedTotalWin[i] += scaledWinCap[i] * count;
+                    cappedTotalWin[i] += static_cast<uint64_t>(scaledWinCap[i]) * count;
                 }
                 else
-                    cappedTotalWin[i] += win * count;
+                    cappedTotalWin[i] += static_cast<uint64_t>(win) * count;
             }
         }
 
+        // Headers
+        std::vector<std::string> headers;
+        headers.emplace_back("");
+        if (currentWinCap > 0) headers.emplace_back(addThousandsSeparator(currentWinCap));
+        for (int i = 0; i < 18; ++i) headers.emplace_back(addThousandsSeparator(winCap[i]));
 
-        std::printf("\n\nWIN CAP REPORT\n\n");
-        std::printf("%14s", "WinCap (xBet)");
-        if (currentWinCap > 0)
-            std::printf("%14s |", addThousandsSeparator(currentWinCap).c_str());
-        for (int i = 0; i < 18; i++)
-            std::printf("%14s", addThousandsSeparator(winCap[i]).c_str());
-        std::printf("\n");
-        std::printf("%14s", "Capped RTP");
-        if (currentWinCap > 0)
-            std::printf("%13.2f%% |", 100.0 * currentCapTotalWin / simGames / bet);
-        for (int i = 0; i < 18; i++)
-            std::printf("%13.2f%%", 100.0 * cappedTotalWin[i] / simGames / bet);
-        std::printf("\n");
-        std::printf("%14s", "RTP lost");
-        if (currentWinCap > 0)
-            std::printf("%13.3f%% |", 100.0 * (totalWin - currentCapTotalWin) / simGames / bet);
-        for (int i = 0; i < 18; i++)
-            std::printf("%13.3f%%", 100.0 * (totalWin - cappedTotalWin[i]) / simGames / bet);
-        std::printf("\n");
-        std::printf("%14s", "Capped 1 in");
-        if (currentWinCap > 0)
-            std::printf("%14s |", currentCapHitCount
-                                      ? addThousandsSeparator(simGames / currentCapHitCount).c_str()
-                                      : "Inf");
-        for (int i = 0; i < 18; i++)
-            std::printf("%14s", hitCount[i] ? addThousandsSeparator(simGames / hitCount[i]).c_str() : "Inf");
-        std::printf("\n");
-    }
+        auto pct = [&](long double v)
+        {
+            char s[64];
+            std::snprintf(s, sizeof(s), "%.2Lf%%", v);
+            return std::string(s);
+        };
+        auto pct3 = [&](long double v)
+        {
+            char s[64];
+            std::snprintf(s, sizeof(s), "%.3Lf%%", v);
+            return std::string(s);
+        };
 
-    std::filesystem::path createOutputFolder(const std::string& betType, const int rtp, const int bet,
-                                             const uint64_t simGames)
-    {
-        namespace fs = std::filesystem;
-
-        const fs::path distributionsRoot = fs::path(GAME_SOURCE_DIR) / "Simulations";
-        fs::create_directories(distributionsRoot);
-
-        const auto now = std::chrono::system_clock::now();
-        const std::time_t t = std::chrono::system_clock::to_time_t(now);
-
-        std::tm tm{};
-#if defined(_WIN32)
-        localtime_s(&tm, &t);
-#else
-        localtime_r(&t, &tm);
-#endif
-
-        std::ostringstream oss;
-        oss << std::put_time(&tm, "%Y-%m-%d_%H.%M");
-
-        if (simGames > BILLION)
-            oss << "_" << simGames / BILLION << "b";
-        else
-            oss << "_" << simGames / MILLION << "m";
-
-        oss << "_RTP" << rtp << "_bet" << bet;
-
-        if (betType != "default") oss << "_" << betType;
-
-        const fs::path outputFolder = distributionsRoot / oss.str() / "Distributions";
-        fs::create_directories(outputFolder);
-        return outputFolder;
+        // Capped RTP
+        {
+            std::vector<std::string> row;
+            row.emplace_back("Capped RTP");
+            if (currentWinCap > 0)
+                row.emplace_back(pct(
+                    100.0L * static_cast<long double>(currentCapTotalWin) / (simGames * static_cast<long
+                        double>(bet))));
+            for (int i = 0; i < 18; ++i)
+                row.emplace_back(pct(
+                    100.0L * static_cast<long double>(cappedTotalWin[i]) / (simGames * static_cast<long
+                        double>(bet))));
+            buffer.addRow("WIN CAP REPORT", headers, row);
+        }
+        // RTP lost
+        {
+            std::vector<std::string> row;
+            row.emplace_back("RTP lost");
+            if (currentWinCap > 0)
+                row.emplace_back(pct3(
+                    100.0L * static_cast<long double>(totalWin - currentCapTotalWin) / (simGames * static_cast
+                        <long double>(bet))));
+            for (int i = 0; i < 18; ++i)
+                row.emplace_back(pct3(
+                    100.0L * static_cast<long double>(totalWin - cappedTotalWin[i]) / (simGames * static_cast<
+                        long double>(bet))));
+            buffer.addRow("WIN CAP REPORT", headers, row);
+        }
+        // Capped 1 in
+        {
+            std::vector<std::string> row;
+            row.emplace_back("Capped 1 in");
+            if (currentWinCap > 0)
+                row.emplace_back(currentCapHitCount
+                                     ? addThousandsSeparator(simGames / currentCapHitCount)
+                                     : std::string("Inf"));
+            for (int i = 0; i < 18; ++i)
+                row.emplace_back(hitCount[i]
+                                     ? addThousandsSeparator(simGames / hitCount[i])
+                                     : std::string("Inf"));
+            buffer.addRow("WIN CAP REPORT", headers, row);
+        }
     }
 }

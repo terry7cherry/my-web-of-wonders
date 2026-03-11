@@ -11,6 +11,8 @@
 #include "eventTemplates/BasicEvent.h"
 #include "../grids/PayGrid.h"
 #include "threadSafeMeters/PayTableMeter.h"
+// Buffered reporting API
+#include "../stats/ReportBuffer.h"
 
 /**
  * @brief Serializes a subset of line wins along with totals for UI/debug output.
@@ -47,6 +49,12 @@ public:
 
 	static void consoleReportRTP(uint64_t simGames, int bet, const std::vector<std::string>& symbolNames);
 
+	// Buffered report version (adds PAYTABLE RTP REPORT table)
+	static void reportRTP(ReportBuffer& buffer,
+	                      uint64_t simGames,
+	                      int bet,
+	                      const std::vector<std::string>& symbolNames);
+
 	inline static PayTableMeter payTableHits;
 	inline static PayTableMeter payTableWinnings;
 
@@ -60,8 +68,4 @@ private:
 	 * @brief Convert buffered/excess wins into a compact JSON array.
 	 */
 	Json::Value getWinsAsJson() const;
-	/**
-	 * @brief Convert a single win to JSON.
-	 */
-	Json::Value convertWinToJson(const Win& win) const;
 };

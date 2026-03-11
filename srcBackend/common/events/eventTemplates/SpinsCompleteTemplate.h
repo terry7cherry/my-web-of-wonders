@@ -6,6 +6,8 @@
 
 #include "./PhaseCompleteTemplate.h"
 #include <inttypes.h>
+#include "../../../thisTitle/stats/StatsOutput.h"
+#include "../../stats/ReportBuffer.h"
 
 /**
  * @brief Completion event base for phases involving a number of awarded spins that may or may not be retriggered.
@@ -112,5 +114,55 @@ public:
         const auto& hitsMeter = finalSpinsMeter.getSortedData();
         const auto& winsMeter = finalSpinsWinsMeter.getSortedData();
         outputHitAndWinReport(hitsMeter, winsMeter, totalBet);
+    }
+
+    // Buffered report appenders
+    static void appendInitialSpinsReport(ReportBuffer& buffer, const uint64_t totalBet)
+    {
+        const auto& hits = initialSpinsMeter.getSortedData();
+        const auto& wins = initialSpinsWinsMeter.getSortedData();
+        appendSpins(buffer, "SPINS REPORT - " + T::phaseName + " - Initial", hits, wins, totalBet);
+    }
+
+    static void appendFinalSpinsReport(ReportBuffer& buffer, const uint64_t totalBet)
+    {
+        const auto& hits = finalSpinsMeter.getSortedData();
+        const auto& wins = finalSpinsWinsMeter.getSortedData();
+        appendSpins(buffer, "SPINS REPORT - " + T::phaseName + " - Final", hits, wins, totalBet);
+    }
+
+private:
+    static void appendSpins(ReportBuffer& buffer,
+                            const std::string& title,
+                            const std::vector<std::pair<int, uint64_t>>& hits,
+                            const std::vector<std::pair<int, uint64_t>>& wins,
+                            const uint64_t totBet)
+    {
+        const std::vector<std::string> headers = {"Spins", "Hits", "Splits", "Wins", "RTP"};
+        long long mapTotal = 0;
+        for (const auto& p : hits) mapTotal += static_cast<long long>(p.second);
+        auto pct2 = [](long double v)
+        {
+            char s[64];
+            std::snprintf(s, sizeof(s), "%.2Lf%%", v);
+            return std::string(s);
+        };
+        for (size_t i = 0; i < hits.size() && i < wins.size(); ++i)
+        {
+            const auto splitsPct = mapTotal > 0
+                                       ? static_cast<long double>(hits[i].second) * 100.0L / mapTotal
+                                       : 0.0L;
+            const auto rtpPct = totBet > 0
+                                    ? static_cast<long double>(wins[i].second) * 100.0L / totBet
+                                    : 0.0L;
+            buffer.addRow(title, headers,
+                          {
+                              std::to_string(hits[i].first),
+                              std::to_string(static_cast<unsigned long long>(hits[i].second)),
+                              pct2(splitsPct),
+                              std::to_string(static_cast<unsigned long long>(wins[i].second)),
+                              pct2(rtpPct)
+                          });
+        }
     }
 };

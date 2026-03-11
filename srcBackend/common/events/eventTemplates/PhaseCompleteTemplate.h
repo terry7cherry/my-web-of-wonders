@@ -13,6 +13,7 @@
 #include "../threadSafeMeters/DistributionMeter.h"
 #include "../threadSafeMeters/IntMaxMeter.h"
 #include "../../rng/MathsRng.h"
+#include "../../stats/ReportBuffer.h"
 
 /**
  * @brief Base for Events signalling end of phase (base game, bonus, free spins, whole game).
@@ -139,6 +140,46 @@ public:
     }
 
     /**
+     * @brief Append this phase's final report data to a buffered report.
+     */
+    static void finalReport(ReportBuffer& buffer, const uint64_t plays, const int betAmount)
+    {
+        const uint64_t hitCount = eventTotalHits.global();
+        const uint64_t winCount = eventTotalWinningHits.global();
+        const uint64_t totalWin = eventTotalWin.global();
+        const uint64_t totalBet = plays * betAmount;
+
+        auto pct = [&](long double v)
+        {
+            char s[64];
+            std::snprintf(s, sizeof(s), "%.2Lf%%", v);
+            return std::string(s);
+        };
+        auto f2 = [&](long double v)
+        {
+            char s[64];
+            std::snprintf(s, sizeof(s), "%.2Lf", v);
+            return std::string(s);
+        };
+
+        const long double rtp = totalBet ? static_cast<long double>(totalWin) * 100.0L / totalBet : 0.0L;
+        const long double hitRate = hitCount ? static_cast<long double>(plays) / hitCount : 0.0L;
+        const long double avgPay =
+            hitCount ? static_cast<long double>(totalWin) / hitCount / betAmount : 0.0L;
+        const long double avgWin =
+            winCount ? static_cast<long double>(totalWin) / winCount / betAmount : 0.0L;
+        const long double winChance =
+            hitCount ? static_cast<long double>(winCount) * 100.0L / hitCount : 0.0L;
+        const long double winRate = winCount ? static_cast<long double>(hitCount) / winCount : 0.0L;
+
+        buffer.addRow(
+            "GENERAL STATS REPORT",
+            {"Phase", "RTP", "HitRate", "AvgPay", "AvgWin", "WinChance", "WinRate"},
+            {T::phaseName, pct(rtp), f2(hitRate), f2(avgPay), f2(avgWin), pct(winChance), f2(winRate)}
+        );
+    }
+
+    /**
      * @brief Print the maximum win and frequencies.
      * @param plays Number of plays simulated.
      * @param betAmount Bet amount per play.
@@ -156,5 +197,35 @@ public:
         std::printf("%12" PRIu64 "\n",
                     maxWinCount ? static_cast<uint64_t>(hitCount / maxWinCount) : static_cast<uint64_t>(0));
         // EventRate
+    }
+
+    /**
+     * @brief Append max win metrics to buffered report.
+     */
+    static void maxWinReport(ReportBuffer& buffer, const uint64_t plays, const int betAmount)
+    {
+        const uint64_t hitCount = eventTotalHits.global();
+        const uint64_t maxWin = maxWinMeter.globalMax;
+        const uint64_t maxWinCount = maxWinMeter.globalCount;
+        auto f2 = [&](long double v)
+        {
+            char s[64];
+            std::snprintf(s, sizeof(s), "%.2Lf", v);
+            return std::string(s);
+        };
+        auto f0 = [&](long double v)
+        {
+            char s[64];
+            std::snprintf(s, sizeof(s), "%.0Lf", v);
+            return std::string(s);
+        };
+        const long double maxXBet = betAmount ? static_cast<long double>(maxWin) / betAmount : 0.0L;
+        const long double hitRate = maxWinCount ? static_cast<long double>(plays) / maxWinCount : 0.0L;
+        const long double eventRate = maxWinCount ? static_cast<long double>(hitCount) / maxWinCount : 0.0L;
+        buffer.addRow(
+            "MAX WIN REPORT",
+            {"Phase", "MaxWin (xBet)", "HitRate", "EventRate"},
+            {T::phaseName, f2(maxXBet), f0(hitRate), f0(eventRate)}
+        );
     }
 };
