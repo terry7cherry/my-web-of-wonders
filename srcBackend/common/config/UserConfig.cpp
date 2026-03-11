@@ -200,20 +200,20 @@ std::optional<size_t> UserConfig::getUserCachedConfigChoice(
     if (rnStream)
         std::cout << std::left
             << std::setw(4) << " "
-            << std::setw(40) << "PAR Sheet File Name"
-            << std::setw(40) << "RN Stream File Name"
+            << std::setw(50) << "PAR Sheet File Name"
+            << std::setw(50) << "RN Stream File Name"
             << std::setw(5) << "RTP"
-            << std::setw(15) << "Bet Type"
-            << std::setw(15) << "Force"
+            << std::setw(25) << "Bet Type"
+            << std::setw(25) << "Force"
             << "\n";
     else
         std::cout << std::left
             << std::setw(4) << " "
-            << std::setw(40) << "PAR Sheet File Name"
+            << std::setw(50) << "PAR Sheet File Name"
             << std::setw(15) << "Sim Size (M)"
             << std::setw(5) << "RTP"
-            << std::setw(15) << "Bet Type"
-            << std::setw(15) << "Force"
+            << std::setw(25) << "Bet Type"
+            << std::setw(25) << "Force"
             << std::setw(10) << "Seed" << '\n';
     std::cout << std::string(150, '-') << '\n';
 
@@ -227,20 +227,20 @@ std::optional<size_t> UserConfig::getUserCachedConfigChoice(
         if (rnStream)
             std::cout << std::left
                 << std::setw(4) << std::to_string(choiceNum++) + ")"
-                << std::setw(40) << choice.at(0)
-                << std::setw(40) << choice.at(1)
+                << std::setw(50) << choice.at(0)
+                << std::setw(50) << choice.at(1)
                 << std::setw(5) << choice.at(2)
-                << std::setw(15) << choice.at(3)
+                << std::setw(25) << choice.at(3)
                 << std::setw(40) << choice.at(4)
                 << "\n";
         else
             std::cout << std::left
                 << std::setw(4) << std::to_string(choiceNum++) + ")"
-                << std::setw(40) << choice.at(0)
+                << std::setw(50) << choice.at(0)
                 << std::setw(15) << choice.at(1)
                 << std::setw(5) << choice.at(2)
-                << std::setw(15) << choice.at(3)
-                << std::setw(15) << choice.at(4)
+                << std::setw(25) << choice.at(3)
+                << std::setw(25) << choice.at(4)
                 << std::setw(40) << choice.at(6) + (choice.at(5) == "RAND"
                                                         ? " (random - new seed will be chosen)"
                                                         : "")
