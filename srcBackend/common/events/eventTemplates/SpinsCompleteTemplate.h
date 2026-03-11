@@ -30,10 +30,12 @@ public:
      * @param totalWin Total win for the phase.
      * @param initialSpins Spins awarded from base game.
      * @param finalSpins Total spins played, including retriggers.
+     * @param repeatEvent A new hit will not be stored if this is true.
      */
     explicit SpinsCompleteTemplate(const unsigned int totalWin,
                                    const unsigned int initialSpins[[maybe_unused]],
-                                   const unsigned int finalSpins[[maybe_unused]])
+                                   const unsigned int finalSpins[[maybe_unused]],
+                                   const bool repeatEvent [[maybe_unused]] = false)
         : PhaseCompleteTemplate<T>(totalWin)
     {
     }
@@ -43,12 +45,14 @@ public:
      * @param totalWin Total win for the phase.
      * @param initialSpins Spins awarded from base game.
      * @param finalSpins Total spins played, including retriggers.
+     * @param repeatEvent A new hit will not be stored if this is true.
      */
     static void updateMeters(const unsigned int totalWin,
                              const unsigned int initialSpins,
-                             const unsigned int finalSpins)
+                             const unsigned int finalSpins,
+                             const bool repeatEvent = false)
     {
-        PhaseCompleteTemplate<T>::updateMeters(totalWin);
+        PhaseCompleteTemplate<T>::updateMeters(totalWin, repeatEvent);
         initialSpinsMeter.add(initialSpins);
         initialSpinsWinsMeter.add(initialSpins, totalWin);
         finalSpinsMeter.add(finalSpins);
@@ -132,11 +136,12 @@ public:
     }
 
 private:
-    static void appendSpins(ReportBuffer& buffer,
-                            const std::string& title,
-                            const std::vector<std::pair<int, uint64_t>>& hits,
-                            const std::vector<std::pair<int, uint64_t>>& wins,
-                            const uint64_t totBet)
+    static void appendSpins(
+        ReportBuffer& buffer,
+        const std::string& title,
+        const std::vector<std::pair<int, uint64_t>>& hits,
+        const std::vector<std::pair<int, uint64_t>>& wins,
+        const uint64_t totBet)
     {
         const std::vector<std::string> headers = {"Spins", "Hits", "Splits", "Wins", "RTP"};
         long long mapTotal = 0;

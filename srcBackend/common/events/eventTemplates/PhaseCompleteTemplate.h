@@ -27,12 +27,17 @@ public:
     /** @brief Name used for output to console and file. */
     inline static std::string phaseName = "Template";
     const unsigned int totalWin;
+    /** @brief Set to false in derived event if the RN stream does not break to a new line/spin when this event occurs. */
     inline static bool countsAsSpinForRnStream = true;
+    /** @brief Set to true if you wish to output CycleHitRate (hit of at least one occurrence in cycle). */
+    inline static bool multipleHitsPerCycle = false;
 
     /**
      * @param phaseWin Win for the completed phase.
+     * @param repeatEvent Has the event already occurred in this cycle?
      */
-    explicit PhaseCompleteTemplate(const int phaseWin) : totalWin(phaseWin)
+    explicit PhaseCompleteTemplate(const int phaseWin,
+                                   const bool repeatEvent [[maybe_unused]] = false) : totalWin(phaseWin)
     {
         if (T::countsAsSpinForRnStream) mathsRng.endSpinSequence(phaseWin);
     }
@@ -40,11 +45,12 @@ public:
     /**
      * @brief Update aggregate meters for the phase.
      * @param phaseWin Win for the completed phase.
+     * @param repeatEvent Has the event already occurred in this cycle?
      */
-    static void updateMeters(const int phaseWin)
+    static void updateMeters(const int phaseWin, const bool repeatEvent = false)
     {
         ++eventTotalHits;
-        //eventWinDistribution.add(totalWin);
+        if (!repeatEvent) ++eventTotalCycleHits;
         eventWinDistribution[phaseWin]++;
         if (phaseWin)
         {
@@ -57,6 +63,7 @@ public:
     inline static DistributionMeter eventWinDistribution{};
     inline static IntSumMeter eventTotalWin{};
     inline static IntSumMeter eventTotalHits{};
+    inline static IntSumMeter eventTotalCycleHits{};
     inline static IntSumMeter eventTotalWinningHits{};
     inline static IntMaxMeter maxWinMeter{};
 
@@ -145,6 +152,7 @@ public:
     static void finalReport(ReportBuffer& buffer, const uint64_t plays, const int betAmount)
     {
         const uint64_t hitCount = eventTotalHits.global();
+        const uint64_t cycleHitCount = eventTotalCycleHits.global();
         const uint64_t winCount = eventTotalWinningHits.global();
         const uint64_t totalWin = eventTotalWin.global();
         const uint64_t totalBet = plays * betAmount;
@@ -164,6 +172,9 @@ public:
 
         const long double rtp = totalBet ? static_cast<long double>(totalWin) * 100.0L / totalBet : 0.0L;
         const long double hitRate = hitCount ? static_cast<long double>(plays) / hitCount : 0.0L;
+        const long double cycleHitRate = cycleHitCount
+                                             ? static_cast<long double>(plays) / cycleHitCount
+                                             : 0.0L;
         const long double avgPay =
             hitCount ? static_cast<long double>(totalWin) / hitCount / betAmount : 0.0L;
         const long double avgWin =
@@ -174,8 +185,17 @@ public:
 
         buffer.addRow(
             "GENERAL STATS REPORT",
-            {"Phase", "RTP", "HitRate", "AvgPay", "AvgWin", "WinChance", "WinRate"},
-            {T::phaseName, pct(rtp), f2(hitRate), f2(avgPay), f2(avgWin), pct(winChance), f2(winRate)}
+            {"Phase", "RTP", "HitRate", "CycleHitRate", "AvgPay", "AvgWin", "WinChance", "WinRate"},
+            {
+                T::phaseName,
+                pct(rtp),
+                hitCount ? f2(hitRate) : "Inf",
+                T::multipleHitsPerCycle ? (cycleHitCount ? f2(cycleHitRate) : "Inf") : "NA",
+                f2(avgPay),
+                f2(avgWin),
+                pct(winChance),
+                winRate ? f2(winRate) : "Inf"
+            }
         );
     }
 
