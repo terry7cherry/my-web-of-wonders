@@ -168,5 +168,7 @@ std::filesystem::path ReportBuffer::createOutputFolder(const std::string& betTyp
 
 std::filesystem::path ReportBuffer::createSubFolder(const std::string& folderName) const
 {
-    return outputFolder / folderName;
+    std::filesystem::path path = outputFolder / folderName;
+    std::filesystem::create_directories(path);
+    return path;
 }
