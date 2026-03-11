@@ -2,10 +2,11 @@
 #include <fstream>
 #include "../utils/utils.h"
 
-ReportBuffer::ReportBuffer(const uint64_t simGames, const std::string& betType, const int rtp, const int bet
+ReportBuffer::ReportBuffer(const uint64_t simGames, const std::string& betType, const int rtp, const int bet,
+                           const std::string& simForce
 ) :
     outputFolder(
-        createOutputFolder(betType, rtp, bet, simGames))
+        createOutputFolder(betType, rtp, bet, simGames, simForce))
 {
     addStat("RUN SETTINGS", "Games", addThousandsSeparator(simGames));
     addStat("RUN SETTINGS", "Bet", std::to_string(bet));
@@ -132,7 +133,8 @@ void ReportBuffer::writeCsv() const
 
 std::filesystem::path ReportBuffer::createOutputFolder(const std::string& betType, const int rtp,
                                                        const int bet,
-                                                       const uint64_t simGames)
+                                                       const uint64_t simGames,
+                                                       const std::string& simForce)
 {
     namespace fs = std::filesystem;
 
@@ -160,6 +162,7 @@ std::filesystem::path ReportBuffer::createOutputFolder(const std::string& betTyp
     oss << "_RTP" << rtp << "_bet" << bet;
 
     if (betType != "default") oss << "_" << betType;
+    if (simForce != "None") oss << "_" << simForce;
 
     const fs::path outputFolder = distributionsRoot / oss.str();
     fs::create_directories(outputFolder);

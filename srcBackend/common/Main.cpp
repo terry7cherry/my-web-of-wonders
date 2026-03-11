@@ -171,6 +171,7 @@ void doMonteCarloStdMultiThread(const GameMaths& gameMaths, const int bet, const
 	std::cout << std::endl;
 	simTimer.outputTime();
 	Stats::outputStats(config.simSize, gameMaths.betType, gameMaths.rtp, bet,
+	                   Forces::simForceNames.at(config.force),
 	                   gameMaths.payTables["default"].symbolNames,
 	                   gameMaths.ints.contains("winCap") ? gameMaths.ints["winCap"] : 0);
 }
@@ -218,6 +219,7 @@ void doMonteCarloStd(const GameMaths& gameMaths, const int bet, const UserConfig
 	printf("\n");
 	simTimer.outputTime();
 	Stats::outputStats(config.simSize, gameMaths.betType, gameMaths.rtp, bet,
+	                   Forces::simForceNames.at(config.force),
 	                   gameMaths.payTables["default"].symbolNames,
 	                   gameMaths.ints.contains("winCap") ? gameMaths.ints["winCap"] : 0);
 }

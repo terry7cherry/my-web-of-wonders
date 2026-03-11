@@ -18,7 +18,8 @@ public:
         std::vector<std::vector<std::string>> rows;
     };
 
-    ReportBuffer(uint64_t simGames, const std::string& betType, int rtp, int bet);
+    ReportBuffer(uint64_t simGames, const std::string& betType, int rtp, int bet,
+                 const std::string& simForce);
 
     // Ensure a table exists with given title and headers. If it exists, headers must match.
     void ensureTable(const std::string& title, const std::vector<std::string>& headers);
@@ -39,7 +40,8 @@ public:
 
     static std::filesystem::path createOutputFolder(const std::string& betType, int rtp,
                                                     int bet,
-                                                    uint64_t simGames);
+                                                    uint64_t simGames,
+                                                    const std::string& simForce);
 
     std::filesystem::path createSubFolder(const std::string& folderName) const;
 
