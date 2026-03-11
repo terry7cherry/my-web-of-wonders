@@ -6,6 +6,7 @@
 
 #include "../../common/gameMaths/GameMaths.h"
 #include "../../common/state/GameSessionBase.h"
+#include "../CollectorPositions.h"
 #include "../forces/simForces.h"
 
 /**
@@ -21,6 +22,8 @@ struct GameSession : GameSessionBase
     // Add persistent variables here. E.g:
     // int jackpotValue;
     // int consecutiveLosingSpins;
+    unsigned int mainCollectorPositionSpinRemaining;
+    CollectorPosition mainCollectorPosition;
 
     /**
      * \brief Construct a new session for a given bet and maths configuration.
@@ -35,10 +38,10 @@ struct GameSession : GameSessionBase
                 const GameMaths& maths,
                 const Forces::SimForce simForce = Forces::ForceNone
     )
-        : GameSessionBase(bet, maths, simForce)
+        : GameSessionBase(bet, maths, simForce),
+          mainCollectorPositionSpinRemaining(0),
+          mainCollectorPosition(TOP_LEFT)
     // Initialise persistent values (typically from gameMaths). e.g.
-    // jackpotValue(maths.ints["initialJackpotValue"]),
-    // consecutiveLosingSpins(0)
     {
     }
 
@@ -57,6 +60,8 @@ struct GameSession : GameSessionBase
                 const GameSession& oldSession [[maybe_unused]])
         : GameSession(bet, maths, Forces::ForceNone)
     {
+        mainCollectorPositionSpinRemaining = oldSession.mainCollectorPositionSpinRemaining;
+        mainCollectorPosition = oldSession.mainCollectorPosition;
         // Copy any persistent data that SHOULD NOT BE bet locked from the oldSession. E.g.
         // consecutiveLosingSpins = oldSession.consecutiveLosingSpins;
         // You can also copy values depending on what has changed from the oldSession. E.g.
@@ -71,7 +76,9 @@ struct GameSession : GameSessionBase
      * \param jsonSession JSON object produced by \c toJson().
      */
     GameSession(const Json::Value& jsonSession) // NOLINT(google-explicit-constructor)
-        : GameSessionBase(jsonSession)
+        : GameSessionBase(jsonSession),
+          mainCollectorPositionSpinRemaining(jsonSession["mainCollectorPositionSpinsRemaining"].asInt()),
+          mainCollectorPosition(collectorPositionMap.at(jsonSession["mainCollectorPosition"].asString()))
     // Initialise all persistent values from the json here. E.g.
     // jackpotValue(jsonSession["jackpotValue"].asInt()),
     // consecutiveLosingSpins(jsonSession["consecutiveLosingSpins"].asInt())
@@ -86,6 +93,8 @@ struct GameSession : GameSessionBase
     Json::Value toJson() const
     {
         Json::Value jsonSession = GameSessionBase::toJson();
+        jsonSession["mainCollectorPositionSpinsRemaining"] = mainCollectorPositionSpinRemaining;
+        jsonSession["mainCollectorPosition"] = collectorPositionNames.at(mainCollectorPosition);
         // Add any persistent data to the JSON session here. E.g.
         // jsonSession["jackpotValue"] = jackpotValue;
         // jsonSession["consecutiveLosingSpins"] = consecutiveLosingSpins;

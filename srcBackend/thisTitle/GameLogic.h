@@ -2,34 +2,42 @@
 
 #include "../common/gameMaths/GameMaths.h"
 #include "state/GameCycle.h"
+#include "CollectorPositions.h"
 
 namespace GameLogic
 {
     unsigned int playGame(const GameMaths& maths, GameCycle& cycle);
 
-    void doBaseGame(const GameMaths& maths, GameCycle& cycle);
+    void updateMainCollectorPosition(const GameMaths& maths, GameCycle& cycle);
 
-    void doFreeSpinsIfTriggered(const GameMaths& maths, GameCycle& cycle);
-
-    unsigned int skipBaseGameAndForceFreeSpins(const GameMaths& maths, GameCycle& cycle);
-
-    unsigned int doRandomBaseGameAndCheckFreeSpinsTrigger(const GameMaths& maths, GameCycle& cycle);
+    unsigned int doBaseGame(const GameMaths& maths, GameCycle& cycle);
 
     unsigned int doFreeSpins(const GameMaths& maths, GameCycle& cycle);
 
-    void spinReels(const GameMaths& maths, GameCycle& cycle, const std::string& weightTableName);
-
-    void checkForFreeSpinsTrigger(const GameMaths& maths, GameCycle& cycle);
+    void activateInitialCollectors(const GameMaths& maths, GameCycle& cycle);
 
     unsigned int doOneFreeSpin(const GameMaths& maths, GameCycle& cycle);
 
-    unsigned int countBaseScatters(const GameMaths& maths, const GameCycle& cycle);
+    void spinReelsAndSetCoinValues(const GameMaths& maths, GameCycle& cycle,
+                                   const std::string& weightTableName);
 
-    void setMultiplierAndRecordNewSpinEvent(const GameMaths& maths, GameCycle& cycle);
+    void collectBonusSymbols(const GameMaths& maths, GameCycle& cycle);
 
-    void expandWilds(const GameMaths& maths, GameCycle& cycle);
+    unsigned int analyseAndCascadeIfWin(const GameMaths& maths, GameCycle& cycle);
 
-    unsigned int evaluateWinsWithMultiplier(const GameMaths& maths, GameCycle& cycle);
+    void setMainCollectorMultiplier(const GameMaths& maths, const GameCycle& cycle);
 
-    void awardRetriggers(const GameMaths& maths, GameCycle& cycle);
+    void collectRemainingCoins(const GameMaths& maths, GameCycle& cycle);
+
+    void setCoinValues(const GameMaths& maths, GameCycle& cycle);
+
+    unsigned int analysePayAnywhereAndCoinWinnings(const GameMaths& maths, GameCycle& cycle);
+
+    void collectCoin(const GameMaths& maths, GameCycle& cycle, size_t reel, size_t row,
+                     bool* collectorHasCollected);
+
+    void activateCollector(const GameMaths& maths, GameCycle& cycle, CollectorPosition collectorPosition);
+
+    void removeExcessScatters(const GameMaths& maths, GameCycle& cycle,
+                              const std::vector<std::pair<size_t, size_t>>& removedSymbols);
 }

@@ -5,150 +5,317 @@
 #include "forces/simForces.h"
 #include "../common/spin/SpinResult.h"
 #include "../common/events/BaseGameCompleteEvent.h"
-#include "../common/events/FreeSpinsCompleteEvent.h"
-#include "../common/events/FreeSpinsRetriggerEvent.h"
-#include "../common/events/FreeSpinsTriggerEvent.h"
 #include "../common/events/GameCycleCompleteEvent.h"
-#include "../common/events/NewFreeSpinEvent.h"
-#include "../common/events/ReelSpinEvent.h"
 #include "../common/events/WinAnalysisEvent.h"
 #include "../common/events/GridUpdateEvent.h"
 #include "../common/events/SpinCompleteEvent.h"
+#include "../common/events/FreeSpinsTriggerEvent.h"
+#include "../common/events/FreeSpinsRetriggerEvent.h"
+#include "./events/ReelSpinWithCoinsEvent.h"
+#include "./events/BonusSymbolCollectionEvent.h"
+#include "events/CascadeWithCoinsEvent.h"
+#include "./events/CoinCollectionEvent.h"
+#include "./events/FreeSpinsCollectionTriggerEvent.h"
+#include "./events/CollectorActivationEvent.h"
+#include "./events/BaseCoinsPhaseCompleteEvent.h"
+#include "./events/BasePayAnywherePhaseCompleteEvent.h"
+#include "CollectorPositions.h"
+#include "../common/events/FreeSpinsCompleteEvent.h"
+#include "../common/events/NewFreeSpinEvent.h"
+#include "events/CollectorAwardedBonusEvent.h"
 
 namespace GameLogic
 {
     unsigned int playGame(const GameMaths& maths, GameCycle& cycle)
     {
-        doBaseGame(maths, cycle);
-        doFreeSpinsIfTriggered(maths, cycle);
+        updateMainCollectorPosition(maths, cycle);
+        cycle.totalWin += doBaseGame(maths, cycle);
+        cycle.fsTrigger = cycle.baseNumScatters == maths.ints["freeSpinsSymbolsToTrigger"];
+        if (!cycle.fsTrigger && cycle.baseNumScatters > 0)
+            collectBonusSymbols(maths, cycle);
+
+        cycle.recordEvent<BaseGameCompleteEvent>(cycle.baseGameWin);
+
+
+        if (cycle.fsTrigger)
+        {
+            cycle.totalWin += doFreeSpins(maths, cycle);
+            cycle.recordEvent<FreeSpinsCompleteEvent>(cycle.freeSpinsWin, cycle.fsInitialSpins,
+                                                      cycle.fsSpinsPlayed);
+        }
 
         cycle.recordEvent<GameCycleCompleteEvent>(cycle.totalWin, maths, cycle.session.bet);
         return cycle.totalWin;
     }
 
-    void doBaseGame(const GameMaths& maths, GameCycle& cycle)
+    void updateMainCollectorPosition(const GameMaths& maths, GameCycle& cycle)
     {
-        if (cycle.session.simForce == Forces::ForceFreeSpins)
-            skipBaseGameAndForceFreeSpins(maths, cycle);
-        else
-            doRandomBaseGameAndCheckFreeSpinsTrigger(maths, cycle);
-
-        cycle.totalWin += cycle.baseGameWin;
-        cycle.recordEvent<BaseGameCompleteEvent>(cycle.baseGameWin);
+        if (cycle.session.mainCollectorPositionSpinRemaining == 0)
+        {
+            cycle.session.mainCollectorPosition = collectorPositionMap.at(
+                maths.stringWeightTables["mainCollectorPosition"].pick()
+            );
+            cycle.session.mainCollectorPositionSpinRemaining =
+                maths.intWeightTables["mainCollectorPositionNumSpins"].pick();
+        }
+        cycle.session.mainCollectorPositionSpinRemaining--;
+        cycle.grid.coinMultiplierGrid = maths.intGrids[
+            "collectorPositions." + collectorPositionNames[cycle.session.mainCollectorPosition]
+        ];
+        cycle.grid.mainCollectorPosition = cycle.session.mainCollectorPosition;
+        cycle.grid.collectorMultipliers[cycle.session.mainCollectorPosition] = 1;
     }
 
 
-    void doFreeSpinsIfTriggered(const GameMaths& maths, GameCycle& cycle)
+    unsigned int doBaseGame(const GameMaths& maths, GameCycle& cycle)
     {
-        if (!cycle.fsTrigger) return;
+        spinReelsAndSetCoinValues(maths, cycle, "baseGame");
 
-        cycle.recordEvent<FreeSpinsTriggerEvent>(cycle.fsInitialSpins);
-        cycle.totalWin += doFreeSpins(maths, cycle);
-        cycle.recordEvent<FreeSpinsCompleteEvent>(cycle);
-    }
+        cycle.baseNumScatters = cycle.grid.getSymbolCount(maths.symbols["freeSpinsTrigger"]);
 
-    unsigned int skipBaseGameAndForceFreeSpins(const GameMaths& maths [[maybe_unused]], GameCycle& cycle)
-    {
-        cycle.baseNumScatters = 3;
-        cycle.fsInitialSpins = 10;
-        cycle.fsTrigger = true;
-        return 0;
-    }
+        cycle.baseGameWin = analyseAndCascadeIfWin(maths, cycle);
 
-    unsigned int doRandomBaseGameAndCheckFreeSpinsTrigger(const GameMaths& maths, GameCycle& cycle)
-    {
-        spinReels(maths, cycle, "baseGame");
-
-        cycle.baseGameWin += cycle.grid.evaluateWins(cycle.session.betMultiplier);
-        cycle.recordEvent<WinAnalysisEvent>(cycle.grid, maths, "base game");
-
-        checkForFreeSpinsTrigger(maths, cycle);
         return cycle.baseGameWin;
     }
 
     unsigned int doFreeSpins(const GameMaths& maths, GameCycle& cycle)
     {
+        cycle.fsInitialSpins = maths.ints["freeSpinsInitialSpins"];
+
+        if (cycle.fsCollectorTrigger)
+            cycle.recordEvent<FreeSpinsCollectionTriggerEvent>(
+                cycle.fsInitialSpins, cycle.fsInitialSecondaryCollectors);
+        else cycle.recordEvent<FreeSpinsTriggerEvent>(cycle.fsInitialSpins);
+
+
+        cycle.fsCollectorsActivated[cycle.session.mainCollectorPosition] = true;
+        setMainCollectorMultiplier(maths, cycle);
+        activateInitialCollectors(maths, cycle);
+
         for (cycle.fsSpinsPlayed = 0;
              cycle.fsSpinsPlayed < cycle.fsInitialSpins + cycle.fsRetriggerSpins;
-             cycle.fsSpinsPlayed++
-        )
+             cycle.fsSpinsPlayed++)
         {
-            unsigned int freeSpinWin = doOneFreeSpin(maths, cycle);
-            cycle.recordEvent<SpinCompleteEvent>(freeSpinWin);
-            cycle.freeSpinsWin += freeSpinWin;
+            cycle.freeSpinsWin += doOneFreeSpin(maths, cycle);
         }
 
         return cycle.freeSpinsWin;
     }
 
-    void spinReels(const GameMaths& maths, GameCycle& cycle, const std::string& weightTableName)
+    void activateInitialCollectors(const GameMaths& maths, GameCycle& cycle)
     {
-        cycle.grid.applySpin(maths.reelSetWeights[weightTableName]);
-        cycle.recordEvent<ReelSpinEvent>(cycle.grid, maths);
-    }
+        std::vector<CollectorPosition> candidateCollectors;
+        for (const CollectorPosition& position : collectorPositionMap | std::views::values)
+            if (cycle.session.mainCollectorPosition != position)
+                candidateCollectors.push_back(position);
 
-    void checkForFreeSpinsTrigger(const GameMaths& maths, GameCycle& cycle)
-    {
-        cycle.baseNumScatters = countBaseScatters(maths, cycle);
-        cycle.fsInitialSpins = maths.awards["fsStartSpins"][cycle.baseNumScatters];
-        if (cycle.fsInitialSpins) cycle.fsTrigger = true;
+        for (size_t i = 0; i < cycle.fsInitialSecondaryCollectors; i++)
+        {
+            const CollectorPosition position = candidateCollectors.size() == 1
+                                                   ? candidateCollectors.at(0)
+                                                   : candidateCollectors[mathsRng.getInt(
+                                                       candidateCollectors.size(),
+                                                       "Choose starting collector to activate.")];
+            activateCollector(maths, cycle, position);
+            std::erase(candidateCollectors, position);
+        }
     }
 
     unsigned int doOneFreeSpin(const GameMaths& maths, GameCycle& cycle)
     {
-        setMultiplierAndRecordNewSpinEvent(maths, cycle);
-
-        spinReels(maths, cycle, "freeSpins");
-        //expandWilds(maths, cycle);
-
-        const unsigned int spinWin = evaluateWinsWithMultiplier(maths, cycle);
-        awardRetriggers(maths, cycle);
-
+        cycle.grid.resetCoinValues();
+        cycle.recordEvent<NewFreeSpinEvent>();
+        spinReelsAndSetCoinValues(maths, cycle, "baseGame");
+        const unsigned int spinWin = analyseAndCascadeIfWin(maths, cycle);
+        collectRemainingCoins(maths, cycle);
+        cycle.recordEvent<SpinCompleteEvent>(spinWin);
         return spinWin;
     }
 
-    unsigned int countBaseScatters(const GameMaths& maths, const GameCycle& cycle)
+
+    void spinReelsAndSetCoinValues(const GameMaths& maths, GameCycle& cycle,
+                                   const std::string& weightTableName)
     {
-        static Symbol fsTriggerSymbol = maths.symbols["fsTriggerSymbol"];
-        return cycle.grid.getSymbolCount(fsTriggerSymbol);
+        if (cycle.session.simForce >= Forces::ForceBaseGameA)
+            cycle.grid.applySpin(
+                maths.reelSetWeights[weightTableName].reelSetVect[cycle.session.simForce -
+                    Forces::ForceBaseGameA]);
+        else
+            cycle.grid.applySpin(maths.reelSetWeights[weightTableName]);
+        setCoinValues(maths, cycle);
+        cycle.recordEvent<ReelSpinWithCoinsEvent>(cycle.grid, maths);
     }
 
-    void setMultiplierAndRecordNewSpinEvent(const GameMaths& maths, GameCycle& cycle)
+    void collectBonusSymbols(const GameMaths& maths, GameCycle& cycle)
     {
-        cycle.grid.gridMultiplier = maths.weightTables["fsMultiplierWeights"].pick();
-        cycle.recordEvent<NewFreeSpinEvent>(cycle.grid.gridMultiplier);
+        for (size_t reel = 0; reel < cycle.grid.maxReels; reel++)
+            for (size_t row = 0; row < cycle.grid.maxRows; row++)
+                if (cycle.grid.getSymbol({reel, row}) == maths.symbols["freeSpinsTrigger"])
+                {
+                    cycle.recordEvent<BonusSymbolCollectionEvent>(reel, row);
+                    if (maths.boolWeightTables["collectorTriggeredBonusChance"].pick())
+                    {
+                        cycle.fsTrigger = true;
+                        cycle.fsCollectorTrigger = true;
+                        cycle.fsInitialSecondaryCollectors = maths.intWeightTables[
+                            "fsInitialSecondaryCollectors"].pick();
+                        cycle.recordEvent<CollectorAwardedBonusEvent>();
+                        return;
+                    }
+                }
     }
 
-    void expandWilds(const GameMaths& maths, GameCycle& cycle)
-    {
-        const int numWildReelsExpanded = cycle.grid.expandSymbol(maths.symbols["wild"]);
 
-        if (numWildReelsExpanded > 0)
-            cycle.recordEvent<GridUpdateEvent>(
-                cycle.grid,
-                maths,
-                numWildReelsExpanded > 1 ? "Wilds expanded!" : "Wild expanded!"
-            );
+    unsigned int analyseAndCascadeIfWin(const GameMaths& maths, GameCycle& cycle)
+    {
+        unsigned int totalWin = 0;
+        const unsigned int cascadeWin = analysePayAnywhereAndCoinWinnings(maths, cycle);
+        cycle.recordEvent<WinAnalysisEvent>(cycle.grid, maths, "base game");
+        totalWin += cascadeWin;
+
+        if (cascadeWin > 0)
+        {
+            const auto& removedSymbols = cycle.grid.cascadeWins(cycle.grid.winVector);
+            removeExcessScatters(maths, cycle, removedSymbols);
+            setCoinValues(maths, cycle);
+            cycle.recordEvent<CascadeWithCoinsEvent>(removedSymbols, cycle.grid, maths);
+
+            totalWin += analyseAndCascadeIfWin(maths, cycle);
+        }
+        return totalWin;
     }
 
-    unsigned int evaluateWinsWithMultiplier(const GameMaths& maths [[maybe_unused]], GameCycle& cycle)
+    void setMainCollectorMultiplier(const GameMaths& maths, const GameCycle& cycle)
     {
-        unsigned int spinWin = cycle.grid.evaluateWins(cycle.session.betMultiplier);
-
-        if (spinWin && cycle.grid.gridMultiplier > 1)
-            spinWin = cycle.grid.applyGridMultiplier(MultipliersCombineType::add);
-
-        cycle.recordEvent<WinAnalysisEvent>(cycle.grid, maths, "free spin");
-        return spinWin;
+        cycle.grid.collectorMultipliers[cycle.session.mainCollectorPosition] = 2;
+        for (auto& reel : cycle.grid.coinMultiplierGrid)
+            for (auto& row : reel)
+                if (row > 0) row = 2;
     }
 
-    void awardRetriggers(const GameMaths& maths, GameCycle& cycle)
+    void collectRemainingCoins(const GameMaths& maths, GameCycle& cycle)
     {
-        const int scatterCount = cycle.grid.getSymbolCount(maths.symbols["fsTriggerSymbol"]);
+        bool collectorHasCollected[4] = {};
+        for (size_t reel = 0; reel < cycle.grid.maxReels; reel++)
+            for (size_t row = 0; row < cycle.grid.maxRows; row++)
+                if (cycle.grid.coinValues[reel][row] > 0)
+                    collectCoin(maths, cycle, reel, row, collectorHasCollected);
 
-        const int retriggerSpins = maths.awards["fsRetriggerSpins"][scatterCount];
-        cycle.fsRetriggerSpins += retriggerSpins;
+        for (const CollectorPosition position : collectorPositionMap | std::views::values)
+            if (collectorHasCollected[position])
+                if (maths.boolWeightTables["collectorActivationChance"].pick())
+                    activateCollector(maths, cycle, position);
+    }
 
-        if (retriggerSpins) cycle.recordEvent<FreeSpinsRetriggerEvent>(retriggerSpins);
+    void setCoinValues(const GameMaths& maths, GameCycle& cycle)
+    {
+        static const Symbol coinSymbol = maths.symbols["coin"];
+        static const auto& coinValueWeights = maths.intWeightTables["coinValue"];
+        for (size_t reel = 0; reel < cycle.grid.maxReels; reel++)
+            for (size_t row = 0; row < cycle.grid.maxRows; row++)
+                if (cycle.grid.getSymbol({reel, row}) == coinSymbol)
+                    if (cycle.grid.coinValues[reel][row] == 0)
+                        cycle.grid.coinValues[reel][row] = coinValueWeights.pick();
+    }
+
+    unsigned int analysePayAnywhereAndCoinWinnings(const GameMaths& maths, GameCycle& cycle)
+    {
+        const unsigned int payAnywhereWins = cycle.grid.evaluateWins(cycle.session.betMultiplier);
+        if (!cycle.fsTrigger && payAnywhereWins > 0)
+        {
+            cycle.recordEvent<BasePayAnywherePhaseCompleteEvent>(
+                payAnywhereWins, cycle.basePayAnywhereRecorded);
+            cycle.basePayAnywhereRecorded = true;
+        }
+        const unsigned int coinWins = cycle.grid.evaluateCoinWins(cycle.session.betMultiplier);
+        if (!cycle.fsTrigger && coinWins > 0)
+        {
+            cycle.recordEvent<BaseCoinsPhaseCompleteEvent>(coinWins, cycle.baseCoinsRecorded);
+            cycle.baseCoinsRecorded = true;
+        }
+
+        return payAnywhereWins + coinWins;
+    }
+
+    void collectCoin(const GameMaths& maths, GameCycle& cycle, size_t reel, size_t row,
+                     bool* collectorHasCollected)
+    {
+        std::vector<CollectorPosition> candidateInactiveCollectors;
+        for (const CollectorPosition& position : collectorPositionMap | std::views::values)
+            if (cycle.grid.collectorMultipliers[position] == 0
+                && maths.intGrids[
+                    "collectorPositions." + collectorPositionNames[position]
+                ][reel][row] == 1
+            )
+                candidateInactiveCollectors.push_back(position);
+
+        if (candidateInactiveCollectors.empty())
+            return;
+
+        const CollectorPosition& collector = candidateInactiveCollectors.size() == 1
+                                                 ? candidateInactiveCollectors.at(0)
+                                                 : candidateInactiveCollectors[mathsRng.getInt(
+                                                     candidateInactiveCollectors.size(),
+                                                     "Choose inactive collector to collect coin.")];
+
+        cycle.recordEvent<CoinCollectionEvent>(reel, row, collector);
+        collectorHasCollected[collector] = true;
+    }
+
+    void activateCollector(const GameMaths& maths, GameCycle& cycle, CollectorPosition collectorPosition)
+    {
+        for (auto& multiplier : cycle.grid.collectorMultipliers)
+            if (multiplier > 0) multiplier++;
+        cycle.grid.collectorMultipliers[collectorPosition] = 1;
+
+        cycle.recordEvent<CollectorActivationEvent>(collectorPosition, cycle.grid.collectorMultipliers);
+
+        const unsigned int numRetriggerSpins = maths.ints["collectorActivationRetriggerSpins"];
+        cycle.fsRetriggerSpins += numRetriggerSpins;
+        cycle.recordEvent<FreeSpinsRetriggerEvent>(numRetriggerSpins);
+
+        const auto& collectorControlArea =
+            maths.intGrids["collectorPositions." + collectorPositionNames[collectorPosition]];
+
+
+        for (size_t reel = 0; reel < cycle.grid.maxReels; reel++)
+            for (size_t row = 0; row < cycle.grid.maxRows; row++)
+            {
+                auto& multiplier = cycle.grid.coinMultiplierGrid[reel][row];
+                if (multiplier > 0) multiplier++;
+                else multiplier = collectorControlArea[reel][row];
+            }
+    }
+
+
+    void removeExcessScatters(const GameMaths& maths, GameCycle& cycle,
+                              const std::vector<std::pair<size_t, size_t>>& removedSymbols)
+    {
+        static const int freeSpinsSymbolsToTrigger = maths.ints["freeSpinsSymbolsToTrigger"];
+        static const Symbol freeSpinsTriggerSymbol = maths.symbols["freeSpinsTrigger"];
+
+        std::vector<std::pair<size_t, size_t>> excessScatterPositions;
+
+        std::vector<size_t> removedSymbolsPerReel;
+        removedSymbolsPerReel.resize(cycle.grid.maxReels);
+
+        for (const auto& reel : removedSymbols | std::views::keys)
+            removedSymbolsPerReel[reel]++;
+
+        for (size_t reel = 0; reel < cycle.grid.maxReels; reel++)
+            for (size_t row = 0; row < removedSymbolsPerReel[reel]; row++)
+                if (cycle.grid.getSymbol({reel, row}) == freeSpinsTriggerSymbol)
+                {
+                    if (cycle.baseNumScatters == freeSpinsSymbolsToTrigger)
+                        excessScatterPositions.push_back({reel, row});
+                    else
+                        cycle.baseNumScatters++;
+                }
+
+        if (excessScatterPositions.size() > 0)
+        {
+            cycle.grid.cascadeSymbols(excessScatterPositions);
+            removeExcessScatters(maths, cycle, excessScatterPositions);
+        }
     }
 }
