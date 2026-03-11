@@ -47,8 +47,6 @@ public:
 	                         const GameMaths& maths [[maybe_unused]],
 	                         const std::string& analysisStage [[maybe_unused]]);
 
-	static void consoleReportRTP(uint64_t simGames, int bet, const std::vector<std::string>& symbolNames);
-
 	// Buffered report version (adds PAYTABLE RTP REPORT table)
 	static void reportRTP(ReportBuffer& buffer,
 	                      uint64_t simGames,

@@ -97,30 +97,10 @@ public:
     }
 
     /**
-     * @brief Print initial-spins distributions.
-     * @param totalBet Total staked in entire simulation (cycles * bet).
-     */
-    static void outputInitialSpinsReport(const uint64_t totalBet)
-    {
-        std::printf("\n\tInitial spins:\n");
-        const auto& hitsMeter = initialSpinsMeter.getSortedData();
-        const auto& winsMeter = initialSpinsWinsMeter.getSortedData();
-        outputHitAndWinReport(hitsMeter, winsMeter, totalBet);
-    }
-
-    /**
      * @brief Print final-spins distributions.
+     * @param buffer Buffer to write report to.
      * @param totalBet Total staked in simulation (cycles * bet).
      */
-    static void outputFinalSpinsReport(const uint64_t totalBet)
-    {
-        std::printf("\n\tFinal spins:\n");
-        const auto& hitsMeter = finalSpinsMeter.getSortedData();
-        const auto& winsMeter = finalSpinsWinsMeter.getSortedData();
-        outputHitAndWinReport(hitsMeter, winsMeter, totalBet);
-    }
-
-    // Buffered report appenders
     static void appendInitialSpinsReport(ReportBuffer& buffer, const uint64_t totalBet)
     {
         const auto& hits = initialSpinsMeter.getSortedData();
@@ -128,6 +108,11 @@ public:
         appendSpins(buffer, "SPINS REPORT - " + T::phaseName + " - Initial", hits, wins, totalBet);
     }
 
+    /**
+     * @brief Print final-spins distributions.
+     * @param buffer Buffer to write report to.
+     * @param totalBet Total staked in simulation (cycles * bet).
+     */
     static void appendFinalSpinsReport(ReportBuffer& buffer, const uint64_t totalBet)
     {
         const auto& hits = finalSpinsMeter.getSortedData();

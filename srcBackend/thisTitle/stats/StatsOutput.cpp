@@ -14,28 +14,14 @@ namespace Stats
     {
         ReportBuffer buffer(simGames, betType, rtp, bet);
 
-        // File outputs for distributions (unchanged behaviour)
         outputDistributionStats(betType, rtp, bet, simGames, buffer.createSubFolder("Distributions"));
 
         addGeneralStatsReport(buffer, simGames, bet);
-
-        // Max win from phases
-        GameCycleCompleteEvent::maxWinReport(buffer, simGames, bet);
-        BaseGameCompleteEvent::maxWinReport(buffer, simGames, bet);
-        FreeSpinsCompleteEvent::maxWinReport(buffer, simGames, bet);
-
-        // Paytable RTP
-        WinAnalysisEvent::reportRTP(buffer, simGames, bet, symbolNames);
-
-        // Spins reports (free spins)
-        const uint64_t totalBet = static_cast<uint64_t>(simGames) * static_cast<uint64_t>(bet);
-        FreeSpinsCompleteEvent::appendInitialSpinsReport(buffer, totalBet);
-        FreeSpinsCompleteEvent::appendFinalSpinsReport(buffer, totalBet);
-
-        // Win Cap report via shared helper
+        addMaxWinReport(buffer, simGames, bet);
+        addPayTableRTPReport(buffer, simGames, bet, symbolNames);
+        addSpinsReport(buffer, simGames, bet);
         addWinCapReport(buffer, simGames, bet, currentWinCap);
 
-        // Print to console and write CSV
         buffer.printConsole();
         buffer.writeCsv();
     }

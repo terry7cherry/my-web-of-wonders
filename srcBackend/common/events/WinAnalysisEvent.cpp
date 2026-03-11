@@ -47,44 +47,6 @@ Json::Value WinAnalysisEvent::toJson() const
     return eventDetails;
 }
 
-void WinAnalysisEvent::consoleReportRTP(const uint64_t simGames,
-                                        const int bet,
-                                        const std::vector<std::string>& symbolNames)
-{
-    size_t maxOAK = 0;
-    size_t minOAK = SIZE_MAX;
-    for (int symbolId = 0; symbolId < symbolNames.size(); symbolId++)
-    {
-        for (int oak = 1; oak <= PayTableMeter::MAX_OAK; oak++)
-        {
-            if (oak > maxOAK)
-                if (payTableWinnings.global[symbolId][oak - 1] > 0)
-                    maxOAK = oak;
-            if (oak < minOAK)
-                if (payTableWinnings.global[symbolId][oak - 1] > 0)
-                    minOAK = oak;
-        }
-    }
-
-    printf("\n\nPAYTABLE RTP REPORT\n");
-    printf("%10s", "Symbol");
-    for (size_t oak = minOAK; oak <= maxOAK; oak++)
-        printf("\t\t%llu OAK", oak);
-    for (size_t symbolId = 0; symbolId < symbolNames.size(); symbolId++)
-    {
-        printf("\n%10s", symbolNames[symbolId].c_str());
-        for (size_t oak = minOAK; oak <= maxOAK; oak++)
-        {
-            printf("\t%12.2f%%",
-                   static_cast<double>(100
-                       * static_cast<long double>(payTableWinnings.global[symbolId][oak - 1])
-                       / static_cast<long double>(simGames)
-                       / bet
-                   ));
-        }
-    }
-}
-
 void WinAnalysisEvent::reportRTP(ReportBuffer& buffer,
                                  const uint64_t simGames,
                                  const int bet,
