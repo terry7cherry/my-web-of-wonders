@@ -84,6 +84,16 @@ void API::startAPIServer()
 	                      {Post}
 
 	);
+	app().registerHandler("/healthz",
+	                      [](const HttpRequestPtr& request [[maybe_unused]],
+	                         std::function<void(const HttpResponsePtr&)>&& callback)
+	                      {
+		                      Json::Value result;
+		                      result["status"] = "ok";
+		                      auto resp = HttpResponse::newHttpJsonResponse(result);
+		                      callback(resp);
+	                      }
+	);
 #ifdef FRONTEND_DEV
 	app().addListener("0.0.0.0", 5172);
 #else
