@@ -136,13 +136,13 @@ public:
         auto pct = [&](long double v)
         {
             char s[64];
-            std::snprintf(s, sizeof(s), "%.2Lf%%", v);
+            std::snprintf(s, sizeof(s), "%.3Lf%%", v);
             return std::string(s);
         };
         auto f2 = [&](long double v)
         {
             char s[64];
-            std::snprintf(s, sizeof(s), "%.2Lf", v);
+            std::snprintf(s, sizeof(s), "%.4Lf", v);
             return std::string(s);
         };
 
