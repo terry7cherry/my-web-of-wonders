@@ -40,4 +40,10 @@ namespace GameLogic
 
     void removeExcessScatters(const GameMaths& maths, GameCycle& cycle,
                               const std::vector<std::pair<size_t, size_t>>& removedSymbols);
+
+    void recordFreeSpinsCompleteEvents(const GameMaths& maths, GameCycle& cycle);
+
+    void handleFreeSpinsForces(const GameMaths& maths, GameCycle& cycle);
+
+    void maximizeMultipliersForEnhancedFreeSpins(const GameMaths& maths, GameCycle& cycle);
 }

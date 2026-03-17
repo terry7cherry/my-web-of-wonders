@@ -1,0 +1,61 @@
+#pragma once
+/**
+ * @file StandardFreeSpinsCompleteEvent.h
+ * @brief Event emitted when the free spins phase completes.
+ */
+
+#include "../../common/events/eventTemplates/SpinsCompleteTemplate.h"
+#include "../state/GameCycle.h"
+
+/**
+ * @brief Phase completion event for Free Spins.
+ * @details Handled automatically on frontend.
+ */
+class EnhancedFreeSpins3CompleteEvent : public SpinsCompleteTemplate<EnhancedFreeSpins3CompleteEvent>
+{
+public:
+	/** @brief Name used for stats output. **/
+	inline static std::string phaseName = "Enhanced Free Spins 3";
+
+	/**
+	 * @param cycle Game cycle event including totalWin, fsInitialSpins, and fsSpinsPlayed properties.
+	 */
+	explicit EnhancedFreeSpins3CompleteEvent(const GameCycle& cycle)
+		: EnhancedFreeSpins3CompleteEvent(cycle.freeSpinsWin, cycle.fsInitialSpins, cycle.fsSpinsPlayed)
+	{
+	}
+
+	/**
+	 * @param totalWin Win from free spins.
+	 * @param initialSpins Free spins awarded from base game.
+	 * @param finalSpins Number of spins played including retriggers.
+	 */
+	EnhancedFreeSpins3CompleteEvent(
+		const unsigned int totalWin,
+		const unsigned int initialSpins,
+		const unsigned int finalSpins
+	) : SpinsCompleteTemplate(totalWin, initialSpins, finalSpins)
+	{
+	}
+
+	static void updateMeters(const GameCycle& cycle)
+	{
+		SpinsCompleteTemplate::updateMeters(
+			cycle.freeSpinsWin, cycle.fsInitialSpins, cycle.fsSpinsPlayed);
+	}
+
+	static void updateMeters(const unsigned int win, const unsigned int initialSpins,
+	                         const unsigned int finalSpins)
+	{
+		SpinsCompleteTemplate::updateMeters(win, initialSpins, finalSpins);
+	}
+
+protected :
+	Json::Value toJson() const override
+	{
+		Json::Value eventDetails;
+		eventDetails["eventType"] = "freeSpinsComplete";
+		eventDetails["totalWin"] = totalWin;
+		return eventDetails;
+	}
+};

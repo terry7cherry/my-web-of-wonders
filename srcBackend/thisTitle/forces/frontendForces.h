@@ -21,6 +21,26 @@ namespace Forces
             }
         ),
         FrontendForce(
+            "Coin Win",
+            [](const GameCycle& cycle)
+            {
+                return cycle.baseCoinsRecorded;
+            }
+        ),
+        FrontendForce(
+            "Bonus Collection",
+            [](const GameCycle& cycle)
+            {
+                return cycle.bonusSymbolCollected;
+            }
+        ),
+        FrontendForce(
+            "Multipliers Maxed",
+            [](const GameCycle& cycle)
+            {
+                return cycle.multipliersMaximized;
+            }),
+        FrontendForce(
             "Big Win (x1000)",
             [](const GameCycle& cycle)
             {

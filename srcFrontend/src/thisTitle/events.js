@@ -17,6 +17,7 @@ import moveElement from "../common/animation/moveElement.js";
 import popElementOut from "../common/animation/popElementOut.js";
 import collectorPositions from "./collectorPositions.js";
 import Image from "../common/uiElements/Image.js";
+import * as PIXI from "pixi.js";
 
 
 /** @type {Record<string, EventHandler>} */
@@ -44,20 +45,44 @@ export default {
             ])
         if (coinWins.length)
             await Promise.all([
-                ...coinWins.map(({collectorPosition, positions, multiplier}) => (async () => {
-                    const {x, y} = collectorPositions(game.ui)[collectorPosition];
+                ...coinWins.map(({positions, multiplier}) => (async () => {
                     const {reel, row} = positions[0];
                     const coinSymbol = game.ui.currentPhase.grid.reels[reel].apertures[row].container;
 
                     popElementOut({element: coinSymbol, targetParent: game.ui.app.stage})
-                    await moveElement({
-                        element: coinSymbol,
-                        newX: x,
-                        newY: y,
-                        pixelsPerFrame: 10
-                    })
+                    const multiplierText = new PIXI.Text(multiplier > 0 ? `x${multiplier}` : "", {
+                        fontFamily: "Arial",
+                        fontSize: 32,
+                        fontWeight: "bold",
+                        fill: 0xFF00FF,
+                        stroke: "#000000",
+                        strokeThickness: 5,
+                        dropShadow: true,
+                        dropShadowColour: "#000000",
+                        dropShadowBlur: 4,
+                        dropShadowAngle: Math.PI / 6,
+                        dropShadowDistance: 6,
+                        align: "center",
+                    });
+                    multiplierText.x = coinSymbol.x + coinSymbol.width;
+                    multiplierText.y = coinSymbol.y + 25;
+                    coinSymbol.parent.addChild(multiplierText);
+                    await Promise.all([...[coinSymbol, multiplierText].map(el => moveElement({
+                        element: el,
+                        newX: el.x,
+                        newY: el.y - 500,
+                        pixelsPerFrame: 6
+                    })), ...[coinSymbol, multiplierText].map(el => new Promise(resolve => {
+                        const animate = (delta) => {
+                            el.alpha -= delta / 50;
+                            if (el.alpha <= 0) PIXI.Ticker.shared.remove(animate);
+                            resolve();
+                        };
+                        PIXI.Ticker.shared.add(animate);
+                    }))]);
                     coinSymbol.parent.removeChild(coinSymbol);
                     coinSymbol.destroy({texture: true, baseTexture: true});
+                    multiplierText.destroy({texture: true, baseTexture: true});
                 })()),
                 game.ui.currentPhase.balance.increment(coinWins.reduce((sum, {totalWin}) => sum + totalWin, 0)),
                 game.ui.ticker.updateText(`${toCurrency(coinWins.reduce((sum, {totalWin}) => sum + totalWin, 0))} cash awarded!`)
@@ -85,20 +110,22 @@ export default {
             const position = positions.shift();
             return moveElement({
                 element: collector,
-                newX: collectorPositions(game.ui)[position].x,
-                newY: collectorPositions(game.ui)[position].y,
+                newX: collectorPositions(game.ui, {sprite: collector})[position].x,
+                newY: collectorPositions(game.ui, {sprite: collector})[position].y,
                 pixelsPerFrame: 10
             }).then(() => {
-                collector.parent.removeChild(collector);
-                collector.destroy({children: true});
                 secondaryCollectors[position] = new Image({
                     texture: game.imageMap.BN,
-                    x: collectorPositions(game.ui)[position].x,
-                    y: collectorPositions(game.ui)[position].y,
+                    x: collectorPositions(game.ui, {sprite: collector})[position].x,
+                    y: collectorPositions(game.ui, {sprite: collector})[position].y,
                     parent: game.ui.app.stage,
-                    width: 100,
-                    height: 100,
+                    width: 80,
+                    height: 80,
                 });
+                secondaryCollectors[position].originalWidth = secondaryCollectors[position].sprite.width;
+                secondaryCollectors[position].originalHeight = secondaryCollectors[position].sprite.height;
+                collector.parent.removeChild(collector);
+                collector.destroy({children: true});
             });
         }));
         game.ui.mainCollector.addOrUpdateText("x2", {
@@ -108,10 +135,21 @@ export default {
         await game.ui.setPhase("freeSpins");
         await game.ui.currentPhase.spinsLeft.update(spins, true);
     },
-    "bonusSymbolCollection": async ({reel, row}) => {
-        const symbol = game.ui.currentPhase.grid.reels[reel].apertures[row].symbol;
+    "bonusSymbolCollection": async ({reel, row}, game) => {
+        const grid = game.ui.currentPhase.grid;
+        const symbol = grid.reels[reel].apertures[row].symbol;
         popElementOut({element: symbol, targetParent: game.ui.app.stage});
-        const {x, y} = collectorPositions(game.ui)[game.state.mainCollectorPosition];
+        const graySymbol = new PIXI.Sprite(game.imageMap.BG);
+        grid.reels[reel].apertures[row].symbol = graySymbol;
+        graySymbol.isImage = true;
+        graySymbol.scale.set(
+            grid.reelWidth / graySymbol.width,
+            grid.symbolHeight / graySymbol.height,
+        );
+        graySymbol.x = (grid.reelWidth - graySymbol.width) / 2;
+        graySymbol.y = (grid.symbolHeight - graySymbol.height) / 2;
+        grid.reels[reel].apertures[row].container.addChild(graySymbol);
+        const {x, y} = collectorPositions(game.ui, game.ui.mainCollector)[game.state.mainCollectorPosition];
         await moveElement({
             element: symbol,
             newX: x,
@@ -119,17 +157,22 @@ export default {
             pixelsPerFrame: 10
         });
         symbol.destroy({children: true});
-        game.ui.mainCollector.sprite.scale.set(
-            game.ui.mainCollector.sprite.scale.x * 1.03,
-            game.ui.mainCollector.sprite.scale.y * 1.03,
-        )
-        game.ui.mainCollector.sprite.x = game.ui.mainCollector.sprite.x - game.ui.mainCollector.sprite.height * 0.015
-        game.ui.mainCollector.sprite.y = game.ui.mainCollector.sprite.y - game.ui.mainCollector.sprite.width * 0.015
+        const {mainCollector} = game.ui;
+        if (mainCollector.sprite.width >= mainCollector.originalWidth * 2)
+            return;
+        mainCollector.sprite.scale.set(
+            mainCollector.sprite.scale.x * (1 + 0.08 * (1 - (mainCollector.sprite.width - mainCollector.originalWidth) / mainCollector.originalWidth)),
+            mainCollector.sprite.scale.y * (1 + 0.08 * (1 - (mainCollector.sprite.width - mainCollector.originalWidth) / mainCollector.originalWidth)),
+        );
+        const newPosition = collectorPositions(game.ui, mainCollector)[game.state.mainCollectorPosition];
+        mainCollector.x = newPosition.x;
+        mainCollector.y = newPosition.y;
     },
     "collectorAwardedBonus": async () => {
         await game.ui.ticker.updateText("Spider awarded super egggwakening!");
     },
     "freeSpinsCollectionTrigger": async ({spins, initialSecondaryCollectors}, game) => {
+        const mainCollector = game.ui.mainCollector;
         game.shell.sessionStats.increment("freespins-sessions");
         await game.ui.ticker.updateText(`${spins} free spins awarded with x${initialSecondaryCollectors} hatched spiders!`);
         game.ui.phases["freeSpins"].secondaryCollectors = {};
@@ -141,20 +184,27 @@ export default {
                     x: -100 - i * 200,
                     y: -100,
                     parent: game.ui.app.stage,
-                    width: 100,
-                    height: 100,
+                    width: 80,
+                    height: 80,
                 });
+                secondaryCollectors[position].originalWidth = secondaryCollectors[position].sprite.width;
+                secondaryCollectors[position].originalHeight = secondaryCollectors[position].sprite.height;
                 return moveElement({
                     element: secondaryCollectors[position],
-                    newX: collectorPositions(game.ui)[position].x,
-                    newY: collectorPositions(game.ui)[position].y,
+                    newX: collectorPositions(game.ui, secondaryCollectors[position])[position].x,
+                    newY: collectorPositions(game.ui, secondaryCollectors[position])[position].y,
                     pixelsPerFrame: 10
                 })
             })));
-        game.ui.mainCollector.addOrUpdateText("x2", {
+        mainCollector.addOrUpdateText("x2", {
             y: 50,
             height: 50
         });
+        const {x, y} = mainCollector.originalScale;
+        mainCollector.sprite.scale.set(x, y);
+        const newPosition = collectorPositions(game.ui, mainCollector)[game.state.mainCollectorPosition];
+        mainCollector.x = newPosition.x;
+        mainCollector.y = newPosition.y;
         await game.ui.setPhase("freeSpins");
         await game.ui.currentPhase.spinsLeft.update(spins, true);
     },
@@ -199,8 +249,22 @@ export default {
     },
     "coinCollection": async ({reel, row, collectorPosition}, game) => {
         const symbol = game.ui.currentPhase.grid.reels[reel].apertures[row].symbol;
+        const grid = game.ui.currentPhase.grid;
+        const graySymbol = new PIXI.Sprite(game.imageMap.CG);
+        grid.reels[reel].apertures[row].symbol = graySymbol;
+        graySymbol.isImage = true;
+        graySymbol.scale.set(
+            grid.reelWidth / graySymbol.width,
+            grid.symbolHeight / graySymbol.height,
+        );
+        graySymbol.x = (grid.reelWidth - graySymbol.width) / 2;
+        graySymbol.y = (grid.symbolHeight - graySymbol.height) / 2;
+        grid.reels[reel].apertures[row].container.sortableChildren = true;
+        graySymbol.zIndex = -Infinity;
+        grid.reels[reel].apertures[row].container.addChild(graySymbol);
         popElementOut({element: symbol, targetParent: game.ui.app.stage});
-        const {x, y} = collectorPositions(game.ui)[collectorPosition];
+        const {x, y} = collectorPositions(game.ui,
+            game.ui.currentPhase.secondaryCollectors[collectorPosition])[collectorPosition];
         await moveElement({
             element: symbol,
             newX: x,
@@ -209,12 +273,15 @@ export default {
         });
         symbol.destroy({children: true, texture: !symbol.isImage, baseTexture: !symbol.isImage});
         const collector = game.ui.currentPhase.secondaryCollectors[collectorPosition]
+        if (collector.sprite.width >= collector.originalWidth * 2)
+            return;
         collector.sprite.scale.set(
-            collector.sprite.scale.x * 1.06,
-            collector.sprite.scale.y * 1.06,
-        )
-        collector.sprite.x = collector.sprite.x - collector.sprite.height * 0.03
-        collector.sprite.y = collector.sprite.y - collector.sprite.width * 0.03
+            collector.sprite.scale.x * (1 + 0.1 * (1 - (collector.sprite.width - collector.originalWidth) / collector.originalWidth)),
+            collector.sprite.scale.y * (1 + 0.1 * (1 - (collector.sprite.width - collector.originalWidth) / collector.originalWidth)),
+        );
+        const newPosition = collectorPositions(game.ui, collector)[collectorPosition];
+        collector.x = newPosition.x;
+        collector.y = newPosition.y;
     },
     "collectorActivation": async ({position, collectorMultipliers}, game) => {
         await Promise.all([
@@ -222,7 +289,7 @@ export default {
             game.ui.ticker.updateText("A spider hatched!")
         ]);
         Object.entries(collectorMultipliers).forEach(([collectorPosition, multiplier]) => {
-            if (multiplier > 1)
+            if (multiplier > 0)
                 if (collectorPosition === game.state.mainCollectorPosition)
                     game.ui.mainCollector.addOrUpdateText(`x${multiplier}`, {
                         y: 50,
@@ -235,5 +302,22 @@ export default {
                     });
         })
         await game.ui.ticker.updateText("Spider multipliers updated!");
+    },
+    "maxedOutMultipliers": async ({}, game) => {
+        await game.ui.ticker.updateText("All spiders hatched!");
+        ["topLeft", "topRight", "bottomLeft", "bottomRight"].forEach(collectorPosition => {
+            if (collectorPosition === game.state.mainCollectorPosition)
+                game.ui.mainCollector.addOrUpdateText(`x5`, {
+                    y: 50,
+                    height: 50
+                });
+            else
+                game.ui.currentPhase.secondaryCollectors[collectorPosition].addOrUpdateText(`x5`, {
+                    y: 50,
+                    height: 50
+                });
+        })
+        await game.ui.ticker.updateText("Multipliers maxed out!");
+
     }
 };

@@ -3,6 +3,7 @@
 #include "../common/grids/PayAnywhereGrid.h"
 #include "CollectorPositions.h"
 #include "wins/CoinWin.h"
+#include "events/BaseCoinsPayoutEvent.h"
 
 class CustomGrid : public PayAnywhereGrid
 {
@@ -54,9 +55,11 @@ public:
             "Tried to award coin with mutliplier value that does not match a collector.");
     }
 
-    unsigned int evaluateCoinWins(const unsigned int betMultiplier)
+    std::pair<unsigned int, std::vector<std::pair<unsigned int, unsigned int>>> evaluateCoinWins(
+        const unsigned int betMultiplier)
     {
         unsigned int totalWin = 0;
+        std::vector<std::pair<unsigned int, unsigned int>> coinWins{};
         for (size_t reel = 0; reel < maxReels; reel++)
             for (size_t row = 0; row < maxRows; row++)
                 if (coinValues[reel][row] > 0 && coinMultiplierGrid[reel][row] > 0)
@@ -69,7 +72,8 @@ public:
                     coinWin.totalWin *= coinMultiplierGrid[reel][row];
                     winVector.emplace_back(std::make_unique<CoinWin>(coinWin));
                     totalWin += coinWin.totalWin;
+                    coinWins.push_back({coinWin.win, coinWin.multiplier});
                 }
-        return totalWin;
+        return {totalWin, coinWins};
     }
 };

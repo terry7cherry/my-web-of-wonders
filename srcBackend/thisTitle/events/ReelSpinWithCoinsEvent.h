@@ -7,15 +7,18 @@ class ReelSpinWithCoinsEvent : public ReelSpinEvent
 {
 public:
     std::vector<std::vector<unsigned int>> coinValues;
+    unsigned int betMultiplier;
 
-    explicit ReelSpinWithCoinsEvent(const CustomGrid& grid, const GameMaths& maths)
-    :ReelSpinEvent(grid, maths),
-    coinValues(grid.coinValues)
+    explicit ReelSpinWithCoinsEvent(const CustomGrid& grid, const GameMaths& maths,
+                                    const unsigned int betMultiplier)
+        : ReelSpinEvent(grid, maths),
+          coinValues(grid.coinValues),
+          betMultiplier(betMultiplier)
     {
-
     }
 
-    static void updateMeters(const CustomGrid& grid, const GameMaths& maths)
+    static void updateMeters(const CustomGrid& grid, const GameMaths& maths,
+                             const unsigned int betMultiplier)
     {
         ReelSpinEvent::updateMeters(grid, maths);
     }
@@ -29,7 +32,7 @@ protected:
         {
             Json::Value jsonRow(Json::arrayValue);
             for (const auto& coinValue : row)
-                jsonRow.append(coinValue);
+                jsonRow.append(coinValue * betMultiplier);
             eventDetails["coinValues"].append(jsonRow);
         }
         return eventDetails;
