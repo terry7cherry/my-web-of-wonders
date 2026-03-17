@@ -155,7 +155,7 @@ export default class Grid {
                 });
             }
             await Promise.all(reelSpinAnimations)
-            await spinSound.stop();
+            this.sound.stop("spin");
             resolve();
         });
     }
@@ -391,6 +391,10 @@ export default class Grid {
             ...textStyle
         }
         const textObject = this.getSymbolText(text, textStyle);
+        textObject.scale.set(
+            this.reelWidth / textObject.width,
+            this.reelWidth / textObject.width,
+        )
         textObject.x = textStyle.x ?? (this.reelWidth - textObject.width) / 2;
         textObject.y = textStyle.y ?? (aperture.height - textObject.height);
         aperture.overlayContainer.addChild(textObject)

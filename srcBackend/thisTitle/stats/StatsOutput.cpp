@@ -13,10 +13,10 @@
 namespace Stats
 {
     void outputStats(const uint64_t simGames, const std::string& betType, const int rtp, const int bet,
-                     const std::string& simForce,
+                     const std::string& simForce, const int seed,
                      const std::vector<std::string>& symbolNames, const unsigned int currentWinCap)
     {
-        ReportBuffer buffer(simGames, betType, rtp, bet, simForce);
+        ReportBuffer buffer(simGames, betType, rtp, bet, simForce, seed);
 
         outputDistributionStats(betType, rtp, bet, simGames, buffer.createSubFolder("Distributions"));
 

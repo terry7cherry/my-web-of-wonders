@@ -211,7 +211,7 @@ export default class StandardGameUI {
 
         this.balance = new Ticker({
             parent: this.bottomTickerContainer,
-            width: 200,
+            width: Math.min(200, this.layout.width * 0.3),
             height: 20,
             pauseScale: 0,
             textFormat: {

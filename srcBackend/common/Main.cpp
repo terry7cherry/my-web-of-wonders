@@ -129,7 +129,7 @@ void threadWorker(const std::stop_token& st,
 
 void doMonteCarloStdMultiThread(const GameMaths& gameMaths, const int bet, const UserConfig& config)
 {
-	constexpr int BATCH_SIZE = 1'000'000;
+	constexpr int BATCH_SIZE = 100'000;
 	const uint64_t totalBatches = config.simSize / BATCH_SIZE;
 	const unsigned int threadCount = std::thread::hardware_concurrency() - 3;
 	std::cout << "Using " << threadCount << " threads" << std::endl;
@@ -172,6 +172,7 @@ void doMonteCarloStdMultiThread(const GameMaths& gameMaths, const int bet, const
 	simTimer.outputTime();
 	Stats::outputStats(config.simSize, gameMaths.betType, gameMaths.rtp, bet,
 	                   Forces::simForceNames.at(config.force),
+	                   config.seed,
 	                   gameMaths.payTables["default"].symbolNames,
 	                   gameMaths.ints.contains("winCap") ? gameMaths.ints["winCap"] : 0);
 }
@@ -220,6 +221,7 @@ void doMonteCarloStd(const GameMaths& gameMaths, const int bet, const UserConfig
 	simTimer.outputTime();
 	Stats::outputStats(config.simSize, gameMaths.betType, gameMaths.rtp, bet,
 	                   Forces::simForceNames.at(config.force),
+	                   config.seed,
 	                   gameMaths.payTables["default"].symbolNames,
 	                   gameMaths.ints.contains("winCap") ? gameMaths.ints["winCap"] : 0);
 }
@@ -295,9 +297,9 @@ int simulatorMain()
 		GameMaths& gameMaths = *parSheet.gameMathsVariants[config.betType][config.rtp];
 		const int bet = static_cast<int>(gameMaths.minBet * gameMaths.betTypeCost);
 #ifdef SINGLETHREAD
-		doMonteCarloStd(gameMaths, bet, config);
+	doMonteCarloStd(gameMaths, bet, config);
 #else
-		doMonteCarloStdMultiThread(gameMaths, bet, config);
+	doMonteCarloStdMultiThread(gameMaths, bet, config);
 #endif
 	}
 #endif

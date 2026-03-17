@@ -99,11 +99,12 @@ export default class PhaseUI {
     }
 
     createBalanceTicker(bottomTickerContainer, tickerTextColour) {
+        const width = Math.min(200, bottomTickerContainer.maxWidth * 0.3);
         this.balance = new Ticker({
             parent: bottomTickerContainer,
-            width: 200,
+            width: width,
             height: 20,
-            x: bottomTickerContainer.maxWidth - 200,
+            x: bottomTickerContainer.maxWidth - width,
             pauseScale: 0,
             textFormat: {fontFamily: "Arial", fontSize: 100, fill: tickerTextColour ?? 0x000000},
         });
@@ -113,11 +114,13 @@ export default class PhaseUI {
     }
 
     createSpinsLeftTicker(bottomTickerContainer, tickerTextColour) {
+        const width = Math.min(200, bottomTickerContainer.maxWidth * 0.3);
         this.spinsLeft = new Ticker({
             parent: bottomTickerContainer,
-            width: 200,
+            width: width,
             height: 20,
-            x: (bottomTickerContainer.maxWidth - 200) / 2,
+            x: Math.min(bottomTickerContainer.maxWidth - this.balance.width - width - bottomTickerContainer.maxWidth * 0.05,
+                (bottomTickerContainer.maxWidth - width) / 2),
             pauseScale: 3,
             textFormat: {fontFamily: "Arial", fontSize: 100, fill: tickerTextColour ?? 0x000000},
         });
