@@ -172,6 +172,7 @@ void doMonteCarloStdMultiThread(const GameMaths& gameMaths, const int bet, const
 	simTimer.outputTime();
 	Stats::outputStats(config.simSize, gameMaths.betType, gameMaths.rtp, bet,
 	                   Forces::simForceNames.at(config.force),
+	                   config.seed,
 	                   gameMaths.payTables["default"].symbolNames,
 	                   gameMaths.ints.contains("winCap") ? gameMaths.ints["winCap"] : 0);
 }
@@ -220,6 +221,7 @@ void doMonteCarloStd(const GameMaths& gameMaths, const int bet, const UserConfig
 	simTimer.outputTime();
 	Stats::outputStats(config.simSize, gameMaths.betType, gameMaths.rtp, bet,
 	                   Forces::simForceNames.at(config.force),
+	                   config.seed,
 	                   gameMaths.payTables["default"].symbolNames,
 	                   gameMaths.ints.contains("winCap") ? gameMaths.ints["winCap"] : 0);
 }

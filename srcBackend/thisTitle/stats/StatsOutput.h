@@ -32,11 +32,13 @@ namespace Stats
      * @param rtp RTP value (e.g., 96).
      * @param bet Bet amount per game (in coins, same unit as minBet and paytable payouts).
      * @param simForce Name of sim force for run.
+     * @param seed The random seed used for the run.
      * @param symbolNames Vector containing the readable name for each symbol.
      * @param currentWinCap The set win cap from the maths sheet, or 0 if not present.
      */
     void outputStats(uint64_t simGames, const std::string& betType, int rtp, int bet,
                      const std::string& simForce,
+                     int seed,
                      const std::vector<std::string>& symbolNames, unsigned int currentWinCap);
 
     /**

@@ -19,7 +19,7 @@ public:
     };
 
     ReportBuffer(uint64_t simGames, const std::string& betType, int rtp, int bet,
-                 const std::string& simForce);
+                 const std::string& simForce, int seed);
 
     // Ensure a table exists with given title and headers. If it exists, headers must match.
     void ensureTable(const std::string& title, const std::vector<std::string>& headers);

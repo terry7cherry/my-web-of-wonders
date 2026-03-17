@@ -3,7 +3,7 @@
 #include "../utils/utils.h"
 
 ReportBuffer::ReportBuffer(const uint64_t simGames, const std::string& betType, const int rtp, const int bet,
-                           const std::string& simForce
+                           const std::string& simForce, const int seed
 ) :
     outputFolder(
         createOutputFolder(betType, rtp, bet, simGames, simForce))
@@ -11,6 +11,7 @@ ReportBuffer::ReportBuffer(const uint64_t simGames, const std::string& betType, 
     addStat("RUN SETTINGS", "Games", addThousandsSeparator(simGames));
     addStat("RUN SETTINGS", "Bet", std::to_string(bet));
     addStat("RUN SETTINGS", "RTP", std::to_string(rtp));
+    addStat("RUN SETTINGS", "Seed", std::to_string(seed));
     if (!betType.empty() && betType != "default") addStat("RUN SETTINGS", "BetType", betType);
 }
 
