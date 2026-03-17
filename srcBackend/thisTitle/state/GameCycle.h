@@ -36,11 +36,16 @@ struct GameCycle : GameCycleBase
     unsigned int fsRetriggerSpins = 0;
     unsigned int fsSpinsPlayed = 0;
     unsigned int baseNumScatters = 0;
+    bool bonusSymbolCollected = false;
     bool baseCoinsRecorded = false;
+    bool baseSingleCoinPayoutRecorded = false;
+    bool freeSpinsSingleCoinPayoutRecorded = false;
     bool basePayAnywhereRecorded = false;
+    bool freeSpinsPayAnywhereRecorded = false;
     bool fsCollectorsActivated[4] = {};
     bool fsTrigger = false;
     bool fsCollectorTrigger = false;
+    bool multipliersMaximized = false;
     unsigned int fsInitialSecondaryCollectors = 0;
     // Add other game state variables here.
 

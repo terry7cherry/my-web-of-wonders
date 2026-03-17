@@ -11,7 +11,7 @@ Json::Value GameMaths::toJson() const
     config["minBetCost"] = minBetCost;
     config["payTable"] = payTables["default"].awardsToJson();
     config["symbolNames"] = payTables["default"].symbolNamesToJson();
-    config["displayReelSet"] = reelSets["baseReelsA"].toJson(payTables["default"].symbolNames);
+    config["displayReelSet"] = reelSets["reelSetA"].toJson(payTables["default"].symbolNames);
     return config;
 }
 

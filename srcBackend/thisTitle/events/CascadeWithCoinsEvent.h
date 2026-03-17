@@ -7,20 +7,24 @@ class CascadeWithCoinsEvent : public CascadeEvent
 {
 public:
     std::vector<std::vector<unsigned int>> coinValues;
+    unsigned int betMultiplier;
 
     explicit CascadeWithCoinsEvent(
         const std::vector<std::pair<size_t, size_t>>& removedSymbols,
         const CustomGrid& grid,
-        const GameMaths& maths) :
+        const GameMaths& maths,
+        const unsigned int betMultiplier) :
         CascadeEvent(removedSymbols, grid, maths),
-        coinValues(grid.coinValues)
+        coinValues(grid.coinValues),
+        betMultiplier(betMultiplier)
     {
     }
 
     static void updateMeters(
         const std::vector<std::pair<size_t, size_t>>& removedSymbols,
         const CustomGrid& grid,
-        const GameMaths& maths)
+        const GameMaths& maths,
+        const unsigned int betMultiplier)
     {
         CascadeEvent::updateMeters(removedSymbols, grid, maths);
     }
@@ -34,7 +38,7 @@ protected:
         {
             Json::Value jsonRow(Json::arrayValue);
             for (const auto& coinValue : row)
-                jsonRow.append(coinValue);
+                jsonRow.append(coinValue * betMultiplier);
             eventDetails["coinValues"].append(jsonRow);
         }
         eventDetails["removedSymbolsPerReel"] = Json::Value(Json::arrayValue);

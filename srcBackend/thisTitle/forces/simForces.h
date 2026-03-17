@@ -7,7 +7,11 @@ namespace Forces
     enum SimForce
     {
         ForceNone,
-        ForceFreeSpins,
+        ForceStandardFreeSpins,
+        ForceEnhancedFreeSpins1,
+        ForceEnhancedFreeSpins2,
+        ForceEnhancedFreeSpins3,
+        ForceEnhancedFreeSpinsRandom,
         // Add additional forces here.
         ForceBaseGameA,
         ForceBaseGameB,
@@ -22,7 +26,11 @@ namespace Forces
 
     inline std::vector<std::string> simForceNames{
         "None",
-        "Free Spins",
+        "Standard Free Spins",
+        "Enhanced Free Spins 1",
+        "Enhanced Free Spins 2",
+        "Enhanced Free Spins 3",
+        "Enhanced Free Spins Random",
         "Base Reelset A",
         "Base Reelset B",
         "Base Reelset C",

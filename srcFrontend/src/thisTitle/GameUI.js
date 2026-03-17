@@ -22,10 +22,10 @@ export default class GameUI extends StandardGameUI {
             {
                 // Uncomment these and edit the values to add outer panels to the game UI.
                 // These panels will be present throughout all phases of the game.
-                topPanelHeight: 120,
-                leftPanelWidth: 120,
-                rightPanelWidth: 120,
-                bottomPanelHeight: 120,
+                topPanelHeight: 80,
+                leftPanelWidth: 80,
+                rightPanelWidth: 80,
+                bottomPanelHeight: 80,
             },
             {
                 // Uncomment these to set the colours of panels created above.
@@ -42,8 +42,8 @@ export default class GameUI extends StandardGameUI {
                     {
                         // Uncomment these and edit the values to create phase UI panels.
                         // These panels will only be present during this phase.
-                        symbolHeight: 120,
-                        reelWidth: 120
+                        symbolHeight: 80,
+                        reelWidth: 80
                     },
                     {
                         // Changes the colour of the entire background for the duration of this phase.
@@ -67,8 +67,8 @@ export default class GameUI extends StandardGameUI {
                     "Free Spins",
                     true,
                     {
-                        symbolHeight: 120,
-                        reelWidth: 120
+                        symbolHeight: 80,
+                        reelWidth: 80
                     },
                     {backgroundColour: 0x11a878},
                     {
@@ -85,12 +85,18 @@ export default class GameUI extends StandardGameUI {
         const mainCollectorTexture = this.imageMap.mainCollector;
         this.mainCollector = new Image({
             texture: mainCollectorTexture,
-            width: 100,
-            height: 100,
+            width: 80,
+            height: 80,
             x: -100,
             y: -100,
             parent: this.app.stage,
-        })
+        });
+        this.mainCollector.originalScale = {
+            x: this.mainCollector.sprite.scale.x,
+            y: this.mainCollector.sprite.scale.y,
+        }
+        this.mainCollector.originalWidth = this.mainCollector.sprite.width;
+        this.mainCollector.originalHeight = this.mainCollector.sprite.height;
         //this.mainCollector = new PIXI.Sprite(mainCollectorTexture);
         //this.mainCollector.size = 100;
         //this.mainCollector.scale.set(
@@ -129,7 +135,7 @@ export default class GameUI extends StandardGameUI {
         await super.updateUiAndStateToMatchSession(session, state);
         if (state.mainCollectorPosition !== session.mainCollectorPosition) {
             state.mainCollectorPosition = session.mainCollectorPosition;
-            const {x, y} = collectorPositions(this)[state.mainCollectorPosition];
+            let {x, y} = collectorPositions(this, this.mainCollector)[state.mainCollectorPosition];
             await moveElement({element: this.mainCollector, newX: x, newY: y, totalFrames: 50});
         }
         // Use this method to update the UI to match the current session.
