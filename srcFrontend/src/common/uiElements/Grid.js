@@ -155,7 +155,7 @@ export default class Grid {
                 });
             }
             await Promise.all(reelSpinAnimations)
-            await spinSound.stop();
+            this.sound.stop("spin");
             resolve();
         });
     }

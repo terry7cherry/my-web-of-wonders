@@ -303,29 +303,43 @@ export default class Game {
     }
 
     getSoundPlayer() {
-        sound.useLegacy = true;
+        const audioCache = new Map();
 
-        sound.add("spin", spinSound);
+        const getOrCreateAudio = (name, url) => {
+            if (!audioCache.has(name)) {
+                const audio = new Audio(url);
+                audio.preload = "auto";
+                audio.load();
+                audioCache.set(name, audio);
+            }
+            return audioCache.get(name);
+        };
+
+        // Pre-cache the spin sound
+        getOrCreateAudio("spin", spinSound);
 
         return {
             play: (soundName) =>
                 new Promise((resolve) => {
-                    sound.play(soundName, {
-                        complete: resolve,
-                    });
+                    const audio = getOrCreateAudio(soundName);
+                    audio.currentTime = 0;
+                    audio.onended = () => resolve();
+                    audio.play().catch(resolve);
                 }),
             playAsync: async (soundName) => {
-                /** @type {import("@pixi/sound").IMediaInstance & { _source?: { play?: Function } }} */
-                const playingSound = await sound.play(soundName);
-                if (playingSound?._source?.play instanceof Function) {
-                    const soundPromise = playingSound._source.play();
-                    if (soundPromise instanceof Promise) {
-                        await soundPromise;
-                    }
-                }
-                return playingSound;
+                const audio = getOrCreateAudio(soundName);
+                audio.currentTime = 0;
+                await audio.play();
+                return audio;
             },
-            add: (name, file) => sound.add(name, file),
+            add: (name, file) => getOrCreateAudio(file),
+            stop: (soundName) => {
+                const audio = audioCache.get(soundName);
+                if (audio) {
+                    audio.pause();
+                    audio.currentTime = 0;
+                }
+            },
         };
     }
 
