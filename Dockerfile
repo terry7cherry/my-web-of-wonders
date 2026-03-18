@@ -66,7 +66,7 @@ FROM debian:bookworm-slim
 RUN apt-get update && apt-get install -y \
     ca-certificates && rm -rf /var/lib/apt/lists/*
 
-COPY --from=build /tmp/cpp-game-out /usr/local/bin/cpp-game
+COPY --from=build /src/build/cpp-game /usr/local/bin/cpp-game
 COPY --from=build /src/srcFrontend/dist /src/srcFrontend/dist
 COPY --from=build /src/srcBackend/thisTitle/parSheets /src/srcBackend/thisTitle/parSheets
 
