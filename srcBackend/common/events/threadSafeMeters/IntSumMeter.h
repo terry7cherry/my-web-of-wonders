@@ -27,81 +27,44 @@ public:
     /**
      * @brief Pre-increment by 1.
      */
-    IntSumMeter& operator++()
-    {
-        increment(1);
-        return *this;
-    }
+    IntSumMeter& operator++();
 
     /**
      * @brief Post-increment by 1.
      */
-    IntSumMeter& operator++(int)
-    {
-        increment(1);
-        return *this;
-    }
+    IntSumMeter& operator++(int);
 
     /**
      * @brief Add v to the current thread's local sum.
      */
-    IntSumMeter& operator+=(const uint64_t v)
-    {
-        increment(v);
-        return *this;
-    }
+    IntSumMeter& operator+=(uint64_t v);
 
     /**
      * @brief Add to the calling thread's local counter.
      * @details Global value will be updated at the end of the batch.
      */
-    void increment(const uint64_t toAdd)
-    {
-        tls()[_id] += toAdd;
-    }
+    void increment(const uint64_t toAdd);
 
     /**
      * @brief Atomically transfer the calling thread's local sum to the global total and clear local.
      */
-    void flush()
-    {
-        if (tls()[_id] == 0) return;
-        global_.fetch_add(tls()[_id], std::memory_order_relaxed);
-        tls()[_id] = 0;
-    }
+    void flush();
 
     /**
      * @brief Read the aggregated global total.
      */
-    uint64_t global() const
-    {
-        return global_.load(std::memory_order_relaxed);
-    }
+    uint64_t global() const;
 
 private:
     /**
      * @brief Access per-thread storage and subscribe this meter to global flush notifications.
      */
-    uint64_t* tls()
-    {
-        thread_local uint64_t tls[100] = {};
-        thread_local bool registered[100] = {};
-        if (!registered[_id]) [[unlikely]]
-        {
-            MeterUpdate::subscribe([this]() { this->flush(); });
-            registered[_id] = true;
-        }
-        return tls;
-    }
+    uint64_t* tls();
 
     /**
      * @brief Allocate a unique slot index for TLS arrays across meters of this type.
      */
-    static size_t allocateId()
-    {
-        static std::atomic<size_t> nextId{0};
-        return nextId.fetch_add(1, std::memory_order_relaxed);
-    }
+    static size_t allocateId();
 
     std::atomic<uint64_t> global_{0};
 

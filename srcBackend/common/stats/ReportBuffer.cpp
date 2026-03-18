@@ -111,7 +111,7 @@ void ReportBuffer::writeCsv() const
         const auto& tbl = tables.at(name);
         if (!firstSection) out << "\n"; // blank line between sections
         firstSection = false;
-        out << tbl.title << "\n";
+        out << tbl.title << ",,\n";
         for (size_t i = 0; i < tbl.headers.size(); ++i)
         {
             out << esc(tbl.headers[i]);
@@ -175,4 +175,19 @@ std::filesystem::path ReportBuffer::createSubFolder(const std::string& folderNam
     std::filesystem::path path = outputFolder / folderName;
     std::filesystem::create_directories(path);
     return path;
+}
+
+std::string ReportBuffer::toPercent(const long double v, const int precision)
+{
+    char s[64];
+    std::snprintf(s, sizeof(s), (std::string("%.") + std::to_string(precision) + "Lf%%").c_str(),
+                  v * 100.0L);
+    return std::string(s);
+}
+
+std::string ReportBuffer::toFloat(const long double v, const int precision)
+{
+    char s[64];
+    std::snprintf(s, sizeof(s), (std::string("%.") + std::to_string(precision) + "Lf").c_str(), v);
+    return std::string(s);
 }

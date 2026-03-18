@@ -131,27 +131,21 @@ private:
         const std::vector<std::string> headers = {"Spins", "Hits", "Splits", "Wins", "RTP"};
         long long mapTotal = 0;
         for (const auto& p : hits) mapTotal += static_cast<long long>(p.second);
-        auto pct2 = [](long double v)
-        {
-            char s[64];
-            std::snprintf(s, sizeof(s), "%.2Lf%%", v);
-            return std::string(s);
-        };
         for (size_t i = 0; i < hits.size() && i < wins.size(); ++i)
         {
             const auto splitsPct = mapTotal > 0
-                                       ? static_cast<long double>(hits[i].second) * 100.0L / mapTotal
+                                       ? static_cast<long double>(hits[i].second) / mapTotal
                                        : 0.0L;
             const auto rtpPct = totBet > 0
-                                    ? static_cast<long double>(wins[i].second) * 100.0L / totBet
+                                    ? static_cast<long double>(wins[i].second) / totBet
                                     : 0.0L;
             buffer.addRow(title, headers,
                           {
                               std::to_string(hits[i].first),
                               std::to_string(static_cast<unsigned long long>(hits[i].second)),
-                              pct2(splitsPct),
+                              buffer.toPercent(splitsPct, 2),
                               std::to_string(static_cast<unsigned long long>(wins[i].second)),
-                              pct2(rtpPct)
+                              buffer.toPercent(rtpPct, 2)
                           });
         }
     }
