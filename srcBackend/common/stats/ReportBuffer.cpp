@@ -111,7 +111,7 @@ void ReportBuffer::writeCsv() const
         const auto& tbl = tables.at(name);
         if (!firstSection) out << "\n"; // blank line between sections
         firstSection = false;
-        out << tbl.title << "\n";
+        out << tbl.title << ",,\n";
         for (size_t i = 0; i < tbl.headers.size(); ++i)
         {
             out << esc(tbl.headers[i]);
