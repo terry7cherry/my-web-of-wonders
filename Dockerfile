@@ -19,8 +19,11 @@ RUN apt-get update && apt-get install -y \
 
 # Install vcpkg
 WORKDIR /opt
-RUN git clone https://github.com/microsoft/vcpkg.git && \
-                  ./vcpkg/bootstrap-vcpkg.sh -disableMetrics
+ARG VCPKG_VERSION=2025.12.12
+RUN git clone --no-single-branch https://github.com/microsoft/vcpkg.git && \
+    cd vcpkg && \
+    git checkout ${VCPKG_VERSION} && \
+    ./bootstrap-vcpkg.sh -disableMetrics
 
 ENV VCPKG_ROOT=/opt/vcpkg
 ENV VCPKG_FEATURE_FLAGS=manifests,versions
@@ -32,24 +35,27 @@ RUN ${VCPKG_ROOT}/vcpkg install --triplet x64-linux --x-manifest-root=/src
 
 # Copy source
 COPY CMakeLists.txt ./
+
+# Install node modules (copy manifests first to cache this layer)
+WORKDIR /src/srcFrontend
+COPY srcFrontend/package.json srcFrontend/package-lock.json ./
+RUN npm i
+
+# Copy remaining source (after npm i to avoid busting its cache)
+WORKDIR /src
 COPY srcBackend ./srcBackend
 COPY srcFrontend ./srcFrontend
 
-# Install node modules
-WORKDIR ./srcFrontend
-RUN npm i
-
-
 # Build (C++ and frontend)
-WORKDIR /src
-
-RUN cmake -B build -S . \
+RUN --mount=type=cache,target=/src/build \
+    cmake -B build -S . \
     -G Ninja \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_TOOLCHAIN_FILE=${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake \
     -DCMAKE_CXX_FLAGS="-w" \
     -DFRONTEND=ON && \
-    cmake --build build --target cpp-game -j$(nproc)
+    cmake --build build --target cpp-game -j$(nproc) && \
+    cp build/cpp-game /tmp/cpp-game-out
 
 
 # ============================
@@ -61,10 +67,9 @@ FROM debian:bookworm-slim
 RUN apt-get update && apt-get install -y \
     ca-certificates && rm -rf /var/lib/apt/lists/*
 
-COPY --from=build /src/build/cpp-game /usr/local/bin/cpp-game
+COPY --from=build /tmp/cpp-game-out /usr/local/bin/cpp-game
 COPY --from=build /src/srcFrontend/dist /src/srcFrontend/dist
 COPY --from=build /src/srcBackend/thisTitle/parSheets /src/srcBackend/thisTitle/parSheets
 
 EXPOSE 8080
 CMD ["cpp-game"]
-
