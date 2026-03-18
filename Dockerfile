@@ -47,8 +47,7 @@ COPY srcBackend ./srcBackend
 COPY srcFrontend ./srcFrontend
 
 # Build (C++ and frontend)
-RUN --mount=type=cache,target=/src/build \
-    cmake -B build -S . \
+RUN cmake -B build -S . \
     -G Ninja \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_TOOLCHAIN_FILE=${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake \
