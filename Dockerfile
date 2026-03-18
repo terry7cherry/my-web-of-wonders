@@ -54,8 +54,7 @@ RUN --mount=type=cache,target=/src/build \
     -DCMAKE_TOOLCHAIN_FILE=${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake \
     -DCMAKE_CXX_FLAGS="-w" \
     -DFRONTEND=ON && \
-    cmake --build build --target cpp-game -j$(nproc) && \
-    cp build/cpp-game /tmp/cpp-game-out
+    cmake --build build --target cpp-game -j$(nproc)
 
 
 # ============================
