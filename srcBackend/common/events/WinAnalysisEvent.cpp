@@ -79,12 +79,6 @@ void WinAnalysisEvent::reportRTP(ReportBuffer& buffer,
         headers.emplace_back(std::to_string(static_cast<unsigned long long>(oak)) + " OAK");
     }
 
-    auto pct2 = [](long double v)
-    {
-        char s[64];
-        std::snprintf(s, sizeof(s), "%.2Lf%%", v);
-        return std::string(s);
-    };
 
     for (std::size_t symbolId = 0; symbolId < symbolNames.size(); ++symbolId)
     {
@@ -95,9 +89,9 @@ void WinAnalysisEvent::reportRTP(ReportBuffer& buffer,
             const auto winnings = payTableWinnings.global[symbolId][oak - 1];
             long double pct = 0.0L;
             if (simGames > 0 && bet > 0)
-                pct = static_cast<long double>(winnings) * 100.0L /
+                pct = static_cast<long double>(winnings) /
                     (static_cast<long double>(simGames) * bet);
-            row.push_back(pct2(pct));
+            row.push_back(buffer.toPercent(pct, 2));
         }
         buffer.addRow("PAYTABLE RTP REPORT", headers, row);
     }

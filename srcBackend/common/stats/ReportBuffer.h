@@ -45,6 +45,11 @@ public:
 
     std::filesystem::path createSubFolder(const std::string& folderName) const;
 
+    static std::string toPercent(long double v, int precision = 3);
+
+
+    static std::string toFloat(long double v, int precision = 2);
+
 private:
     std::map<std::string, Table> tables;
     std::vector<std::string> order;

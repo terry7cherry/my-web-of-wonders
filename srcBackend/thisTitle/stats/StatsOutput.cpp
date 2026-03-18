@@ -131,31 +131,18 @@ namespace Stats
         if (currentWinCap > 0) headers.emplace_back(addThousandsSeparator(currentWinCap));
         for (int i = 0; i < 18; ++i) headers.emplace_back(addThousandsSeparator(winCap[i]));
 
-        auto pct = [&](long double v)
-        {
-            char s[64];
-            std::snprintf(s, sizeof(s), "%.2Lf%%", v);
-            return std::string(s);
-        };
-        auto pct3 = [&](long double v)
-        {
-            char s[64];
-            std::snprintf(s, sizeof(s), "%.3Lf%%", v);
-            return std::string(s);
-        };
-
         // Capped RTP
         {
             std::vector<std::string> row;
             row.emplace_back("Capped RTP");
             if (currentWinCap > 0)
-                row.emplace_back(pct(
-                    100.0L * static_cast<long double>(currentCapTotalWin) / (simGames * static_cast<long
-                        double>(bet))));
+                row.emplace_back(buffer.toPercent(
+                    static_cast<long double>(currentCapTotalWin) / (simGames * static_cast<long
+                        double>(bet)), 2));
             for (int i = 0; i < 18; ++i)
-                row.emplace_back(pct(
-                    100.0L * static_cast<long double>(cappedTotalWin[i]) / (simGames * static_cast<long
-                        double>(bet))));
+                row.emplace_back(buffer.toPercent(
+                    static_cast<long double>(cappedTotalWin[i]) / (simGames * static_cast<long
+                        double>(bet)), 2));
             buffer.addRow("WIN CAP REPORT", headers, row);
         }
         // RTP lost
@@ -163,12 +150,12 @@ namespace Stats
             std::vector<std::string> row;
             row.emplace_back("RTP lost");
             if (currentWinCap > 0)
-                row.emplace_back(pct3(
-                    100.0L * static_cast<long double>(totalWin - currentCapTotalWin) / (simGames * static_cast
+                row.emplace_back(buffer.toPercent(
+                    static_cast<long double>(totalWin - currentCapTotalWin) / (simGames * static_cast
                         <long double>(bet))));
             for (int i = 0; i < 18; ++i)
-                row.emplace_back(pct3(
-                    100.0L * static_cast<long double>(totalWin - cappedTotalWin[i]) / (simGames * static_cast<
+                row.emplace_back(buffer.toPercent(
+                    static_cast<long double>(totalWin - cappedTotalWin[i]) / (simGames * static_cast<
                         long double>(bet))));
             buffer.addRow("WIN CAP REPORT", headers, row);
         }

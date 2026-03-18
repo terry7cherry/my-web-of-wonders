@@ -133,20 +133,7 @@ public:
         const uint64_t totalWin = eventTotalWin.global();
         const uint64_t totalBet = plays * betAmount;
 
-        auto pct = [&](long double v)
-        {
-            char s[64];
-            std::snprintf(s, sizeof(s), "%.3Lf%%", v);
-            return std::string(s);
-        };
-        auto f2 = [&](long double v)
-        {
-            char s[64];
-            std::snprintf(s, sizeof(s), "%.4Lf", v);
-            return std::string(s);
-        };
-
-        const long double rtp = totalBet ? static_cast<long double>(totalWin) * 100.0L / totalBet : 0.0L;
+        const long double rtp = totalBet ? static_cast<long double>(totalWin) / totalBet : 0.0L;
         const long double hitRate = hitCount ? static_cast<long double>(plays) / hitCount : 0.0L;
         const long double cycleHitRate = cycleHitCount
                                              ? static_cast<long double>(plays) / cycleHitCount
@@ -156,7 +143,7 @@ public:
         const long double avgWin =
             winCount ? static_cast<long double>(totalWin) / winCount / betAmount : 0.0L;
         const long double winChance =
-            hitCount ? static_cast<long double>(winCount) * 100.0L / hitCount : 0.0L;
+            hitCount ? static_cast<long double>(winCount) / hitCount : 0.0L;
         const long double winRate = winCount ? static_cast<long double>(hitCount) / winCount : 0.0L;
 
         buffer.addRow(
@@ -164,13 +151,13 @@ public:
             {"Phase", "RTP", "HitRate", "CycleHitRate", "AvgPay", "AvgWin", "WinChance", "WinRate"},
             {
                 T::phaseName,
-                pct(rtp),
-                hitCount ? f2(hitRate) : "Inf",
-                T::multipleHitsPerCycle ? (cycleHitCount ? f2(cycleHitRate) : "Inf") : "NA",
-                f2(avgPay),
-                f2(avgWin),
-                pct(winChance),
-                winRate ? f2(winRate) : "Inf"
+                buffer.toPercent(rtp),
+                hitCount ? buffer.toFloat(hitRate, 4) : "Inf",
+                T::multipleHitsPerCycle ? (cycleHitCount ? buffer.toFloat(cycleHitRate, 4) : "Inf") : "NA",
+                buffer.toFloat(avgPay, 4),
+                buffer.toFloat(avgWin, 4),
+                buffer.toPercent(winChance),
+                winRate ? buffer.toFloat(winRate, 4) : "Inf"
             }
         );
     }
@@ -186,25 +173,16 @@ public:
         const uint64_t hitCount = eventTotalHits.global();
         const uint64_t maxWin = maxWinMeter.globalMax;
         const uint64_t maxWinCount = maxWinMeter.globalCount;
-        auto f2 = [&](long double v)
-        {
-            char s[64];
-            std::snprintf(s, sizeof(s), "%.2Lf", v);
-            return std::string(s);
-        };
-        auto f0 = [&](long double v)
-        {
-            char s[64];
-            std::snprintf(s, sizeof(s), "%.0Lf", v);
-            return std::string(s);
-        };
         const long double maxXBet = betAmount ? static_cast<long double>(maxWin) / betAmount : 0.0L;
         const long double hitRate = maxWinCount ? static_cast<long double>(plays) / maxWinCount : 0.0L;
         const long double eventRate = maxWinCount ? static_cast<long double>(hitCount) / maxWinCount : 0.0L;
         buffer.addRow(
             "MAX WIN REPORT",
             {"Phase", "MaxWin (xBet)", "HitRate", "EventRate"},
-            {T::phaseName, f2(maxXBet), f0(hitRate), f0(eventRate)}
+            {
+                T::phaseName, buffer.toFloat(maxXBet, 2), buffer.toFloat(hitRate, 0),
+                buffer.toFloat(eventRate, 0)
+            }
         );
     }
 };
