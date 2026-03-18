@@ -51,6 +51,7 @@ namespace Stats
     void outputDistributionStats(const std::string& betType, int rtp, int bet, uint64_t simGames,
                                  const std::filesystem::path& outputFolder);
 
+
     /**
      * @brief Print a general (RTP, hit rates, averages) report to the console.
      * @param buffer Buffer to write stats to.
@@ -58,6 +59,8 @@ namespace Stats
      * @param bet Bet amount per game (in coins, same unit as minBet and paytable payouts).
      */
     void addGeneralStatsReport(ReportBuffer& buffer, uint64_t simGames, int bet);
+
+    void addEndingSecondaryCollectorsReport(ReportBuffer& buffer);
 
     /**
      * @brief Print a breakdown of RTP by paytable awards.

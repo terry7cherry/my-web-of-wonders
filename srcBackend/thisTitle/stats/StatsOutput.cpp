@@ -9,6 +9,15 @@
 
 #include "../events/BaseCoinsPhaseCompleteEvent.h"
 #include "../events/BasePayAnywherePhaseCompleteEvent.h"
+#include "../events/BonusSymbolCollectionEvent.h"
+#include "../events/CoinCollectionEvent.h"
+#include "../events/EnhancedFreeSpinsCompleteEvent.h"
+#include "../events/EnhancedFreeSpins1CompleteEvent.h"
+#include "../events/EnhancedFreeSpins2CompleteEvent.h"
+#include "../events/EnhancedFreeSpins3CompleteEvent.h"
+#include "../events/FreeSpinsCoinsPayoutEvent.h"
+#include "../events/FreeSpinsPayAnywherePhaseCompleteEvent.h"
+#include "../events/StandardFreeSpinsCompleteEvent.h"
 
 namespace Stats
 {
@@ -21,6 +30,7 @@ namespace Stats
         outputDistributionStats(betType, rtp, bet, simGames, buffer.createSubFolder("Distributions"));
 
         addGeneralStatsReport(buffer, simGames, bet);
+        addEndingSecondaryCollectorsReport(buffer);
         addMaxWinReport(buffer, simGames, bet);
         addPayTableRTPReport(buffer, simGames, bet, symbolNames);
         addSpinsReport(buffer, simGames, bet);
@@ -49,14 +59,29 @@ namespace Stats
         GameCycleCompleteEvent::finalReport(buffer, simGames, bet);
         BaseGameCompleteEvent::finalReport(buffer, simGames, bet);
         FreeSpinsCompleteEvent::finalReport(buffer, simGames, bet);
+        StandardFreeSpinsCompleteEvent::finalReport(buffer, simGames, bet);
+        BonusSymbolCollectionEvent::finalReport(buffer, simGames, bet);
+        EnhancedFreeSpinsCompleteEvent::finalReport(buffer, simGames, bet);
+        EnhancedFreeSpins1CompleteEvent::finalReport(buffer, simGames, bet);
+        EnhancedFreeSpins2CompleteEvent::finalReport(buffer, simGames, bet);
+        EnhancedFreeSpins3CompleteEvent::finalReport(buffer, simGames, bet);
         BasePayAnywherePhaseCompleteEvent::finalReport(buffer, simGames, bet);
         BaseCoinsPhaseCompleteEvent::finalReport(buffer, simGames, bet);
+        BaseCoinsPayoutEvent::finalReport(buffer, simGames, bet);
+        FreeSpinsPayAnywherePhaseCompleteEvent::finalReport(buffer, simGames, bet);
+        FreeSpinsCoinsPayoutEvent::finalReport(buffer, simGames, bet);
         // You can add other phases (features/bonuses etc) to this report.
         // Ensure you have created an event for your phase derived from the PhaseCompleteEvent class.
         // (Copy from common/events/BaseGameCompleteEvent.h, for example).
         // Make sure you call cycle.recordEvent<YourPhaseCompleteEvent>(phaseWinnings) in your GameLogic.
         // Call finalReport on the new event above.
     };
+
+    void addEndingSecondaryCollectorsReport(ReportBuffer& buffer)
+    {
+        StandardFreeSpinsCompleteEvent::finalSecondaryCollectorsMeter.addReport(
+            buffer, "STANDARD FREE SPINS FINAL SECONDARY COLLECTORS", "FinalSecondaryCollectors");
+    }
 
     void addPayTableRTPReport(ReportBuffer& buffer, const uint64_t simGames, const int bet,
                               const std::vector<std::string>& symbolNames)

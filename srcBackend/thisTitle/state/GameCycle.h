@@ -47,6 +47,7 @@ struct GameCycle : GameCycleBase
     bool fsCollectorTrigger = false;
     bool multipliersMaximized = false;
     unsigned int fsInitialSecondaryCollectors = 0;
+    unsigned int fsFinalSecondaryCollectors = 0;
     // Add other game state variables here.
 
     explicit GameCycle(GameSession& session, GameCycleReused& reused, const GameMaths& maths [[maybe_unused]])

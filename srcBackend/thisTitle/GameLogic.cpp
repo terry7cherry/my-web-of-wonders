@@ -335,6 +335,7 @@ namespace GameLogic
                 else multiplier = collectorControlArea[reel][row];
             }
 
+        cycle.fsFinalSecondaryCollectors++;
         maximizeMultipliersForEnhancedFreeSpins(maths, cycle);
     }
 
@@ -394,7 +395,8 @@ namespace GameLogic
         }
         else
             cycle.recordEvent<StandardFreeSpinsCompleteEvent>(cycle.freeSpinsWin, cycle.fsInitialSpins,
-                                                              cycle.fsSpinsPlayed);
+                                                              cycle.fsSpinsPlayed,
+                                                              cycle.fsFinalSecondaryCollectors);
     }
 
     void handleFreeSpinsForces(const GameMaths& maths, GameCycle& cycle)
@@ -432,9 +434,7 @@ namespace GameLogic
 
     void maximizeMultipliersForEnhancedFreeSpins(const GameMaths& maths, GameCycle& cycle)
     {
-        if (!cycle.fsCollectorTrigger) return;
-        for (const bool& activated : cycle.fsCollectorsActivated)
-            if (!activated) return;
+        if (!(cycle.fsCollectorTrigger && cycle.fsFinalSecondaryCollectors == 3)) return;
 
         cycle.multipliersMaximized = true;
 
