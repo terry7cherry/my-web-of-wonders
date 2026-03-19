@@ -1,3 +1,10 @@
+# [1.1.0](https://git.corpcenter.tech/maths/simulators/cpp-web-of-wonders/compare/1.0.0...1.1.0) (2026-03-19)
+
+
+### Features
+
+* fix docker layer cache ([89201d0](https://git.corpcenter.tech/maths/simulators/cpp-web-of-wonders/commit/89201d08865189f9dd5e1357a4cd57c7f8c9236a))
+
 # 1.0.0 (2026-03-19)
 
 
