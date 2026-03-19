@@ -1,5 +1,7 @@
 #include "API.h"
 
+#include <cstdlib>
+#include <cstring>
 #include <random>
 
 #include "../gameMaths/parser/ParSheet.h"
@@ -113,6 +115,41 @@ void API::startAPIServer()
 	std::cout << "Starting dev server" << std::endl;
 	std::cout << "Go to localhost:8080 in your browser" << std::endl;
 #endif
+
+	const char* authUser = std::getenv("BASIC_AUTH_USERNAME");
+	const char* authPass = std::getenv("BASIC_AUTH_PASSWORD");
+	const bool authEnabled = authUser && authPass
+		&& std::strlen(authUser) > 0 && std::strlen(authPass) > 0;
+
+	if (authEnabled)
+	{
+		std::string expectedCredentials = std::string(authUser) + ":" + std::string(authPass);
+		std::string expectedEncoded = drogon::utils::base64Encode(expectedCredentials);
+
+		app().registerPreRoutingAdvice(
+			[expectedEncoded](const HttpRequestPtr& req,
+			                  AdviceCallback&& acb,
+			                  AdviceChainCallback&& accb)
+			{
+				if (req->path() == "/healthz")
+				{
+					accb();
+					return;
+				}
+				const std::string& authHeader = req->getHeader("authorization");
+				if (authHeader.substr(0, 6) == "Basic " &&
+					authHeader.substr(6) == expectedEncoded)
+				{
+					accb();
+					return;
+				}
+				auto resp = HttpResponse::newHttpResponse();
+				resp->setStatusCode(k401Unauthorized);
+				resp->addHeader("WWW-Authenticate", "Basic realm=\"Game Simulator\"");
+				acb(resp);
+			});
+		std::cout << "Basic auth enabled" << std::endl;
+	}
 
 	app()
 		.setThreadNum(std::max(2u, std::thread::hardware_concurrency() - 2))
