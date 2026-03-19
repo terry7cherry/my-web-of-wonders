@@ -1,0 +1,10 @@
+include:
+  - component: $CI_SERVER_FQDN/components/internal/docker-pipeline-component/docker@1.2.0
+    inputs:
+      file: Dockerfile
+
+#variables:
+#  DOCKER_SNAPSHOT_IMAGE: "git.corpcenter.tech:4567/engineering/games/studio/maths_prototype_images/snapshot/$CI_PROJECT_NAME:$CI_COMMIT_REF_SLUG"
+#  DOCKER_RELEASE_IMAGE: "git.corpcenter.tech:4567/engineering/games/studio/maths_prototype_images/$CI_PROJECT_NAME:$CI_COMMIT_REF_NAME"
+#  DOCKER_REGISTRY_USER: "maths_prototype_images_container_registry_token"
+#  DOCKER_REGISTRY_PASSWORD: $TARGET_DOCKER_REGISTRY_PASSWORD

@@ -14,7 +14,7 @@ hosting.
 1) Make sure Docker Desktop is running.
 2) From the repo root:
    ```
-   docker build -t cpp-game-name .
+   docker build --platform linux/amd64 -t cpp-game-name .
    # (rename to your game name)
    ```
 
