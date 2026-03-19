@@ -5,6 +5,7 @@ include:
 
 variables:
   DOCKER_SNAPSHOT_IMAGE: "git.corpcenter.tech:4567/engineering/games/studio/maths_prototype_images/snapshot/$CI_PROJECT_NAME:$CI_COMMIT_REF_SLUG"
+  KANIKO_SNAPSHOT_IMAGE_CACHE: "git.corpcenter.tech:4567/engineering/games/studio/maths_prototype_images/cache"
   DOCKER_RELEASE_IMAGE: "git.corpcenter.tech:4567/engineering/games/studio/maths_prototype_images/$CI_PROJECT_NAME:$CI_COMMIT_REF_NAME"
   DOCKER_REGISTRY_USER: "maths_prototype_images_container_registry_token"
   DOCKER_REGISTRY_PASSWORD: $TARGET_DOCKER_REGISTRY_PASSWORD
