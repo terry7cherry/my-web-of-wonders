@@ -9,6 +9,7 @@
 # Defunct
 /srcBackend/common/defunct
 # Frontend
+/node_modules
 /srcFrontend/node_modules
 /srcFrontend/dist
 /srcFrontend/.vite
