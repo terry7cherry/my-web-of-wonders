@@ -18,6 +18,7 @@ import popElementOut from "../common/animation/popElementOut.js";
 import collectorPositions from "./collectorPositions.js";
 import Image from "../common/uiElements/Image.js";
 import * as PIXI from "pixi.js";
+import Button from "../common/uiElements/Button.js";
 
 
 /** @type {Record<string, EventHandler>} */
@@ -89,6 +90,7 @@ export default {
             ])
     },
     "freeSpinsTrigger": async ({spins, multiplier}, game) => {
+        game.state.inactiveCollectors = 3;
         game.shell.sessionStats.increment("freespins-sessions");
         await game.ui.ticker.updateText(`${spins} free spins awarded${
             multiplier !== 1
@@ -132,7 +134,14 @@ export default {
             y: 50,
             height: 50
         });
+        game.ui.phases.freeSpins.secondaryControlAreas.forEach(button => button.buttonContainer.destroy({
+            children: true,
+            texture: true,
+            baseTexture: true
+        }));
+        game.ui.phases.freeSpins.secondaryControlAreas = [];
         await game.ui.setPhase("freeSpins");
+        game.ui.currentPhase.grid.reelBackground.addChild(game.ui.mainControlArea.buttonContainer);
         await game.ui.currentPhase.spinsLeft.update(spins, true);
     },
     "bonusSymbolCollection": async ({reel, row}, game) => {
@@ -172,6 +181,7 @@ export default {
         await game.ui.ticker.updateText("Spider awarded super egggwakening!");
     },
     "freeSpinsCollectionTrigger": async ({spins, initialSecondaryCollectors}, game) => {
+        game.state.inactiveCollectors = 3;
         const mainCollector = game.ui.mainCollector;
         game.shell.sessionStats.increment("freespins-sessions");
         await game.ui.ticker.updateText(`${spins} free spins awarded with x${initialSecondaryCollectors} hatched spiders!`);
@@ -205,7 +215,14 @@ export default {
         const newPosition = collectorPositions(game.ui, mainCollector)[game.state.mainCollectorPosition];
         mainCollector.x = newPosition.x;
         mainCollector.y = newPosition.y;
+        game.ui.phases.freeSpins.secondaryControlAreas.forEach(button => button.buttonContainer.destroy({
+            children: true,
+            texture: true,
+            baseTexture: true
+        }));
+        game.ui.phases.freeSpins.secondaryControlAreas = [];
         await game.ui.setPhase("freeSpins");
+        game.ui.currentPhase.grid.reelBackground.addChild(game.ui.mainControlArea.buttonContainer);
         await game.ui.currentPhase.spinsLeft.update(spins, true);
     },
     "freeSpinsRetrigger": async ({spins, multiplier}, game) => {
@@ -288,6 +305,26 @@ export default {
             game.ui.currentPhase.secondaryCollectors[position].transformImage(game.imageMap.activeSecondaryCollector),
             game.ui.ticker.updateText("A spider hatched!")
         ]);
+        const {
+            controlX,
+            controlY
+        } = collectorPositions(game.ui, game.ui.currentPhase.secondaryCollectors[position])[position];
+        const colours = {
+            3: 0x6A0DAD,
+            2: 0x9932CC,
+            1: 0xC020A0
+        }
+        const button = new Button({
+            x: controlX,
+            y: controlY,
+            height: 240,
+            width: 240,
+            parent: game.ui.currentPhase.grid.reelBackground,
+            colour: colours[game.state.inactiveCollectors],
+        })
+        button.buttonContainer.zIndex = game.state.inactiveCollectors;
+        game.ui.currentPhase.secondaryControlAreas.push(button);
+        game.state.inactiveCollectors--;
         Object.entries(collectorMultipliers).forEach(([collectorPosition, multiplier]) => {
             if (multiplier > 0)
                 if (collectorPosition === game.state.mainCollectorPosition)

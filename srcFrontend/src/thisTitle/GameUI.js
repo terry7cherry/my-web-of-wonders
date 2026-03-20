@@ -119,6 +119,7 @@ export default class GameUI extends StandardGameUI {
 
     buildPhaseUIs(soundPlayer, imageMap) {
         super.buildPhaseUIs(soundPlayer, imageMap);
+        this.phases.freeSpins.secondaryControlAreas = [];
         // Add UI elements to phase panels here. E.g.
         // this.phases.base.bottomPanel.testButton = new Button({
         //     width: 800,
@@ -135,8 +136,23 @@ export default class GameUI extends StandardGameUI {
         await super.updateUiAndStateToMatchSession(session, state);
         if (state.mainCollectorPosition !== session.mainCollectorPosition) {
             state.mainCollectorPosition = session.mainCollectorPosition;
-            let {x, y} = collectorPositions(this, this.mainCollector)[state.mainCollectorPosition];
+            let {
+                x,
+                y,
+                controlX,
+                controlY
+            } = collectorPositions(this, this.mainCollector)[state.mainCollectorPosition];
             await moveElement({element: this.mainCollector, newX: x, newY: y, totalFrames: 50});
+            if (!this.mainControlArea) {
+                this.mainControlArea = new Button({
+                    x: 0, y: 0, width: 240, height: 240, parent: this.currentPhase.grid.reelBackground,
+                    colour: 0x4B0082,
+                })
+                this.mainControlArea.buttonContainer.zIndex = Infinity;
+            }
+
+            this.mainControlArea.buttonContainer.x = controlX;
+            this.mainControlArea.buttonContainer.y = controlY;
         }
         // Use this method to update the UI to match the current session.
         // Where you have persistent game elements reflected in the UI, you will update the UI elements when
