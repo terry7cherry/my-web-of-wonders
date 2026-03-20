@@ -96,6 +96,7 @@ namespace GameLogic
     {
         static const unsigned int fsInitialSpins = maths.ints["freeSpinsInitialSpins"];
         cycle.fsInitialSpins = fsInitialSpins;
+        cycle.fsSpinsRemaining = cycle.fsInitialSpins;
 
         if (cycle.fsCollectorTrigger)
             cycle.recordEvent<FreeSpinsCollectionTriggerEvent>(
@@ -112,6 +113,7 @@ namespace GameLogic
              cycle.fsSpinsPlayed++)
         {
             cycle.freeSpinsWin += doOneFreeSpin(maths, cycle);
+            cycle.fsSpinsRemaining--;
         }
 
         return cycle.freeSpinsWin;
@@ -222,7 +224,12 @@ namespace GameLogic
                 if (cycle.grid.coinValues[reel][row] > 0)
                     collectCoin(maths, cycle, reel, row, collectorHasCollected);
 
-        static const auto& collectorActivationChance = maths.boolWeightTables["collectorActivationChance"];
+        const bool veryHighChance = cycle.fsSpinsRemaining <= 2 && cycle.fsFinalSecondaryCollectors == 0;
+        const bool highChance = cycle.fsSpinsRemaining <= 3 && cycle.fsFinalSecondaryCollectors == 0;
+        const auto& collectorActivationChance = maths.boolWeightTables[
+            veryHighChance
+                ? "collectorActivationChanceVeryHigh"
+                : (highChance ? "collectorActivationChanceHigh" : "collectorActivationChance")];
         for (const CollectorPosition position : collectorPositionMap | std::views::values)
             if (collectorHasCollected[position])
                 if (collectorActivationChance.pick())
@@ -321,6 +328,7 @@ namespace GameLogic
 
         static const unsigned int numRetriggerSpins = maths.ints["collectorActivationRetriggerSpins"];
         cycle.fsRetriggerSpins += numRetriggerSpins;
+        cycle.fsSpinsRemaining += numRetriggerSpins;
         cycle.recordEvent<FreeSpinsRetriggerEvent>(numRetriggerSpins);
 
         const auto& collectorControlArea =
