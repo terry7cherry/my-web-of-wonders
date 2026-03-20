@@ -302,7 +302,12 @@ export default {
     },
     "collectorActivation": async ({position, collectorMultipliers}, game) => {
         await Promise.all([
-            game.ui.currentPhase.secondaryCollectors[position].transformImage(game.imageMap.activeSecondaryCollector),
+            game.ui.currentPhase.secondaryCollectors[position].transformImage(game.imageMap.activeSecondaryCollector).then(() => {
+                const collector = game.ui.currentPhase.secondaryCollectors[position];
+                const newPosition = collectorPositions(game.ui, collector)[position];
+                collector.x = newPosition.x;
+                collector.y = newPosition.y;
+            }),
             game.ui.ticker.updateText("A spider hatched!")
         ]);
         const {
@@ -329,12 +334,12 @@ export default {
             if (multiplier > 0)
                 if (collectorPosition === game.state.mainCollectorPosition)
                     game.ui.mainCollector.addOrUpdateText(`x${multiplier}`, {
-                        y: 50,
+                        y: 40,
                         height: 50
                     });
                 else
                     game.ui.currentPhase.secondaryCollectors[collectorPosition].addOrUpdateText(`x${multiplier}`, {
-                        y: 50,
+                        y: 40,
                         height: 50
                     });
         })
@@ -346,12 +351,12 @@ export default {
             if (collectorPosition === game.state.mainCollectorPosition)
                 game.ui.mainCollector.addOrUpdateText(`x5`, {
                     y: 50,
-                    height: 50
+                    height: 40
                 });
             else
                 game.ui.currentPhase.secondaryCollectors[collectorPosition].addOrUpdateText(`x5`, {
                     y: 50,
-                    height: 50
+                    height: 40
                 });
         })
         await game.ui.ticker.updateText("Multipliers maxed out!");
