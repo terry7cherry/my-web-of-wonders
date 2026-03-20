@@ -1,3 +1,10 @@
+# [1.2.0](https://git.corpcenter.tech/maths/simulators/cpp-web-of-wonders/compare/1.1.0...1.2.0) (2026-03-20)
+
+
+### Features
+
+* add an optional BASE_PATH environment variable which can be used to serve the content at a different prefix from / ([5e1cd91](https://git.corpcenter.tech/maths/simulators/cpp-web-of-wonders/commit/5e1cd91ed2d4308e52446cdaf6d6a784e31c745c))
+
 # [1.1.0](https://git.corpcenter.tech/maths/simulators/cpp-web-of-wonders/compare/1.0.0...1.1.0) (2026-03-19)
 
 
