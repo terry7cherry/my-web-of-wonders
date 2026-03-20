@@ -297,9 +297,40 @@ int simulatorMain()
 		GameMaths& gameMaths = *parSheet.gameMathsVariants[config.betType][config.rtp];
 		const int bet = static_cast<int>(gameMaths.minBet * gameMaths.betTypeCost);
 #ifdef SINGLETHREAD
-	doMonteCarloStd(gameMaths, bet, config);
+		doMonteCarloStd(gameMaths, bet, config);
 #else
-	doMonteCarloStdMultiThread(gameMaths, bet, config);
+		doMonteCarloStdMultiThread(gameMaths, bet, config);
+#endif
+	}
+#endif
+	return
+		0;
+}
+
+int sessionMain()
+{
+#ifndef FRONTEND
+	UserConfig config = UserConfig::getNewOrCachedConfig();
+	ParSheet& parSheet = config.parSheet;
+	if (config.rtp == -1)
+	{
+		for (int rtp : parSheet.rtps)
+		{
+			if (!config.seedChoice.has_value()) config.seed = std::random_device{}();
+			GameMaths& gameMaths = *parSheet.gameMathsVariants[config.betType][rtp];
+			const int bet = static_cast<int>(gameMaths.minBet * gameMaths.betTypeCost);
+			doMonteCarloStdMultiThread(gameMaths, bet, config);
+		}
+	}
+	else
+	{
+		// valid single RTP option
+		GameMaths& gameMaths = *parSheet.gameMathsVariants[config.betType][config.rtp];
+		const int bet = static_cast<int>(gameMaths.minBet * gameMaths.betTypeCost);
+#ifdef SINGLETHREAD
+		doMonteCarloStd(gameMaths, bet, config);
+#else
+		doMonteCarloStdMultiThread(gameMaths, bet, config);
 #endif
 	}
 #endif
@@ -332,7 +363,11 @@ int main()
 #ifdef RN_STREAM
 		return rnStreamMain();
 #else
+#ifdef SESSION
+		return sessionMain();
+#else
 		return simulatorMain();
+#endif
 #endif
 #endif
 	}

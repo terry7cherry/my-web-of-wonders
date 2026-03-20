@@ -160,6 +160,7 @@ endif ()
 option(FRONTEND_DEV "Enable frontend dev server" OFF)
 option(FRONTEND "Enable frontend release server" OFF)
 option(RN_STREAM "Run using RN stream CSV file" OFF)
+option(SESSION "Generate session stats" OFF)
 
 if (FRONTEND AND NOT FRONTEND_DEV)
     message(STATUS "Frontend release build is enabled (npm run build).")

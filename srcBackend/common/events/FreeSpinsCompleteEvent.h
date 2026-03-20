@@ -16,6 +16,23 @@ class FreeSpinsCompleteEvent : public SpinsCompleteTemplate<FreeSpinsCompleteEve
 public:
 	/** @brief Name used for stats output. **/
 	inline static std::string phaseName = "Free Spins";
+    
+    // Reset all meters for a fresh session aggregation
+    static void reset()
+    {
+        // Reset phase template meters
+        SpinsCompleteTemplate<FreeSpinsCompleteEvent>::initialSpinsMeter = DistributionMeter();
+        SpinsCompleteTemplate<FreeSpinsCompleteEvent>::finalSpinsMeter = DistributionMeter();
+        SpinsCompleteTemplate<FreeSpinsCompleteEvent>::initialSpinsWinsMeter = DistributionMeter();
+        SpinsCompleteTemplate<FreeSpinsCompleteEvent>::finalSpinsWinsMeter = DistributionMeter();
+        // Reset base phase meters
+        PhaseCompleteTemplate<FreeSpinsCompleteEvent>::eventWinDistribution = DistributionMeter();
+        PhaseCompleteTemplate<FreeSpinsCompleteEvent>::eventTotalWin = IntSumMeter();
+        PhaseCompleteTemplate<FreeSpinsCompleteEvent>::eventTotalHits = IntSumMeter();
+        PhaseCompleteTemplate<FreeSpinsCompleteEvent>::eventTotalCycleHits = IntSumMeter();
+        PhaseCompleteTemplate<FreeSpinsCompleteEvent>::eventTotalWinningHits = IntSumMeter();
+        PhaseCompleteTemplate<FreeSpinsCompleteEvent>::maxWinMeter = IntMaxMeter();
+    }
 
 	/**
 	 * @param cycle Game cycle event including totalWin, fsInitialSpins, and fsSpinsPlayed properties.
