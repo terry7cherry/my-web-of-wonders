@@ -10,7 +10,7 @@ namespace Forces
             "Eggwakening",
             [](const GameCycle& cycle)
             {
-                return cycle.fsTrigger;
+                return !cycle.fsCollectorTrigger && cycle.fsTrigger;
             }
         ),
         FrontendForce(
