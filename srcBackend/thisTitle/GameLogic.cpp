@@ -60,6 +60,7 @@ namespace GameLogic
         }
 
         cycle.recordEvent<GameCycleCompleteEvent>(cycle.totalWin, maths, cycle.session.bet);
+        updateDeadSpins(maths, cycle);
         return cycle.totalWin;
     }
 
@@ -67,10 +68,11 @@ namespace GameLogic
     {
         static auto& collectorPositionWeights = maths.stringWeightTables["mainCollectorPosition"];
         static auto& mainCollectorPositionNumSpins = maths.intWeightTables["mainCollectorPositionNumSpins"];
-        if (cycle.session.mainCollectorPositionSpinRemaining == 0)
+        if (cycle.session.mainCollectorPositionSpinRemaining == 0 || cycle.session.deadSpins >= 3)
         {
             cycle.session.mainCollectorPosition = collectorPositionMap.at(collectorPositionWeights.pick());
             cycle.session.mainCollectorPositionSpinRemaining = mainCollectorPositionNumSpins.pick();
+            cycle.mainCollectorMoved = true;
         }
         cycle.session.mainCollectorPositionSpinRemaining--;
         cycle.grid.coinMultiplierGrid = maths.intGrids["collectorPositions." + collectorPositionNames[cycle.
@@ -454,6 +456,13 @@ namespace GameLogic
                 cycle.grid.coinMultiplierGrid[reel][row] = 5;
 
         cycle.recordEvent<MaxedOutMultipliersEvent>();
+    }
+
+    void updateDeadSpins(const GameMaths& maths, GameCycle& cycle)
+    {
+        if (cycle.totalWin == 0 && !cycle.bonusSymbolCollected && !cycle.mainCollectorMoved)
+            cycle.session.deadSpins++;
+        else cycle.session.deadSpins = 0;
     }
 }
 

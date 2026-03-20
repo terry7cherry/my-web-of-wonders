@@ -23,6 +23,7 @@ struct GameSession : GameSessionBase
     // int jackpotValue;
     // int consecutiveLosingSpins;
     unsigned int mainCollectorPositionSpinRemaining;
+    unsigned int deadSpins;
     CollectorPosition mainCollectorPosition;
 
     /**
@@ -40,6 +41,7 @@ struct GameSession : GameSessionBase
     )
         : GameSessionBase(bet, maths, simForce),
           mainCollectorPositionSpinRemaining(0),
+          deadSpins(0),
           mainCollectorPosition(TOP_LEFT)
     // Initialise persistent values (typically from gameMaths). e.g.
     {
@@ -61,6 +63,7 @@ struct GameSession : GameSessionBase
         : GameSession(bet, maths, Forces::ForceNone)
     {
         mainCollectorPositionSpinRemaining = oldSession.mainCollectorPositionSpinRemaining;
+        deadSpins = oldSession.deadSpins;
         mainCollectorPosition = oldSession.mainCollectorPosition;
         // Copy any persistent data that SHOULD NOT BE bet locked from the oldSession. E.g.
         // consecutiveLosingSpins = oldSession.consecutiveLosingSpins;
@@ -78,6 +81,7 @@ struct GameSession : GameSessionBase
     GameSession(const Json::Value& jsonSession) // NOLINT(google-explicit-constructor)
         : GameSessionBase(jsonSession),
           mainCollectorPositionSpinRemaining(jsonSession["mainCollectorPositionSpinsRemaining"].asInt()),
+          deadSpins(jsonSession["deadSpins"].asInt()),
           mainCollectorPosition(collectorPositionMap.at(jsonSession["mainCollectorPosition"].asString()))
     // Initialise all persistent values from the json here. E.g.
     // jackpotValue(jsonSession["jackpotValue"].asInt()),
@@ -94,6 +98,7 @@ struct GameSession : GameSessionBase
     {
         Json::Value jsonSession = GameSessionBase::toJson();
         jsonSession["mainCollectorPositionSpinsRemaining"] = mainCollectorPositionSpinRemaining;
+        jsonSession["deadSpins"] = deadSpins;
         jsonSession["mainCollectorPosition"] = collectorPositionNames.at(mainCollectorPosition);
         // Add any persistent data to the JSON session here. E.g.
         // jsonSession["jackpotValue"] = jackpotValue;

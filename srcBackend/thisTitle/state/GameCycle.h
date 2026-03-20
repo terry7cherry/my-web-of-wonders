@@ -46,6 +46,7 @@ struct GameCycle : GameCycleBase
     bool fsTrigger = false;
     bool fsCollectorTrigger = false;
     bool multipliersMaximized = false;
+    bool mainCollectorMoved = false;
     unsigned int fsInitialSecondaryCollectors = 0;
     unsigned int fsFinalSecondaryCollectors = 0;
     unsigned int fsSpinsRemaining = 0;
