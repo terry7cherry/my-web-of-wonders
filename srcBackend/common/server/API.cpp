@@ -112,6 +112,38 @@ void API::startAPIServer()
 	std::cout << "Go to localhost:8080 in your browser" << std::endl;
 #endif
 
+	const char* basePathEnv = std::getenv("BASE_PATH");
+	if (basePathEnv && std::strlen(basePathEnv) > 0)
+	{
+		std::string basePath(basePathEnv);
+		if (basePath.front() != '/') basePath = "/" + basePath;
+		if (basePath.back() == '/') basePath.pop_back();
+
+		app().registerPreRoutingAdvice(
+			[basePath](const HttpRequestPtr& req,
+			           AdviceCallback&& acb,
+			           AdviceChainCallback&& accb)
+			{
+				const std::string& path = req->path();
+				if (path == basePath)
+				{
+					auto resp = HttpResponse::newHttpResponse();
+					resp->setStatusCode(k301MovedPermanently);
+					resp->addHeader("Location", basePath + "/");
+					acb(resp);
+					return;
+				}
+				if (path.starts_with(basePath + "/"))
+				{
+					std::string newPath = path.substr(basePath.length());
+					if (newPath.empty()) newPath = "/";
+					req->setPath(newPath);
+				}
+				accb();
+			});
+		std::cout << "Base path prefix stripping enabled for: " << basePath << std::endl;
+	}
+
 	const char* authUser = std::getenv("BASIC_AUTH_USERNAME");
 	const char* authPass = std::getenv("BASIC_AUTH_PASSWORD");
 	const bool authEnabled = authUser && authPass

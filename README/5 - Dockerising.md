@@ -14,7 +14,7 @@ hosting.
 1) Make sure Docker Desktop is running.
 2) From the repo root:
    ```
-   docker build --platform linux/amd64 -t cpp-game-name .
+   docker build --platform linux/amd64 -t cpp-web-of-wonders .
    # (rename to your game name)
    ```
 
@@ -22,7 +22,7 @@ hosting.
 
 1) Run:
    ```
-   docker run --rm -p 8080:8080 cpp-game-name
+   docker run --rm -p 8080:8080 cpp-web-of-wonders
    ```
 2) Open your browser at:
    ```
