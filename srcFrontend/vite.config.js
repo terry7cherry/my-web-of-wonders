@@ -1,4 +1,4 @@
-import { defineConfig } from "vite";
+import {defineConfig} from "vite";
 
 export default defineConfig({
     server: {
@@ -7,7 +7,7 @@ export default defineConfig({
         strictPort: true,
         proxy: {
             "/api": {
-                target: "http://localhost:8080/",
+                target: "http://localhost:5172/",
                 changeOrigin: true,
                 secure: false,
                 ws: true
