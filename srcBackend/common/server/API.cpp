@@ -84,7 +84,11 @@ void API::startAPIServer()
 	                      {Post}
 
 	);
+#ifdef FRONTEND_DEV
+	app().addListener("0.0.0.0", 5172);
+#else
 	app().addListener("0.0.0.0", 8080);
+#endif
 
 #ifndef FRONTEND_DEV
 	// Serve static files from "../srcFrontend/dist" in production
