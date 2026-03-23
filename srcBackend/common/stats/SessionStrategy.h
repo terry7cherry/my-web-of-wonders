@@ -6,6 +6,7 @@
 
 // Forward declare to avoid heavy includes in common header
 struct GameSession;
+struct GameCycle;
 
 /**
  * SessionStrategy describes how a batch-play session should start and when it should end.
@@ -17,5 +18,6 @@ struct SessionStrategy
 {
     std::string name;
     int initialBalanceMult{0};
-    std::function<bool(long long currentBalance, uint64_t spinsPlayed, const GameSession& session)> shouldStop;
+    // Evaluated at the END of each completed spin; may use GameCycle to check flags like fsTrigger, fsSpinsPlayed
+    std::function<bool(long long currentBalance, uint64_t spinsPlayed, const GameSession& session, const GameCycle& cycle)> shouldStop;
 };

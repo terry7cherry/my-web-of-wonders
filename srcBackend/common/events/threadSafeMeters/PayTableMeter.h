@@ -21,6 +21,7 @@ class PayTableMeter
 public:
     static constexpr std::size_t MAX_SYMBOLS = 50;
     static constexpr std::size_t MAX_OAK = 20;
+    using LocalArray = std::uint64_t[MAX_SYMBOLS][MAX_OAK];
     std::uint64_t global[MAX_SYMBOLS][MAX_OAK]{}; // zero-initialized
 
     PayTableMeter()
@@ -31,6 +32,8 @@ public:
     // Same API shape as DistributionMeter: single int key + value
     void add(Symbol symbol, size_t oak, std::uint64_t toAdd = 1);
 
+    LocalArray& getLocalArray();
+
     std::uint64_t* operator[](Symbol symbol);
 
     void flush();
@@ -40,7 +43,6 @@ private:
     std::mutex mutex;
 
     // TLS buffer per thread; each meter instance indexes into the array via _id
-    using LocalArray = std::uint64_t[MAX_SYMBOLS][MAX_OAK];
 
     LocalArray* tls();
 

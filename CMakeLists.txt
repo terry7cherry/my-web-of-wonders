@@ -183,6 +183,12 @@ if (RN_STREAM)
     )
 endif ()
 
+if (SESSION)
+    target_compile_definitions(cpp-game PUBLIC
+            SESSION=1
+    )
+endif ()
+
 
 if (FRONTEND_DEV)
     target_compile_definitions(cpp-game PUBLIC
