@@ -9,77 +9,103 @@
 #include "../gameMaths/parser/ParSheet.h"
 #include "../console/Console.h"
 #include "../../thisTitle/forces/simForces.h"
+#include "../../thisTitle/stats/SessionStrategies.h"
 
-UserConfig::UserConfig(const bool rnStream)
-    : simSize(rnStream ? 0 : getUserSimSizeChoice()),
-      parSheet(getUserParSheetChoice()),
-      rnStreamFileName(rnStream ? getUserRnStreamFileChoice() : ""),
-      rtp(getUserRtpChoice(parSheet, rnStream)),
-      betType(getUserBetTypeChoice(parSheet)), force(getUserForceChoice()),
-      seedChoice(rnStream ? 0 : getUserSeedChoice()), seed(seedChoice.value_or(std::random_device{}()))
+UserConfig::UserConfig() :
+    parSheet(getUserParSheetChoice()),
+#ifndef RN_STREAM
+    simSize(getUserSimSizeChoice()),
+#else
+    rnStreamFileName(getUserRnStreamFileChoice()),
+#endif
+    rtp(getUserRtpChoice(parSheet)),
+    betType(getUserBetTypeChoice(parSheet)),
+    force(getUserForceChoice())
+#ifdef SESSION
+, sessionStrategyIndex(getUserSessionStrategyIndexChoice()),
+    sessionStrategy(SessionStats::sessionStrategies.at(sessionStrategyIndex))
+#endif
+#ifndef RN_STREAM
+, seedChoice(getUserSeedChoice()),
+    seed(seedChoice.value_or(std::random_device{}()))
+#endif
+
 {
-    saveOrUpdateCache(rnStream);
+    saveOrUpdateCache();
 }
 
-UserConfig::UserConfig(const std::string& cachedConfig, const bool rnStream)
-    : simSize(rnStream ? 0 : std::stoull(split(cachedConfig).at(1))),
-      parSheet(split(cachedConfig).at(0)),
-      rnStreamFileName(rnStream ? split(cachedConfig).at(1) : ""),
-      rtp(std::stoi(split(cachedConfig).at(2))),
-      betType(split(cachedConfig).at(3)),
-      force(stringToForce(split(cachedConfig).at(4))),
-      seedChoice(rnStream || split(cachedConfig).at(5) == "RAND"
+UserConfig::UserConfig(const std::string& cachedConfig) :
+    parSheet(split(cachedConfig).at(0)),
+#ifndef RN_STREAM
+    simSize(std::stoull(split(cachedConfig).at(1))),
+#else
+    rnStreamFileName(split(cachedConfig).at(1)),
+#endif
+    rtp(std::stoi(split(cachedConfig).at(2))),
+    betType(split(cachedConfig).at(3)),
+    force(stringToForce(split(cachedConfig).at(4)))
+#ifdef SESSION
+    , sessionStrategyIndex(std::stoi(split(cachedConfig).at(6))),
+    sessionStrategy(SessionStats::sessionStrategies.at(sessionStrategyIndex))
+#endif
+#ifndef RN_STREAM
+    , seedChoice(split(cachedConfig).at(5) == "RAND"
                      ? std::nullopt
                      : std::optional(std::stoi(split(cachedConfig).at(6)))
-      ),
-      seed(rnStream ? 0 : seedChoice.value_or(std::random_device{}()))
+    ),
+    seed(seedChoice.value_or(std::random_device{}()))
+#endif
+
+
 {
-    saveOrUpdateCache(rnStream);
+    saveOrUpdateCache();
     headerText += " - " + parSheet.gameTitle;
-    headerText += " - " + (rtp > 0 ? " RTP" + std::to_string(rtp) : " All RTPs");
+    headerText += " - RTP" + std::to_string(rtp);
     headerText += " - " + betType;
     if (force) headerText += " - " + Forces::simForceNames.at(force);
 }
 
-UserConfig UserConfig::getNewOrCachedConfig(const bool rnStream)
+UserConfig UserConfig::getNewOrCachedConfig()
 {
     namespace fs = std::filesystem;
-    const fs::path cacheFilePath = fs::path(GAME_SOURCE_DIR)
-        / "srcBackend" / "common" / "config" / (rnStream ? "rnCache.txt" : "cache.txt");
-    if (!fs::exists(cacheFilePath)) return UserConfig(rnStream);
+    const fs::path cacheFilePath = getCacheFilePath();
+    if (!fs::exists(cacheFilePath)) return UserConfig();
 
-    const std::vector<std::string> lines = getCachedConfigLines(rnStream);
+    const std::vector<std::string> lines = getCachedConfigLines();
 
     std::vector<std::vector<std::string>> configChoices;
     for (const auto& line : lines)
     {
         std::vector<std::string> choice;
         const std::vector<std::string> elements = split(line);
-        if (rnStream)
-        {
-            choice.emplace_back(elements.at(0));
-            choice.emplace_back(elements.at(1));
-            choice.emplace_back(elements.at(2));
-            choice.emplace_back(elements.at(3));
-            choice.emplace_back(Forces::simForceNames.at(std::stoi(elements.at(4))));
-        }
-        else
-        {
-            choice.emplace_back(elements.at(0));
-            choice.emplace_back(std::to_string(std::stoull(elements.at(1)) / MILLION));
-            choice.emplace_back(elements.at(2));
-            choice.emplace_back(elements.at(3));
-            choice.emplace_back(Forces::simForceNames.at(std::stoi(elements.at(4))));
-            choice.emplace_back(elements.at(5));
-            choice.emplace_back(elements.at(6));
-        }
+        size_t positionIndex = 0;
+        choice.emplace_back(elements.at(positionIndex++));
+#ifdef RN_STREAM
+        choice.emplace_back(elements.at(positionIndex++));
+#else
+        choice.emplace_back(std::to_string(std::stoull(elements.at(positionIndex++))
+#ifndef SESSION
+            / MILLION
+#endif
+        ));
+#endif
+        choice.emplace_back(elements.at(positionIndex++));
+        choice.emplace_back(elements.at(positionIndex++));
+        choice.emplace_back(Forces::simForceNames.at(std::stoi(elements.at(positionIndex++))));
+#ifndef RN_STREAM
+        choice.emplace_back(elements.at(positionIndex++));
+        choice.emplace_back(elements.at(positionIndex++));
+#endif
+#ifdef SESSION
+        choice.emplace_back(elements.at(positionIndex++));
+#endif
         configChoices.emplace_back(choice);
     }
 
     const std::optional<size_t> userChoice = getUserCachedConfigChoice(
-        configChoices, "Select Cached Config", rnStream);
-    if (userChoice.value_or(0) == 0) return UserConfig(rnStream);
-    return UserConfig(lines.at(userChoice.value() - 1), rnStream);
+        configChoices, "Select Cached Config");
+    if (userChoice.value_or(0) == 0) return UserConfig();
+    return UserConfig(lines.at(userChoice.value() - 1));
 }
 
 std::vector<std::string> UserConfig::split(const std::string& line)
@@ -95,11 +121,10 @@ std::vector<std::string> UserConfig::split(const std::string& line)
 }
 
 
-void UserConfig::saveOrUpdateCache(const bool rnStream) const
+void UserConfig::saveOrUpdateCache() const
 {
     namespace fs = std::filesystem;
-    const fs::path cacheFilePath = fs::path(GAME_SOURCE_DIR)
-        / "srcBackend" / "common" / "config" / (rnStream ? "rnCache.txt" : "cache.txt");
+    const fs::path cacheFilePath = getCacheFilePath();
 
     if (!fs::exists(cacheFilePath))
     {
@@ -111,29 +136,36 @@ void UserConfig::saveOrUpdateCache(const bool rnStream) const
         }
     }
 
-    std::vector<std::string> lines = getCachedConfigLines(rnStream);
-
+    std::vector<std::string> lines = getCachedConfigLines();
     std::string newConfigLine =
-        rnStream
-            ? (parSheet.fileName + "|" +
-                rnStreamFileName + "|" +
-                std::to_string(rtp) + "|" +
-                betType + "|" +
-                std::to_string(force))
-            : (parSheet.fileName + "|" +
-                std::to_string(simSize) + "|" +
-                std::to_string(rtp) + "|" +
-                betType + "|" +
-                std::to_string(force) + "|" +
-                (seedChoice.has_value()
-                     ? std::to_string(seed)
-                     : "RAND"));
+            parSheet.fileName
+#ifdef RN_STREAM
+            + "|" + rnStreamFileName
+#else
+            +"|" + std::to_string(simSize)
+#endif
+            + "|" + std::to_string(rtp)
+            + "|" + betType
+            + "|" + std::to_string(force)
+#ifndef RN_STREAM
+        +"|" + (seedChoice.has_value()
+                    ? std::to_string(seed)
+                    : "RAND")
+#endif
+#ifdef SESSION
+        +"|" + std::to_string(sessionStrategyIndex)
+#endif
+        ;
 
     for (const auto& line : lines)
         if (line.starts_with(newConfigLine))
             lines.erase(std::ranges::find(lines, line));
 
+#ifndef RN_STREAM
     lines.insert(lines.begin(), newConfigLine + "|" + std::to_string(seed));
+#else
+    lines.insert(lines.begin(), newConfigLine);
+#endif
 
     if (lines.size() > 10) lines.erase(lines.begin() + 10, lines.end());
     std::ofstream output(cacheFilePath);
@@ -145,11 +177,10 @@ void UserConfig::saveOrUpdateCache(const bool rnStream) const
     for (const auto& line : lines) output << line << "\n";
 }
 
-std::vector<std::string> UserConfig::getCachedConfigLines(const bool rnStream)
+std::vector<std::string> UserConfig::getCachedConfigLines()
 {
     namespace fs = std::filesystem;
-    const fs::path cacheFilePath = fs::path(GAME_SOURCE_DIR)
-        / "srcBackend" / "common" / "config" / (rnStream ? "rnCache.txt" : "cache.txt");
+    const fs::path cacheFilePath = getCacheFilePath();
     std::ifstream cacheFile(cacheFilePath);
     if (!cacheFile)
         std::cerr << "Failed to open config cache file: " << cacheFilePath << std::endl;
@@ -163,6 +194,21 @@ std::vector<std::string> UserConfig::getCachedConfigLines(const bool rnStream)
     cacheFile.close();
     return lines;
 };
+
+std::filesystem::path UserConfig::getCacheFilePath()
+{
+    return std::filesystem::path(GAME_SOURCE_DIR)
+        / "srcBackend" / "common" / "config" /
+#ifdef RN_STREAM
+        "rnCache.txt";
+#else
+#ifdef SESSION
+    "sessionCache.txt";
+#else
+    "cache.txt";
+#endif
+#endif
+}
 
 std::optional<size_t> UserConfig::getUserChoiceFromList(const std::vector<std::string>& choices,
                                                         const std::string& title)
@@ -189,62 +235,71 @@ std::optional<size_t> UserConfig::getUserChoiceFromList(const std::vector<std::s
 
 std::optional<size_t> UserConfig::getUserCachedConfigChoice(
     const std::vector<std::vector<std::string>>& choices,
-    const std::string& title,
-    const bool rnStream)
+    const std::string& title)
 {
     gameConsole.setHeader(headerText, true, true);
     std::cout << std::endl;
     gameConsole.coutStyle("\t" + title, CONSOLE_INVERT);
     std::cout << std::endl;
+    std::cout << std::endl;
 
-    if (rnStream)
-        std::cout << std::left
-            << std::setw(4) << " "
-            << std::setw(50) << "PAR Sheet File Name"
-            << std::setw(50) << "RN Stream File Name"
-            << std::setw(5) << "RTP"
-            << std::setw(25) << "Bet Type"
-            << std::setw(25) << "Force"
-            << "\n";
-    else
-        std::cout << std::left
-            << std::setw(4) << " "
-            << std::setw(50) << "PAR Sheet File Name"
-            << std::setw(15) << "Sim Size (M)"
-            << std::setw(5) << "RTP"
-            << std::setw(25) << "Bet Type"
-            << std::setw(25) << "Force"
-            << std::setw(10) << "Seed" << '\n';
-    std::cout << std::string(150, '-') << '\n';
+    std::cout << std::left
+        << std::setw(4) << " "
+        << std::setw(50) << "PAR Sheet File Name"
+#ifdef RN_STREAM
+        << std::setw(50) << "RN Stream File Name"
+#else
+#ifdef SESSION
+        << std::setw(21) << "Sim Size (sessions)"
+#else
+        << std::setw(15) << "Sim Size (M)"
+#endif
+#endif
+        << std::setw(5) << "RTP"
+        << std::setw(25) << "Bet Type"
+        << std::setw(25) << "Force"
+#ifdef SESSION
+        << std::setw(25) << "Session Strategy"
+#endif
+#ifndef RN_STREAM
+        << std::setw(10) << "Seed"
+#endif
+        << '\n';
+    std::cout << std::string(200, '-') << '\n';
 
     int choiceNum = 0;
-    std::cout
-        << std::setw(4) << std::to_string(choiceNum++)
-        << std::setw(40) << "NEW CONFIG"
+    std::cout << std::left << std::setw(4) << std::to_string(choiceNum++) + ")"
+        << std::setw(50) << "NEW CONFIG"
         << std::endl;
 
     for (const auto& choice : choices)
-        if (rnStream)
-            std::cout << std::left
-                << std::setw(4) << std::to_string(choiceNum++) + ")"
-                << std::setw(50) << choice.at(0)
-                << std::setw(50) << choice.at(1)
-                << std::setw(5) << choice.at(2)
-                << std::setw(25) << choice.at(3)
-                << std::setw(40) << choice.at(4)
-                << "\n";
-        else
-            std::cout << std::left
-                << std::setw(4) << std::to_string(choiceNum++) + ")"
-                << std::setw(50) << choice.at(0)
-                << std::setw(15) << choice.at(1)
-                << std::setw(5) << choice.at(2)
-                << std::setw(25) << choice.at(3)
-                << std::setw(25) << choice.at(4)
-                << std::setw(40) << choice.at(6) + (choice.at(5) == "RAND"
+        std::cout << std::left << std::setw(4) << std::to_string(choiceNum++) + ")"
+            << std::setw(50) << choice.at(0)
+#ifdef RN_STREAM
+            << std::setw(50) << choice.at(1)
+#else
+#ifdef SESSION
+            << std::setw(21) << choice.at(1)
+#else
+            << std::setw(15) << choice.at(1)
+#endif
+#endif
+            << std::setw(5) << choice.at(2)
+            << std::setw(25) << choice.at(3)
+            << std::setw(25) << choice.at(4)
+#ifdef SESSION
+            << std::setw(25) << SessionStats::sessionStrategies.at(stoi(choice.at(6))).name
+                << std::setw(40) << choice.at(7) + (choice.at(5) == "RAND"
                                                         ? " (random - new seed will be chosen)"
                                                         : "")
-                << '\n';
+#else
+#ifndef RN_STREAM
+            << std::setw(40) << choice.at(6) + (choice.at(5) == "RAND"
+                                                    ? " (random - new seed will be chosen)"
+                                                    : "")
+#endif
+#endif
+            << '\n';
 
     std::string choiceString;
 
@@ -367,20 +422,19 @@ std::string UserConfig::getUserRnStreamFileChoice()
     return rnFileNames.at(userChoice.value_or(0));
 }
 
-int UserConfig::getUserRtpChoice(const ParSheet& parSheet, const bool rnStream)
+int UserConfig::getUserRtpChoice(const ParSheet& parSheet)
 {
     std::vector<std::string> rtpOptionStrings;
-    if (!rnStream) rtpOptionStrings.emplace_back("All");
     for (const int rtp : parSheet.rtps)
         rtpOptionStrings.emplace_back(std::to_string(rtp));
 
+    std::ranges::sort(rtpOptionStrings, [](const auto& a, const auto& b) { return a > b; });
+
     const std::optional<size_t> userChoice = getUserChoiceFromList(rtpOptionStrings, "Select RTP");
 
-    const int rtp = userChoice.has_value() || rnStream
-                        ? parSheet.rtps.at(userChoice.value_or(0) - (rnStream ? 0 : 1))
-                        : -1;
+    const int rtp = parSheet.rtps.at(userChoice.value_or(0));
 
-    headerText += (rtp > 0 ? " - RTP" + std::to_string(rtp) : " - All RTPs");
+    headerText += " - RTP" + std::to_string(rtp);
     return rtp;
 }
 
@@ -402,6 +456,22 @@ Forces::SimForce UserConfig::getUserForceChoice()
     return static_cast<Forces::SimForce>(userChoice);
 }
 
+size_t UserConfig::getUserSessionStrategyIndexChoice()
+{
+    if (SessionStats::sessionStrategies.empty())
+        throw std::runtime_error(
+            "No session strategies found. Please add session strategies to the vector in srcBackend/thisTitle/stats/SessionStrateiges.h");
+    std::vector<std::string> sessionStrategyNames;
+    for (const SessionStrategy& sessionStrategy : SessionStats::sessionStrategies)
+        sessionStrategyNames.emplace_back(sessionStrategy.name);
+
+    const size_t userChoice = getUserChoiceFromList(sessionStrategyNames, "Select Session Strategy").
+        value_or(0);
+    headerText += " - " + sessionStrategyNames.at(userChoice);
+    return userChoice;
+}
+
+
 std::optional<int> UserConfig::getUserSeedChoice()
 {
     return getUserInputAsInt("Set Seed", "Enter RNG Seed (press Enter for random)");
@@ -410,8 +480,16 @@ std::optional<int> UserConfig::getUserSeedChoice()
 uint64_t UserConfig::getUserSimSizeChoice()
 {
     return getUserInputAsInt("SET SIM SIZE",
+#ifdef SESSION
+                             "Enter number of sessions to simulate. (press Enter for 1000)"
+#else
                              "Enter number of games to simulate in millions. (press Enter for 1b)"
-    ).value_or(1000) * static_cast<uint64_t>(MILLION);
+#endif
+        ).value_or(1000)
+#ifndef SESSION
+        * static_cast<uint64_t>(MILLION)
+#endif
+        ;
 }
 
 Forces::SimForce UserConfig::stringToForce(const std::string& stringValue)

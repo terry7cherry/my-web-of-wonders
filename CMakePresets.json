@@ -30,6 +30,31 @@
       }
     },
     {
+      "name": "windows-session-debug",
+      "displayName": "Windows Sim Debug",
+      "description": "Debug sim build using Visual Studio toolchain.",
+      "generator": "Visual Studio 17 2022",
+      "binaryDir": "${sourceDir}/build/windows-session-debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+        "VCPKG_TARGET_TRIPLET": "x64-windows",
+        "SESSION": "ON"
+      }
+    },
+    {
+      "name": "windows-session",
+      "displayName": "Windows Sim",
+      "generator": "Visual Studio 17 2022",
+      "binaryDir": "${sourceDir}/build/windows-session",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+        "VCPKG_TARGET_TRIPLET": "x64-windows",
+        "SESSION": "ON"
+      }
+    },
+    {
       "name": "windows-frontend-debug",
       "displayName": "Windows Frontend Debug",
       "description": "Debug frontend build using Visual Studio toolchain.",
@@ -102,6 +127,31 @@
         "CMAKE_BUILD_TYPE": "Release",
         "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
         "VCPKG_TARGET_TRIPLET": "arm64-osx"
+      }
+    },
+    {
+      "name": "macos-session-debug",
+      "displayName": "macOS Sim Debug",
+      "description": "Debug sim build using Apple Clang and vcpkg manifest",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/macos-session-debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+        "VCPKG_TARGET_TRIPLET": "arm64-osx",
+        "SESSION": "ON"
+      }
+    },
+    {
+      "name": "macos-session",
+      "displayName": "macOS Sim",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/macos-session",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+        "VCPKG_TARGET_TRIPLET": "arm64-osx",
+        "SESSION": "ON"
       }
     },
     {

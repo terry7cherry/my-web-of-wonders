@@ -34,6 +34,12 @@ void PayTableMeter::flush()
     }
 }
 
+PayTableMeter::LocalArray& PayTableMeter::getLocalArray()
+{
+    return tls()[_id];
+}
+
+
 PayTableMeter::LocalArray* PayTableMeter::tls()
 {
     thread_local LocalArray tlsStorage[100]{}; // zero-initialized
