@@ -58,7 +58,7 @@ export default class Game {
 
     async getMathsAndCreateUI() {
         await this.getMaths();
-        if (!this.state.bet) this.state.bet = this.minBet * this.maths.betTypeCost;
+        if (!this.state.bet) this.state.bet = 100 * this.maths.betTypeCost;
         this.ui = new GameUI(this.maths);
         await this.ui.init({
             state: this.state,
@@ -67,6 +67,7 @@ export default class Game {
             shell: this.shell,
             imageMap: this.imageMap
         });
+        this.updateBet(this.state.bet);
         this.registerClickCallbacks();
         this.setupForcesAndPayTable();
         await this.ui.balance.update(this.state.balance);
