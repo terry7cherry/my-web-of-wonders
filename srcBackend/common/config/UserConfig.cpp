@@ -22,17 +22,20 @@ UserConfig::UserConfig() :
     betType(getUserBetTypeChoice(parSheet)),
     force(getUserForceChoice())
 #ifdef SESSION
-, sessionStrategyIndex(getUserSessionStrategyIndexChoice()),
+    ,
+    sessionStrategyIndex(getUserSessionStrategyIndexChoice()),
     sessionStrategy(SessionStats::sessionStrategies.at(sessionStrategyIndex))
 #endif
 #ifndef RN_STREAM
-, seedChoice(getUserSeedChoice()),
+    ,
+    seedChoice(getUserSeedChoice()),
     seed(seedChoice.value_or(std::random_device{}()))
 #endif
 
 {
     saveOrUpdateCache();
 }
+
 
 UserConfig::UserConfig(const std::string& cachedConfig) :
     parSheet(split(cachedConfig).at(0)),
@@ -45,7 +48,8 @@ UserConfig::UserConfig(const std::string& cachedConfig) :
     betType(split(cachedConfig).at(3)),
     force(stringToForce(split(cachedConfig).at(4)))
 #ifdef SESSION
-    , sessionStrategyIndex(std::stoi(split(cachedConfig).at(6))),
+    ,
+    sessionStrategyIndex(std::stoi(split(cachedConfig).at(6))),
     sessionStrategy(SessionStats::sessionStrategies.at(sessionStrategyIndex))
 #endif
 #ifndef RN_STREAM
@@ -65,14 +69,63 @@ UserConfig::UserConfig(const std::string& cachedConfig) :
     if (force) headerText += " - " + Forces::simForceNames.at(force);
 }
 
-UserConfig UserConfig::getNewOrCachedConfig()
+UserConfig::UserConfig(const int argc, char* argv[]) :
+    parSheet(hasFlag({"-p", "--parSheet"}, argc, argv)
+                 ? ParSheet(getArgumentByFlag({"-p", "--parSheet"}, argc, argv).value())
+                 : getUserParSheetChoice()),
+#ifndef RN_STREAM
+    simSize(
+        hasFlag({"-r", "--simSize"}, argc, argv)
+            ? (std::stoll(getArgumentByFlag({"-r", "--simSize"}, argc, argv).value())
+                * static_cast<uint64_t>(MILLION))
+            : getUserSimSizeChoice()),
+#else
+    rnStreamFileName(
+        hasFlag({"--rnStream"}, argc, argv)
+            ? getArgumentByFlag({"--rnStream"}, argc, argv).value()
+            : getUserRnStreamFileChoice()),
+#endif
+    rtp(
+        hasFlag({"--rtp"}, argc, argv)
+            ? std::stoi(getArgumentByFlag({"--rtp"}, argc, argv).value())
+            : getUserRtpChoice(parSheet)),
+    betType(
+        hasFlag({"-b", "--betType"}, argc, argv)
+            ? getArgumentByFlag({"-b", "--betType"}, argc, argv).value()
+            : getUserBetTypeChoice(parSheet))
+    , force(hasFlag({"-f", "--force"}, argc, argv)
+                ? static_cast<Forces::SimForce>(std::stoi(
+                    getArgumentByFlag({"-f", "--force"}, argc, argv).value()))
+                : getUserForceChoice())
+#ifdef SESSION
+    , sessionStrategyIndex(
+        hasFlag({"--sessionStrategy"}, argc, argv)
+            ? std::stoi(getArgumentByFlag({"--sessionStrategy"}, argc, argv).value())
+            : getUserSessionStrategyIndexChoice()
+    ),
+    sessionStrategy(SessionStats::sessionStrategies.at(sessionStrategyIndex))
+#endif
+#ifndef RN_STREAM
+    , seedChoice(
+        hasFlag({"-s", "--seed"}, argc, argv)
+            ? (getArgumentByFlag({"-s", "--seed"}, argc, argv).value().starts_with("r")
+               || getArgumentByFlag({"-s", "--seed"}, argc, argv).value().starts_with("R")
+                   ? std::nullopt
+                   : std::optional(std::stoi(getArgumentByFlag({"-r", "--rtp"}, argc, argv).value())))
+            : getUserSeedChoice()
+    ),
+    seed(seedChoice.value_or(std::random_device{}()))
+#endif
+{
+    saveOrUpdateCache();
+}
+
+UserConfig UserConfig::getNewOrCachedConfig(int argc, char* argv[])
 {
     namespace fs = std::filesystem;
     const fs::path cacheFilePath = getCacheFilePath();
-    if (!fs::exists(cacheFilePath)) return UserConfig();
-
+    if (!fs::exists(cacheFilePath) || argc > 1) return UserConfig(argc, argv);
     const std::vector<std::string> lines = getCachedConfigLines();
-
     std::vector<std::vector<std::string>> configChoices;
     for (const auto& line : lines)
     {
@@ -140,20 +193,20 @@ void UserConfig::saveOrUpdateCache() const
     std::string newConfigLine =
             parSheet.fileName
 #ifdef RN_STREAM
-            + "|" + rnStreamFileName
+            +"|" + rnStreamFileName
 #else
-            +"|" + std::to_string(simSize)
+            + "|" + std::to_string(simSize)
 #endif
             + "|" + std::to_string(rtp)
             + "|" + betType
             + "|" + std::to_string(force)
 #ifndef RN_STREAM
-        +"|" + (seedChoice.has_value()
-                    ? std::to_string(seed)
-                    : "RAND")
+            + "|" + (seedChoice.has_value()
+                         ? std::to_string(seed)
+                         : "RAND")
 #endif
 #ifdef SESSION
-        +"|" + std::to_string(sessionStrategyIndex)
+            + "|" + std::to_string(sessionStrategyIndex)
 #endif
         ;
 
@@ -203,7 +256,7 @@ std::filesystem::path UserConfig::getCacheFilePath()
         "rnCache.txt";
 #else
 #ifdef SESSION
-    "sessionCache.txt";
+        "sessionCache.txt";
 #else
     "cache.txt";
 #endif
@@ -289,9 +342,9 @@ std::optional<size_t> UserConfig::getUserCachedConfigChoice(
             << std::setw(25) << choice.at(4)
 #ifdef SESSION
             << std::setw(25) << SessionStats::sessionStrategies.at(stoi(choice.at(6))).name
-                << std::setw(40) << choice.at(7) + (choice.at(5) == "RAND"
-                                                        ? " (random - new seed will be chosen)"
-                                                        : "")
+            << std::setw(40) << choice.at(7) + (choice.at(5) == "RAND"
+                                                    ? " (random - new seed will be chosen)"
+                                                    : "")
 #else
 #ifndef RN_STREAM
             << std::setw(40) << choice.at(6) + (choice.at(5) == "RAND"
@@ -487,7 +540,7 @@ uint64_t UserConfig::getUserSimSizeChoice()
 #endif
         ).value_or(1000)
 #ifndef SESSION
-        * static_cast<uint64_t>(MILLION)
+        *static_cast<uint64_t>(MILLION)
 #endif
         ;
 }
@@ -503,4 +556,22 @@ Forces::SimForce UserConfig::stringToForce(const std::string& stringValue)
             std::runtime_error("Force value from cached config is negative. That's weird yo.");
 
     return static_cast<Forces::SimForce>(intValue);
+}
+
+bool UserConfig::hasFlag(const std::vector<std::string>& flags, const int argc, char* argv[])
+{
+    for (size_t i = 0; i < argc; i++)
+        for (const std::string& flag : flags)
+            if (flag == argv[i]) return true;
+    return false;
+}
+
+std::optional<std::string> UserConfig::getArgumentByFlag(const std::vector<std::string>& flags,
+                                                         const int argc,
+                                                         char* argv[])
+{
+    for (size_t i = 0; i < argc; i++)
+        for (const std::string& flag : flags)
+            if (flag == argv[i]) return argv[i + 1];
+    return std::nullopt;
 }

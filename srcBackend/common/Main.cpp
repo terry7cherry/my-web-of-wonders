@@ -277,11 +277,11 @@ int frontendMain()
 	return 0;
 }
 
-int simulatorMain()
-{
 #ifndef FRONTEND
 #ifndef RN_STREAM
-	UserConfig config = UserConfig::getNewOrCachedConfig();
+int simulatorMain(const int argc, char* argv[])
+{
+	UserConfig config = UserConfig::getNewOrCachedConfig(argc, argv);
 	ParSheet& parSheet = config.parSheet;
 	if (config.rtp == -1)
 	{
@@ -304,17 +304,17 @@ int simulatorMain()
 		doMonteCarloStdMultiThread(gameMaths, bet, config);
 #endif
 	}
-#endif
-#endif
 	return
 		0;
 }
+#endif
+#endif
 
-int sessionMain()
-{
 #ifdef SESSION
+int sessionMain(int argc, char* argv[])
+{
 	// Get session-specific configuration
-	UserConfig config = UserConfig::getNewOrCachedConfig();
+	UserConfig config = UserConfig::getNewOrCachedConfig(argc, argv);
 	ParSheet& parSheet = config.parSheet;
 	// Single RTP only (as per requirement)
 	GameMaths& gameMaths = *parSheet.gameMathsVariants[config.betType][config.rtp];
@@ -335,94 +335,94 @@ int sessionMain()
 	const std::time_t t = std::chrono::system_clock::to_time_t(now);
 	std::tm tm{};
 #if defined(_WIN32)
-	localtime_s(&tm, &t);
+localtime_s (&tm, &t);
 #else
-	localtime_r(&t, &tm);
+localtime_r (&t, &tm);
 #endif
-	std::ostringstream oss;
-	oss << std::put_time(&tm, "%Y-%m-%d_%H.%M");
-	oss << "_session";
-	if (config.simSize > BILLION)
-		oss << "_" << (config.simSize / BILLION) << "b";
+std::ostringstream oss;
+oss<< std::put_time (&tm, "%Y-%m-%d_%H.%M");
+oss<< "_session";
+	if (config.simSize> BILLION)
+oss<< "_" << (config.simSize/ BILLION) << "b";
 	else
-		oss << "_" << (config.simSize / MILLION) << "m";
-	oss << "_RTP" << gameMaths.rtp << "_bet" << bet;
-	if (gameMaths.betType != "default") oss << "_" << gameMaths.betType;
-	const fs::path outFolder = simsRoot / oss.str();
-	fs::create_directories(outFolder);
-	const fs::path csvPath = outFolder / (std::string("Sessions_") + name + ".csv");
+oss<< "_" << (config.simSize/ MILLION) << "m";
+oss<< "_RTP" << gameMaths.rtp<< "_bet" << bet;
+	if (gameMaths.betType!= "default") oss<< "_" << gameMaths.betType;
+const fs::path outFolder = simsRoot / oss.str();
+fs::create_directories (outFolder);
+const fs::path csvPath = outFolder / (std::string("Sessions_") + name + ".csv");
 
-	// Shared results container
-	std::mutex rowsMutex;
-	std::vector<std::vector<float>> rows;
-	rows.reserve(static_cast<size_t>(config.simSize));
+// Shared results container
+std::mutex rowsMutex;
+std::vector<std::vector<float>> rows;
+rows.reserve (static_cast<size_t>(config.simSize));
 
-	std::atomic<uint64_t> nextBatch{0};
-	std::vector<std::jthread> threads;
-	threads.reserve(threadCount);
+std::atomic<uint64_t> nextBatch{0};
+std::vector<std::jthread> threads;
+threads.reserve (threadCount);
 
-	auto sessionWorker = [&](const std::stop_token& st,
-	                         const uint64_t totalBatchesLocal,
-	                         const uint64_t sessionsPerBatchLocal,
-	                         const int baseSeed)
+auto sessionWorker = [&](const std::stop_token& st,
+                         const uint64_t totalBatchesLocal,
+                         const uint64_t sessionsPerBatchLocal,
+                         const int baseSeed)
+{
+	GameCycleReused reused(gameMaths);
+	try
 	{
-		GameCycleReused reused(gameMaths);
-		try
+		while (!st.stop_requested())
 		{
-			while (!st.stop_requested())
+			const uint64_t batch = nextBatch.fetch_add(1, std::memory_order_relaxed);
+			if (batch >= totalBatchesLocal) break;
+			mathsRng.setSeed(baseSeed + static_cast<int>(batch));
+
+			for (uint64_t i = 0; i < sessionsPerBatchLocal; ++i)
 			{
-				const uint64_t batch = nextBatch.fetch_add(1, std::memory_order_relaxed);
-				if (batch >= totalBatchesLocal) break;
-				mathsRng.setSeed(baseSeed + static_cast<int>(batch));
+				// Initialise a new logical session
+				GameSession session(bet, gameMaths, config.force);
+				long long balance = static_cast<long long>(initialBalanceMult) * static_cast<long
+					long>(bet);
+				SessionStats::beginSession(balance);
 
-				for (uint64_t i = 0; i < sessionsPerBatchLocal; ++i)
+				uint64_t spinsPlayed = 0;
+				bool done = false;
+				while (!done)
 				{
-					// Initialise a new logical session
-					GameSession session(bet, gameMaths, config.force);
-					long long balance = static_cast<long long>(initialBalanceMult) * static_cast<long
-						long>(bet);
-					SessionStats::beginSession(balance);
+					GameCycle cycle(session, reused, gameMaths);
+					GameLogic::playGame(gameMaths, cycle);
 
-					uint64_t spinsPlayed = 0;
-					bool done = false;
-					while (!done)
-					{
-						GameCycle cycle(session, reused, gameMaths);
-						GameLogic::playGame(gameMaths, cycle);
+					// Bankroll update
+					balance -= bet;
+					balance += cycle.totalWin;
 
-						// Bankroll update
-						balance -= bet;
-						balance += cycle.totalWin;
+					// Per-spin stats
+					SessionStats::storeSessionStatsForSpin(cycle, bet);
 
-						// Per-spin stats
-						SessionStats::storeSessionStatsForSpin(cycle, bet);
+					++spinsPlayed;
+					done = shouldStop(balance, spinsPlayed, session, cycle);
+				}
 
-						++spinsPlayed;
-						done = shouldStop(balance, spinsPlayed, session, cycle);
-					}
+				// Finalise one row
+				std::vector<float> row = SessionStats::storeSessionStatsForSession(
+					balance, gameMaths.payTables["default"].symbolNames);
+				// Prepend SessionIndex (1-based across whole run). Approximate index by current size+1; will adjust after join
+				// We will store without index here and add indices during CSV write to avoid races.
 
-					// Finalise one row
-					std::vector<float> row = SessionStats::storeSessionStatsForSession(
-						balance, gameMaths.payTables["default"].symbolNames);
-					// Prepend SessionIndex (1-based across whole run). Approximate index by current size+1; will adjust after join
-					// We will store without index here and add indices during CSV write to avoid races.
-
-					// Push thread-safely
-					{
-						std::lock_guard lk(rowsMutex);
-						rows.emplace_back(std::move(row));
-					}
+				// Push thread-safely
+				{
+					std::lock_guard lk(rowsMutex);
+					rows.emplace_back(std::move(row));
 				}
 			}
 		}
-		catch (const std::exception& e)
-		{
-			std::cerr << "Session worker error: " << e.what() << std::endl;
-		}
-	};
+	}
+	catch (const std::exception& e)
+	{
+		std::cerr << "Session worker error: " << e.what() << std::endl;
+	}
+};
 
-	// Launch threads
-	for (unsigned int ti = 0; ti < threadCount; ++ti)
+// Launch threads
+	for (unsigned int ti = 0; ti<threadCount;++ti)
 	{
 		threads.emplace_back(sessionWorker,
 		                     totalBatches,
@@ -430,14 +430,14 @@ int sessionMain()
 		                     static_cast<int>(config.seed));
 	}
 
-	// Wait for threads to finish (jthread joins on destruction)
-	threads.clear();
+// Wait for threads to finish (jthread joins on destruction)
+threads.clear();
 
-	// If we produced slightly more rows due to rounding, trim
-	if (rows.size() > config.simSize) rows.resize(static_cast<size_t>(config.simSize));
+// If we produced slightly more rows due to rounding, trim
+	if (rows.size()> config.simSize) rows.resize (static_cast<size_t>(config.simSize));
 
-	// Write CSV
-	std::ofstream out(csvPath);
+// Write CSV
+std::ofstream out(csvPath);
 	if (!out.is_open())
 	{
 		std::cerr << "Failed to open sessions CSV: " << csvPath << std::endl;
@@ -469,16 +469,16 @@ int sessionMain()
 		out.close();
 		std::cout << "Wrote sessions CSV: " << csvPath << std::endl;
 	}
-#endif
 	return
 		0;
 }
+#endif
 
 #ifdef RN_STREAM
-int rnStreamMain()
+int rnStreamMain(int argc, char* argv[])
 {
 	mathsRng.setRng(RngOptions::data);
-	UserConfig config = UserConfig::getNewOrCachedConfig();
+	UserConfig config = UserConfig::getNewOrCachedConfig(argc, argv);
 	const std::filesystem::path filePath = std::filesystem::path(GAME_SOURCE_DIR) / "srcBackend" / "thisTitle"
 		/
 		"parSheets" / config.rnStreamFileName;
@@ -488,7 +488,7 @@ int rnStreamMain()
 }
 #endif
 
-int main()
+int main(int argc, char* argv[])
 {
 #ifdef _WIN32
 	SetConsoleOutputCP(CP_UTF8);
@@ -499,12 +499,12 @@ int main()
 		return frontendMain();
 #else
 #ifdef RN_STREAM
-		return rnStreamMain();
+		return rnStreamMain(argc, argv);
 #else
 #ifdef SESSION
-		return sessionMain();
+		return sessionMain(argc, argv);
 #else
-		return simulatorMain();
+		return simulatorMain(argc, argv);
 #endif
 #endif
 #endif
