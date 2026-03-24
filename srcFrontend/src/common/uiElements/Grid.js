@@ -55,8 +55,16 @@ export default class Grid {
         this.isHoldAndSpin = isHoldAndSpin;
         this.holdAndSpinBlankSymbols = holdAndSpinBlankSymbols;
         this.weightedDisplayReelSet = weightedDisplayReelSet;
+        this.reelBackground = this.createReelBackground();
         this.reels = this.createReels();
         this.getReelStartingPositions();
+    }
+
+    createReelBackground() {
+        const reelBackground = new PIXI.Container();
+        reelBackground.sortableChildren = true;
+        this.container.addChild(reelBackground);
+        return reelBackground;
     }
 
     createReels() {
