@@ -34,6 +34,16 @@ void IntMaxMeter::flush()
     localCounts[_id] = 0;
 }
 
+uint64_t IntMaxMeter::getLocalMax()
+{
+    return tls().first[_id];
+}
+
+uint64_t IntMaxMeter::getLocalCount()
+{
+    return tls().second[_id];
+}
+
 std::pair<uint64_t*, uint64_t*> IntMaxMeter::tls()
 {
     thread_local uint64_t tlsMax[100] = {};

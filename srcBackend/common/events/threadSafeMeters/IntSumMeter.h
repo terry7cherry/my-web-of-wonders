@@ -55,6 +55,11 @@ public:
      */
     uint64_t global() const;
 
+    /**
+     * @brief Read the local total.
+     */
+    uint64_t getLocalValue();
+
 private:
     /**
      * @brief Access per-thread storage and subscribe this meter to global flush notifications.

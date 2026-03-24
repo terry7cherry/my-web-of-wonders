@@ -55,6 +55,11 @@ public:
     void flush();
 
     /**
+     * @brief Get the local distribution.
+     */
+    std::unordered_map<int, uint64_t> getLocalData();
+
+    /**
      * @brief Get the aggregated distribution as sorted pairs of (key,count).
      * @param descending Sort descending by key when true; ascending when false.
      */
