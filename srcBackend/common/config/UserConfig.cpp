@@ -77,7 +77,10 @@ UserConfig::UserConfig(const int argc, char* argv[]) :
     simSize(
         hasFlag({"-r", "--simSize"}, argc, argv)
             ? (std::stoll(getArgumentByFlag({"-r", "--simSize"}, argc, argv).value())
-                * static_cast<uint64_t>(MILLION))
+#ifndef SESSION
+                *static_cast<uint64_t>(MILLION)
+#endif
+            )
             : getUserSimSizeChoice()),
 #else
     rnStreamFileName(
