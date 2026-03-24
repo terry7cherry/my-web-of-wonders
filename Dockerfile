@@ -22,7 +22,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /opt
 ARG VCPKG_VERSION=2025.12.12
 RUN git clone --no-single-branch https://github.com/microsoft/vcpkg.git
-WORKDIR /vcpkg
+WORKDIR /opt/vcpkg
 RUN git checkout ${VCPKG_VERSION} && \
     ./bootstrap-vcpkg.sh -disableMetrics
 
