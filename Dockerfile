@@ -47,11 +47,6 @@ WORKDIR /src
 COPY srcBackend ./srcBackend
 COPY srcFrontend ./srcFrontend
 
-# Install node modules
-WORKDIR /src/srcFrontend
-RUN npm i
-
-
 # Build (C++ and frontend)
 RUN cmake -B build -S . \
     -G Ninja \
