@@ -10,8 +10,10 @@ class UserConfig
 public:
     UserConfig();
 
+    UserConfig(int argc, char* argv[]);
+
     explicit UserConfig(const std::string& cachedConfig);
-    static UserConfig getNewOrCachedConfig();
+    static UserConfig getNewOrCachedConfig(int argc, char* argv[]);
 
     inline static Console gameConsole;
     inline static std::string headerText = "";
@@ -68,4 +70,9 @@ private:
     static uint64_t getUserSimSizeChoice();
 
     static Forces::SimForce stringToForce(const std::string& stringValue);
+
+    static bool hasFlag(const std::vector<std::string>& flags, int argc, char* argv[]);
+
+    static std::optional<std::string> getArgumentByFlag(const std::vector<std::string>& flags, int argc,
+                                                        char* argv[]);
 };
