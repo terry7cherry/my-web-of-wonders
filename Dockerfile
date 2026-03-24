@@ -1,10 +1,12 @@
+
 # ============================
 # Stage 1: Build (Node + C++)
 # ============================
 FROM node:20-bookworm AS build
 
 # Install C++ toolchain and CMake for building the backend and tools needed for vcpkg install
-RUN apt-get update && apt-get install -y \
+# hadolint ignore=DL3008
+RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     cmake \
     ninja-build \
@@ -20,9 +22,9 @@ RUN apt-get update && apt-get install -y \
 # Install vcpkg
 WORKDIR /opt
 ARG VCPKG_VERSION=2025.12.12
-RUN git clone --no-single-branch https://github.com/microsoft/vcpkg.git && \
-    cd vcpkg && \
-    git checkout ${VCPKG_VERSION} && \
+RUN git clone --no-single-branch https://github.com/microsoft/vcpkg.git
+WORKDIR /opt/vcpkg
+RUN git checkout ${VCPKG_VERSION} && \
     ./bootstrap-vcpkg.sh -disableMetrics
 
 ENV VCPKG_ROOT=/opt/vcpkg
@@ -53,8 +55,7 @@ RUN cmake -B build -S . \
     -DCMAKE_TOOLCHAIN_FILE=${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake \
     -DCMAKE_CXX_FLAGS="-w" \
     -DFRONTEND=ON && \
-    cmake --build build --target cpp-game -j$(nproc)
-
+    cmake --build build --target cpp-game -j"$(nproc)"
 
 # ============================
 # Stage 2: Runtime image
@@ -62,12 +63,22 @@ RUN cmake -B build -S . \
 
 FROM debian:bookworm-slim
 
-RUN apt-get update && apt-get install -y \
+# hadolint ignore=DL3008
+RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates && rm -rf /var/lib/apt/lists/*
+
+RUN groupadd --system appuser && useradd --system --gid appuser appuser
 
 COPY --from=build /src/build/cpp-game /usr/local/bin/cpp-game
 COPY --from=build /src/srcFrontend/dist /src/srcFrontend/dist
 COPY --from=build /src/srcBackend/thisTitle/parSheets /src/srcBackend/thisTitle/parSheets
+
+# Create a dir for drogon to store requests larger than client_max_body_size
+RUN mkdir -p /src/uploads && chown appuser:appuser /src/uploads
+
+USER appuser
+
+WORKDIR /src
 
 EXPOSE 8080
 CMD ["cpp-game"]
