@@ -48,7 +48,7 @@ COPY srcBackend ./srcBackend
 COPY srcFrontend ./srcFrontend
 
 # Install node modules
-WORKDIR ./srcFrontend
+WORKDIR /src/srcFrontend
 RUN npm i
 
 
