@@ -25,6 +25,7 @@ struct GameSession : GameSessionBase
     unsigned int mainCollectorPositionSpinRemaining;
     unsigned int deadSpins;
     CollectorPosition mainCollectorPosition;
+    std::vector<CollectorPosition> positionsWithCoinsOrBonuses;
 
     /**
      * \brief Construct a new session for a given bet and maths configuration.
@@ -42,7 +43,8 @@ struct GameSession : GameSessionBase
         : GameSessionBase(bet, maths, simForce),
           mainCollectorPositionSpinRemaining(0),
           deadSpins(0),
-          mainCollectorPosition(TOP_LEFT)
+          mainCollectorPosition(TOP_LEFT),
+          positionsWithCoinsOrBonuses()
     // Initialise persistent values (typically from gameMaths). e.g.
     {
     }
@@ -65,6 +67,7 @@ struct GameSession : GameSessionBase
         mainCollectorPositionSpinRemaining = oldSession.mainCollectorPositionSpinRemaining;
         deadSpins = oldSession.deadSpins;
         mainCollectorPosition = oldSession.mainCollectorPosition;
+        positionsWithCoinsOrBonuses = oldSession.positionsWithCoinsOrBonuses;
         // Copy any persistent data that SHOULD NOT BE bet locked from the oldSession. E.g.
         // consecutiveLosingSpins = oldSession.consecutiveLosingSpins;
         // You can also copy values depending on what has changed from the oldSession. E.g.
@@ -87,6 +90,8 @@ struct GameSession : GameSessionBase
     // jackpotValue(jsonSession["jackpotValue"].asInt()),
     // consecutiveLosingSpins(jsonSession["consecutiveLosingSpins"].asInt())
     {
+        for (const auto& position : jsonSession["positionsWithCoinsOrBonuses"])
+            positionsWithCoinsOrBonuses.push_back(static_cast<CollectorPosition>(position.asInt()));
     }
 
     /**
@@ -100,6 +105,9 @@ struct GameSession : GameSessionBase
         jsonSession["mainCollectorPositionSpinsRemaining"] = mainCollectorPositionSpinRemaining;
         jsonSession["deadSpins"] = deadSpins;
         jsonSession["mainCollectorPosition"] = collectorPositionNames.at(mainCollectorPosition);
+        jsonSession["positionsWithCoinsOrBonuses"] = Json::Value(Json::arrayValue);
+        for (const auto& position : positionsWithCoinsOrBonuses)
+            jsonSession["positionsWithCoinsOrBonuses"].append(static_cast<int>(position));
         // Add any persistent data to the JSON session here. E.g.
         // jsonSession["jackpotValue"] = jackpotValue;
         // jsonSession["consecutiveLosingSpins"] = consecutiveLosingSpins;

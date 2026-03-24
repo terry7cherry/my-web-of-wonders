@@ -3,6 +3,7 @@
 #include "../../common/events/WinAnalysisEvent.h"
 #include "../../common/events/GameCycleCompleteEvent.h"
 #include "../../common/events/threadSafeMeters/MeterUpdate.h"
+#include "../events/BonusSymbolCollectionEvent.h"
 #include "../state/GameCycle.h"
 
 namespace SessionStats
@@ -15,7 +16,8 @@ namespace SessionStats
         long long totalPayout = 0;
         uint64_t winSpins = 0;
         uint64_t zeroWinSpins = 0;
-        uint64_t fsTriggers = 0;
+        uint64_t eggwakeningTriggers = 0;
+        uint64_t superEggwakeningTriggers = 0;
         uint64_t fsSpins = 0;
         unsigned int maxSingleWin = 0;
     };
@@ -30,7 +32,10 @@ namespace SessionStats
         "RTP",
         "WinSpins",
         "ZeroWinSpins",
-        "FS_Triggers",
+        "Eggwakening",
+        "Super Eggwakening",
+        "Bonus Symbol Collections",
+        "Base Coin Payouts",
         "FS_Spins",
         "MaxSingleWin",
         "EndBalance",
@@ -60,7 +65,10 @@ namespace SessionStats
         else g.zeroWinSpins += 1;
         if (cycle.fsTrigger)
         {
-            g.fsTriggers += 1;
+            if (cycle.fsCollectorTrigger)
+                g.superEggwakeningTriggers++;
+            else
+                g.eggwakeningTriggers++;
             g.fsSpins += cycle.fsSpinsPlayed;
         }
         if (cycle.totalWin > g.maxSingleWin) g.maxSingleWin = cycle.totalWin;
@@ -82,7 +90,10 @@ namespace SessionStats
         row.push_back(rtp);
         row.push_back(static_cast<float>(g.winSpins));
         row.push_back(static_cast<float>(g.zeroWinSpins));
-        row.push_back(static_cast<float>(g.fsTriggers));
+        row.push_back(static_cast<float>(g.eggwakeningTriggers));
+        row.push_back(static_cast<float>(g.superEggwakeningTriggers));
+        row.push_back(static_cast<float>(BonusSymbolCollectionEvent::eventTotalHits.getLocalValue()));
+        row.push_back(static_cast<float>(BaseCoinsPayoutEvent::eventTotalHits.getLocalValue()));
         row.push_back(static_cast<float>(g.fsSpins));
         row.push_back(static_cast<float>(g.maxSingleWin));
         row.push_back(static_cast<float>(endingBalance));

@@ -60,7 +60,7 @@ namespace GameLogic
         }
 
         cycle.recordEvent<GameCycleCompleteEvent>(cycle.totalWin, maths, cycle.session.bet);
-        updateDeadSpins(maths, cycle);
+        updateDeadSpinsAndPositionsWithCoins(maths, cycle);
         return cycle.totalWin;
     }
 
@@ -68,13 +68,27 @@ namespace GameLogic
     {
         static auto& collectorPositionWeights = maths.stringWeightTables["mainCollectorPosition"];
         static auto& mainCollectorPositionNumSpins = maths.intWeightTables["mainCollectorPositionNumSpins"];
-        if (cycle.session.mainCollectorPositionSpinRemaining == 0 || cycle.session.deadSpins >= 3)
+        if (cycle.session.mainCollectorPositionSpinRemaining == 0 || cycle.session.deadSpins >= 2)
         {
-            cycle.session.mainCollectorPosition = collectorPositionMap.at(collectorPositionWeights.pick());
+            const auto& positionsWithCoins = cycle.session.positionsWithCoinsOrBonuses;
+            if (positionsWithCoins.size() == 1)
+                cycle.session.mainCollectorPosition = positionsWithCoins.
+                    at(0);
+            else if (positionsWithCoins.size() > 1)
+                cycle.session.mainCollectorPosition = positionsWithCoins[
+                    mathsRng.getInt(positionsWithCoins.size(), "Choose main collector position.")];
+            else
+            {
+                CollectorPosition newPosition = cycle.session.mainCollectorPosition;
+                while (newPosition == cycle.session.mainCollectorPosition)
+                    newPosition = collectorPositionMap.at(collectorPositionWeights.pick());
+                cycle.session.mainCollectorPosition = newPosition;
+            }
             cycle.session.mainCollectorPositionSpinRemaining = mainCollectorPositionNumSpins.pick();
             cycle.mainCollectorMoved = true;
+            cycle.session.deadSpins = 0;
         }
-        cycle.session.mainCollectorPositionSpinRemaining--;
+        //cycle.session.mainCollectorPositionSpinRemaining--;
         cycle.grid.coinMultiplierGrid = maths.intGrids["collectorPositions." + collectorPositionNames[cycle.
                 session.mainCollectorPosition]
         ];
@@ -227,7 +241,7 @@ namespace GameLogic
                     collectCoin(maths, cycle, reel, row, collectorHasCollected);
 
         const bool veryHighChance = cycle.fsSpinsRemaining <= 2 && cycle.fsFinalSecondaryCollectors == 0;
-        const bool highChance = cycle.fsSpinsRemaining <= 3 && cycle.fsFinalSecondaryCollectors == 0;
+        const bool highChance = cycle.fsSpinsRemaining <= 4 && cycle.fsFinalSecondaryCollectors == 0;
         const auto& collectorActivationChance = maths.boolWeightTables[
             veryHighChance
                 ? "collectorActivationChanceVeryHigh"
@@ -458,11 +472,30 @@ namespace GameLogic
         cycle.recordEvent<MaxedOutMultipliersEvent>();
     }
 
-    void updateDeadSpins(const GameMaths& maths, GameCycle& cycle)
+    void updateDeadSpinsAndPositionsWithCoins(const GameMaths& maths, GameCycle& cycle)
     {
-        if (cycle.totalWin == 0 && !cycle.bonusSymbolCollected && !cycle.mainCollectorMoved)
+        if (!cycle.bonusSymbolCollected && !cycle.baseCoinsRecorded && !cycle.fsTrigger)
             cycle.session.deadSpins++;
         else cycle.session.deadSpins = 0;
+        cycle.session.positionsWithCoinsOrBonuses.clear();
+        for (CollectorPosition position : collectorPositionMap | std::views::values)
+        {
+            const auto& collectorControlArea = maths.intGrids["collectorPositions." + collectorPositionNames[
+                position]];
+            std::vector<CollectorPosition> inactiveCollectorPositions;
+            bool hasCoins = false;
+            for (size_t reel = 0; reel < cycle.grid.maxReels && !hasCoins; reel++)
+                for (size_t row = 0; row < cycle.grid.maxRows && !hasCoins; row++)
+                    if (
+                        collectorControlArea[reel][row] == 1
+                        && (cycle.grid.getSymbol({reel, row})
+                            == maths.payTables["default"].symbolIndexMap.at("C1")
+                            || cycle.grid.getSymbol({reel, row})
+                            == maths.payTables["default"].symbolIndexMap.at("BN"))
+                    )
+                        hasCoins = true;
+            if (hasCoins) cycle.session.positionsWithCoinsOrBonuses.push_back(position);
+        }
     }
 }
 

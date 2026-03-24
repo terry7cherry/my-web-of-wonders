@@ -17,5 +17,5 @@ Json::Value GameMaths::toJson() const
 
 std::string GameMaths::getFrontendMathsSheetName()
 {
-    return "HerrSpider_V0_0_1 ParSheet.xlsx";
+    return "HerrSpider_V0_0_2 ParSheet.xlsx";
 }

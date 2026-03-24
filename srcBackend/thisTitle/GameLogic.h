@@ -47,5 +47,5 @@ namespace GameLogic
 
     void maximizeMultipliersForEnhancedFreeSpins(const GameMaths& maths, GameCycle& cycle);
 
-    void updateDeadSpins(const GameMaths& maths, GameCycle& cycle);
+    void updateDeadSpinsAndPositionsWithCoins(const GameMaths& maths, GameCycle& cycle);
 }

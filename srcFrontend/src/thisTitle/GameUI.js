@@ -148,7 +148,7 @@ export default class GameUI extends StandardGameUI {
                     x: 0, y: 0, width: 240, height: 240, parent: this.currentPhase.grid.reelBackground,
                     colour: 0x4B0082,
                 })
-                this.mainControlArea.buttonContainer.zIndex = Infinity;
+                this.mainControlArea.buttonContainer.zIndex = 10;
             }
 
             this.mainControlArea.buttonContainer.x = controlX;

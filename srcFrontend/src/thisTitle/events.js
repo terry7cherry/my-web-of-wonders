@@ -170,15 +170,15 @@ export default {
         if (mainCollector.sprite.width >= mainCollector.originalWidth * 2)
             return;
         mainCollector.sprite.scale.set(
-            mainCollector.sprite.scale.x * (1 + 0.08 * (1 - (mainCollector.sprite.width - mainCollector.originalWidth) / mainCollector.originalWidth)),
-            mainCollector.sprite.scale.y * (1 + 0.08 * (1 - (mainCollector.sprite.width - mainCollector.originalWidth) / mainCollector.originalWidth)),
+            mainCollector.sprite.scale.x * (1 + 0.02 * (1 - (mainCollector.sprite.width - mainCollector.originalWidth) / mainCollector.originalWidth)),
+            mainCollector.sprite.scale.y * (1 + 0.02 * (1 - (mainCollector.sprite.width - mainCollector.originalWidth) / mainCollector.originalWidth)),
         );
         const newPosition = collectorPositions(game.ui, mainCollector)[game.state.mainCollectorPosition];
         mainCollector.x = newPosition.x;
         mainCollector.y = newPosition.y;
     },
     "collectorAwardedBonus": async () => {
-        await game.ui.ticker.updateText("Spider awarded super egggwakening!");
+        await game.ui.ticker.updateText("Spider awarded super eggwakening!");
     },
     "freeSpinsCollectionTrigger": async ({spins, initialSecondaryCollectors}, game) => {
         game.state.inactiveCollectors = 3;
@@ -215,12 +215,6 @@ export default {
         const newPosition = collectorPositions(game.ui, mainCollector)[game.state.mainCollectorPosition];
         mainCollector.x = newPosition.x;
         mainCollector.y = newPosition.y;
-        game.ui.phases.freeSpins.secondaryControlAreas.forEach(button => button.buttonContainer.destroy({
-            children: true,
-            texture: true,
-            baseTexture: true
-        }));
-        game.ui.phases.freeSpins.secondaryControlAreas = [];
         await game.ui.setPhase("freeSpins");
         game.ui.currentPhase.grid.reelBackground.addChild(game.ui.mainControlArea.buttonContainer);
         await game.ui.currentPhase.spinsLeft.update(spins, true);
@@ -243,6 +237,13 @@ export default {
         }
         game.ui.mainCollector.removeText();
         game.ui.currentPhase.secondaryCollectors = {};
+        game.ui.phases.base.grid.reelBackground.addChild(game.ui.mainControlArea.buttonContainer);
+        game.ui.phases.freeSpins.secondaryControlAreas.forEach(button => button.buttonContainer.destroy({
+            children: true,
+            texture: true,
+            baseTexture: true
+        }));
+        game.ui.phases.freeSpins.secondaryControlAreas = [];
         await game.ui.endCurrentPhase(totalWin);
     },
     "newFreeSpin": async ({multiplier}, game) => {
@@ -359,7 +360,14 @@ export default {
                     height: 40
                 });
         })
+        const button = new Button({
+            height: 400,
+            width: 400,
+            parent: game.ui.currentPhase.grid.reelBackground,
+            colour: 0x4B0082,
+        })
+        button.buttonContainer.zIndex = Infinity;
+        game.ui.currentPhase.secondaryControlAreas.push(button);
         await game.ui.ticker.updateText("Multipliers maxed out!");
-
     }
 };
