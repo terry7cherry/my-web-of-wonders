@@ -88,6 +88,11 @@ void DistributionMeter::addReport(
     }
 }
 
+std::unordered_map<int, uint64_t> DistributionMeter::getLocalData()
+{
+    return tls()[_id];
+}
+
 
 std::unordered_map<int, uint64_t>* DistributionMeter::tls()
 {

@@ -35,6 +35,11 @@ uint64_t IntSumMeter::global() const
     return global_.load(std::memory_order_relaxed);
 }
 
+uint64_t IntSumMeter::getLocalValue()
+{
+    return tls()[_id];
+}
+
 uint64_t* IntSumMeter::tls()
 {
     thread_local uint64_t tls[100] = {};

@@ -41,6 +41,16 @@ public:
     uint64_t globalMax{0}; // highest value observed across all threads
     uint64_t globalCount{0}; // number of observations equal to globalMax
 
+    /**
+     * @brief Read the local max.
+     */
+    uint64_t getLocalMax();
+
+    /**
+     * @brief Read the local count.
+     */
+    uint64_t getLocalCount();
+
 private:
     /**
      * @brief Access per-thread arrays for (max,count) and subscribe to flush notifications.
