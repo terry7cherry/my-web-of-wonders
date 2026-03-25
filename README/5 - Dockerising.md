@@ -14,7 +14,7 @@ hosting.
 1) Make sure Docker Desktop is running.
 2) From the repo root:
    ```
-   docker build --platform linux/amd64 -t cpp-web-of-wonders .
+   docker build --platform linux/amd64 -t cpp-game-name .
    # (rename to your game name)
    ```
 

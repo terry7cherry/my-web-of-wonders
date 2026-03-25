@@ -148,6 +148,7 @@ void API::startAPIServer()
 		std::cout << "Base path prefix stripping enabled for: " << basePath << std::endl;
 	}
 
+
 	const char* authUser = std::getenv("BASIC_AUTH_USERNAME");
 	const char* authPass = std::getenv("BASIC_AUTH_PASSWORD");
 	const bool authEnabled = authUser && authPass

@@ -25,7 +25,8 @@ export default class Grid {
                     waysWinColour,
                     isHoldAndSpin,
                     holdAndSpinBlankSymbols,
-                    weightedDisplayReelSet
+                    weightedDisplayReelSet,
+                    state,
                 }) {
         this.reelWidth = Math.round(width / numReels);
         this.symbolHeight = Math.round(height / numRows);
@@ -55,6 +56,7 @@ export default class Grid {
         this.isHoldAndSpin = isHoldAndSpin;
         this.holdAndSpinBlankSymbols = holdAndSpinBlankSymbols;
         this.weightedDisplayReelSet = weightedDisplayReelSet;
+        this.state = state;
         this.reelBackground = this.createReelBackground();
         this.reels = this.createReels();
         this.getReelStartingPositions();
@@ -550,7 +552,7 @@ export default class Grid {
 
     async animateWins(wins) {
         const lineWins = wins.filter(({winType}) => winType == "line");
-        if (this.simultaneousWinLineAnimations) {
+        if (this.simultaneousWinLineAnimations || this.state.autoPlayOn) {
             await Promise.all(lineWins.map((win) => this.animateWinLine(win)))
         } else {
             for (let win of lineWins) {
