@@ -50,7 +50,7 @@ export default class PayTable extends InfoPanel {
             this.grid[symbolNum] = this.createInfoGrid(
                 x, y,
                 gridWidth - SPACING,
-                ROW_HEIGHT - SPACING,
+                80,
                 this.style, symbol, func, awards, getSymbol
             );
             this._scrollArea.content.addChild(this.grid[symbolNum]);
@@ -80,7 +80,7 @@ export default class PayTable extends InfoPanel {
         const baseW = bounds.width || 1;
         const baseH = bounds.height || 1;
 
-        const scale = Math.min(symbolBoxSize / baseW, symbolBoxSize / baseH);
+        const scale = Math.min(height / baseW, height / baseH);
         sprite.scale.set(scale, scale);
 
         // Center inside the symbol square
@@ -90,7 +90,7 @@ export default class PayTable extends InfoPanel {
         const headText = new PIXI.Text();
         headText.style = style;
         headText.text = "Type: " + func;
-        headText.x = symbolBoxSize + 10;
+        headText.x = height + 10;
 
         infoGrid.addChild(sprite);
         infoGrid.addChild(headText);
@@ -99,7 +99,7 @@ export default class PayTable extends InfoPanel {
         for (let index = awards.length - 1; index >= 0; index--) {
             if (awards[index] > 0) {
                 const subText = new PIXI.Text();
-                subText.x = symbolBoxSize + 10;
+                subText.x = height + 10;
                 subText.y = style.fontSize * count + style.fontSize;
                 subText.style = style;
                 subText.text = (index + 1) + " symbols: " + toCurrency(this.stakeMultiplier * awards[index]);

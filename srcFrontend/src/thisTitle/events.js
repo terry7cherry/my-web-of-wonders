@@ -51,7 +51,7 @@ export default {
                     const coinSymbol = game.ui.currentPhase.grid.reels[reel].apertures[row].container;
 
                     popElementOut({element: coinSymbol, targetParent: game.ui.app.stage})
-                    const multiplierText = new PIXI.Text(multiplier > 0 ? `x${multiplier}` : "", {
+                    const multiplierText = new PIXI.Text(multiplier > 1 ? `x${multiplier}` : "", {
                         fontFamily: "Arial",
                         fontSize: 32,
                         fontWeight: "bold",
@@ -332,7 +332,7 @@ export default {
         game.ui.currentPhase.secondaryControlAreas.push(button);
         game.state.inactiveCollectors--;
         Object.entries(collectorMultipliers).forEach(([collectorPosition, multiplier]) => {
-            if (multiplier > 0)
+            if (multiplier > 1)
                 if (collectorPosition === game.state.mainCollectorPosition)
                     game.ui.mainCollector.addOrUpdateText(`x${multiplier}`, {
                         y: 40,
