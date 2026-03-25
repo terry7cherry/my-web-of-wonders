@@ -59,9 +59,10 @@ export default class PhaseUI {
         this.colours = colours;
     }
 
-    build(maths, outerContainer, bottomTickerContainer, soundPlayer, tickerTextColour, imageMap) {
+    build(maths, outerContainer, bottomTickerContainer, soundPlayer, tickerTextColour, imageMap, state) {
         this.maths = maths;
         this.createContainer(outerContainer);
+        this.state = state;
         this.createGrid(maths, soundPlayer, imageMap);
         this.createMarginPanels();
         this.createBalanceTicker(bottomTickerContainer, tickerTextColour);
@@ -171,6 +172,7 @@ export default class PhaseUI {
             weightedDisplayReelSet: this.gridOptions.weightedDisplayReelSet,
             winLineColour: this.colours.winLineColour ?? 0xf80000,
             waysWinColour: this.colours.waysWinColour ?? 0xf80000,
+            state: this.state,
         });
     }
 

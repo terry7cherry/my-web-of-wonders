@@ -347,7 +347,7 @@ export default class StandardGameUI {
 
     buildPhaseUIs(soundPlayer, imageMap) {
         Object.values(this.phases).forEach(phase => {
-            phase.build(this.maths, this.phaseContainer, this.bottomTickerContainer, soundPlayer, this.colours.tickerTextColour ?? 0x000000, imageMap);
+            phase.build(this.maths, this.phaseContainer, this.bottomTickerContainer, soundPlayer, this.colours.tickerTextColour ?? 0x000000, imageMap, this.state);
         });
     }
 
