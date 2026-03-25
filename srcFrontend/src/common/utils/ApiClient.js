@@ -1,8 +1,19 @@
+/**
+ * Returns the base path for API calls, derived from the current page URL.
+ * e.g. page at "/web-of-wonders/" returns "/web-of-wonders/api"
+ *      page at "/" returns "/api"
+ */
+function getApiBase() {
+    const pathname = window.location.pathname;
+    const base = pathname.endsWith("/") ? pathname : pathname.substring(0, pathname.lastIndexOf("/") + 1);
+    return base + "api";
+}
+
 export default class ApiClient {
     static async getMathsAndForcesForRtpAndBetType(rtp, betType) {
         const jsonBody = {rtp, betType};
 
-        const response = await fetch("/api/maths", {
+        const response = await fetch(`${getApiBase()}/maths`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -23,7 +34,7 @@ export default class ApiClient {
     }
 
     static async getGlobalConfig() {
-        const requestUri = `/api/options`;
+        const requestUri = `${getApiBase()}/options`;
 
         const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -99,7 +110,7 @@ export default class ApiClient {
 
     static async getNewSession(oldSession, bet, betType, rtp) {
         const jsonBody = {oldSession, bet, betType, rtp};
-        const response = await fetch("/api/newSession", {
+        const response = await fetch(`${getApiBase()}/newSession`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -118,7 +129,7 @@ export default class ApiClient {
 
     static async getNewGameCycle(session, forceIndex, seed, rnStream) {
         const jsonBody = {session, forceIndex, seed, rnStream};
-        const response = await fetch("/api/spin", {
+        const response = await fetch(`${getApiBase()}/spin`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
