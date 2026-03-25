@@ -1,6 +1,13 @@
 import InfoPanel from "./InfoPanel.js"
 import * as PIXI from "pixi.js"
 import toCurrency from "../utils/toCurrency.js";
+import ScrollableContainer from "./ScrollableContainer.js";
+
+const SCROLLBAR_WIDTH = 12;
+const TOP_OFFSET = 60;   // space for the close button
+const MARGIN = 10;
+const SPACING = 5;
+const ROW_HEIGHT = 120;  // fixed height per symbol row
 
 export default class PayTable extends InfoPanel {
     constructor({state, app, x, y, width, height}) {
@@ -12,7 +19,6 @@ export default class PayTable extends InfoPanel {
             fill: 0xffffff,
             align: "center",
         };
-
     }
 
     payTableSetup(payTable, stakeMultiplier, getSymbol) {
@@ -22,31 +28,41 @@ export default class PayTable extends InfoPanel {
         this.payTable = payTable;
         this.stakeMultiplier = stakeMultiplier;
 
-        const margin = 50;
-        const spacing = 5;
+        const scrollHeight = this.height - TOP_OFFSET - MARGIN;
+        this._scrollArea = new ScrollableContainer({
+            x: 0,
+            y: TOP_OFFSET,
+            width: this.width,
+            height: scrollHeight,
+            parent: this.container,
+        });
 
-        const gridWidth = Math.floor((this.container.width - 2 * margin) / 2);
-        const gridHeight = Math.floor((this.container.height - 2 * margin) * 2 / Object.keys(payTable).length);
+        const gridWidth = Math.floor((this.width - SCROLLBAR_WIDTH - 2 * MARGIN) / 2);
 
-        let x;
-        let y;
         this.grid = [];
-        let symbolNum = 0
+        let symbolNum = 0;
         for (const [symbol, {func, awards}] of Object.entries(payTable)) {
-            if (symbolNum % 2 === 0) x = margin;
-            else x = margin + gridWidth;
-            y = Math.floor(symbolNum / 2) * gridHeight + margin;
-            this.grid[symbolNum] = this.createInfoGrid(x, y, gridWidth - 2 * spacing, gridHeight - 2 * spacing, this.style, symbol, func, awards, getSymbol);
-            this.container.addChild(this.grid[symbolNum]);
+            const col = symbolNum % 2;
+            const row = Math.floor(symbolNum / 2);
+            const x = MARGIN + col * (gridWidth + SPACING);
+            const y = MARGIN + row * ROW_HEIGHT;
+
+            this.grid[symbolNum] = this.createInfoGrid(
+                x, y,
+                gridWidth - SPACING,
+                ROW_HEIGHT - SPACING,
+                this.style, symbol, func, awards, getSymbol
+            );
+            this._scrollArea.content.addChild(this.grid[symbolNum]);
             symbolNum++;
         }
+
+        this._scrollArea.refresh();
     }
 
     createInfoGrid(x, y, width, height, style, symbol, func, awards, getSymbol) {
         const entries = 1 + awards.filter(award => award > 0).length;
-        const textHeight = Math.floor(height / entries);
-
-        style.fontSize = Math.min(textHeight, Math.floor(height / 4));
+        style.fontSize = 15;
 
         const infoGrid = new PIXI.Container();
         infoGrid.x = x;
@@ -55,7 +71,7 @@ export default class PayTable extends InfoPanel {
         const sprite = getSymbol(symbol);
 
         // Make the symbol area a square of size `height` (as your layout assumes)
-        const symbolBoxSize = height;
+        const symbolBoxSize = Math.max(height, entries * style.fontSize + 5);
 
         // Reset scale before measuring (prevents “scale a scaled thing” blow-ups)
         if (sprite?.scale?.set) sprite.scale.set(1, 1);
@@ -84,7 +100,7 @@ export default class PayTable extends InfoPanel {
             if (awards[index] > 0) {
                 const subText = new PIXI.Text();
                 subText.x = symbolBoxSize + 10;
-                subText.y = textHeight * count + textHeight;
+                subText.y = style.fontSize * count + style.fontSize;
                 subText.style = style;
                 subText.text = (index + 1) + " symbols: " + toCurrency(this.stakeMultiplier * awards[index]);
                 infoGrid.addChild(subText);
@@ -94,4 +110,5 @@ export default class PayTable extends InfoPanel {
 
         return infoGrid;
     }
+
 }
