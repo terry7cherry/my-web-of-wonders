@@ -1,3 +1,12 @@
+# [1.4.0](https://git.corpcenter.tech/maths/simulators/cpp-web-of-wonders/compare/1.3.0...1.4.0) (2026-03-26)
+
+
+### Features
+
+* Add optional basic auth based on env vars [VS3P2T3-549] ([4937d25](https://git.corpcenter.tech/maths/simulators/cpp-web-of-wonders/commit/4937d250e74d6937df1a4cdb66e5969808fe26fe))
+* Deploy container images to a project in /engineering so that they can be deployed to SRC [VS3P2T3-549] ([b86f638](https://git.corpcenter.tech/maths/simulators/cpp-web-of-wonders/commit/b86f63877499129e8589106e512a69b4bd7b273b))
+* Remove x1 multipliers. ([b7e2371](https://git.corpcenter.tech/maths/simulators/cpp-web-of-wonders/commit/b7e237151901d19234b503d8fd2c9b9c5bd79f07))
+
 # [1.3.0](https://git.corpcenter.tech/maths/simulators/cpp-web-of-wonders/compare/1.2.0...1.3.0) (2026-03-24)
 
 
