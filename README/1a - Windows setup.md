@@ -17,6 +17,10 @@
 - Node.js 20+ (LTS)
     - Download the Windows .msi from https://nodejs.org
     - Run the installer (accept defaults)
+    - Chance PowerShell execution policy to allow npm to work:
+      ```
+      Set-ExecutionPolicy RemoteSigned
+      ```
     - In a new PowerShell/Command Prompt:
       ```
       node -v
