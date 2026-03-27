@@ -72,7 +72,8 @@
       ```
 4) Open in CLion
     - Start CLion.
-    - Open the folder `C:\Projects\cpp-{your-game-name}`.
+    - Go to File > Open and select `C:\Projects\cpp-{your-game-name}\CMakeLists.txt`.
+    - When prompted, click "Open as Project".
 5) Select Toolchain:
     - Go to: File → Settings → Build, Execution, Deployment → Toolchains
     - Add a "Visual Studio" toolchain if not already present.

@@ -86,7 +86,8 @@
       ```
 4) Open in CLion
     - Start CLion.
-    - Open the folder `~/Projects/cpp-{your-game-name}`.
+    - Go to File > Open and select `C:\Projects\cpp-{your-game-name}\CMakeLists.txt`.
+    - When prompted, click "Open as Project".
 5) Replace `VCPKG_ROOT`
     - In `CMakePresets.json`, replace each occurrence of `$env{VCPKG_ROOT}` with the path returned by:
       ```
