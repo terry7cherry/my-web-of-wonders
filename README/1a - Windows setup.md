@@ -17,12 +17,22 @@
 - Node.js 20+ (LTS)
     - Download the Windows .msi from https://nodejs.org
     - Run the installer (accept defaults)
+    - Chance PowerShell execution policy to allow npm to work:
+      ```
+      Set-ExecutionPolicy RemoteSigned
+      ```
     - In a new PowerShell/Command Prompt:
       ```
       node -v
       npm -v
       ```
     - Make sure both commands work.
+- safe-chain:
+    - Follow directions at https://github.com/AikidoSec/safe-chain.
+    - Verify with
+  ```
+      npm safe-chain-verify
+  ```
 - vcpkg
     - Open PowerShell:
       ```powershell
@@ -68,7 +78,8 @@
       ```
 4) Open in CLion
     - Start CLion.
-    - Open the folder `C:\Projects\cpp-{your-game-name}`.
+    - Go to File > Open and select `C:\Projects\cpp-{your-game-name}\CMakeLists.txt`.
+    - When prompted, click "Open as Project".
 5) Select Toolchain:
     - Go to: File → Settings → Build, Execution, Deployment → Toolchains
     - Add a "Visual Studio" toolchain if not already present.
@@ -85,4 +96,4 @@
     - Build and run.
     - Open the browser at the 'Local' URL printed in the run output by the backend and try a few spins.
 9) Add template as remote to allow getting updates in future:
-    - `git remote add upstream <copied URI from step 2>`
+    - `git remote add upstream https://git.corpcenter.tech/templates/cpp-template-game.git`

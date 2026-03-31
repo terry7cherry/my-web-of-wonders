@@ -20,6 +20,12 @@
       node -v
       npm -v
   ```
+- safe-chain:
+    - Follow directions at https://github.com/AikidoSec/safe-chain.
+    - Verify with
+  ```
+      npm safe-chain-verify
+  ```
 - Ninja build system:
   ```
       brew install ninja
@@ -86,7 +92,8 @@
       ```
 4) Open in CLion
     - Start CLion.
-    - Open the folder `~/Projects/cpp-{your-game-name}`.
+    - Go to File > Open and select `C:\Projects\cpp-{your-game-name}\CMakeLists.txt`.
+    - When prompted, click "Open as Project".
 5) Replace `VCPKG_ROOT`
     - In `CMakePresets.json`, replace each occurrence of `$env{VCPKG_ROOT}` with the path returned by:
       ```
@@ -105,5 +112,5 @@
     - Select `macos-frontend` (or equivalent) and Run.
     - Open your browser at the URL printed by the server (typically `http://localhost:5173`).
 10) Add template as remote to allow getting updates in future:
-    - `git remote add upstream <copied URI from step 2>`
+    - `git remote add upstream https://git.corpcenter.tech/templates/cpp-template-game.git`
 

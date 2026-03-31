@@ -131,7 +131,11 @@ void doMonteCarloStdMultiThread(const GameMaths& gameMaths, const int bet, const
 {
 	constexpr int BATCH_SIZE = 100'000;
 	const uint64_t totalBatches = config.simSize / BATCH_SIZE;
+#ifdef DEBUG
+	const unsigned int threadCount = 1;
+#else
 	const unsigned int threadCount = std::thread::hardware_concurrency() - 3;
+#endif
 	std::cout << "Using " << threadCount << " threads" << std::endl;
 
 	config.gameConsole.clearScreen();
@@ -325,15 +329,19 @@ int sessionMain(int argc, char* argv[])
 	// Multithreaded sessions execution
 	constexpr uint64_t SESSIONS_PER_BATCH = 1000;
 	const uint64_t totalBatches = std::max<uint64_t>(1, config.simSize / SESSIONS_PER_BATCH);
-	const unsigned int threadCount = std::max(1u, std::thread::hardware_concurrency() - 3);
+#ifdef DEBUG
+const unsigned int threadCount = 1;
+#else
+const unsigned int threadCount = std::max(1u, std::thread::hardware_concurrency() - 3);
+#endif
 
-	// Prepare output folder: same as normal but with "session" in the name after timestamp
-	namespace fs = std::filesystem;
-	const fs::path simsRoot = fs::path(GAME_SOURCE_DIR) / "Simulations";
-	fs::create_directories(simsRoot);
-	const auto now = std::chrono::system_clock::now();
-	const std::time_t t = std::chrono::system_clock::to_time_t(now);
-	std::tm tm{};
+// Prepare output folder: same as normal but with "session" in the name after timestamp
+namespace fs = std::filesystem;
+const fs::path simsRoot = fs::path(GAME_SOURCE_DIR) / "Simulations";
+fs::create_directories (simsRoot);
+const auto now = std::chrono::system_clock::now();
+const std::time_t t = std::chrono::system_clock::to_time_t(now);
+std::tm tm{};
 #if defined(_WIN32)
 localtime_s (&tm, &t);
 #else
