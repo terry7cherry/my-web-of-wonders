@@ -27,6 +27,12 @@
       npm -v
       ```
     - Make sure both commands work.
+- safe-chain:
+    - Follow directions at https://github.com/AikidoSec/safe-chain.
+    - Verify with
+  ```
+      npm safe-chain-verify
+  ```
 - vcpkg
     - Open PowerShell:
       ```powershell
@@ -90,4 +96,4 @@
     - Build and run.
     - Open the browser at the 'Local' URL printed in the run output by the backend and try a few spins.
 9) Add template as remote to allow getting updates in future:
-    - `git remote add upstream <copied URI from step 2>`
+    - `git remote add upstream https://git.corpcenter.tech/templates/cpp-template-game.git`
