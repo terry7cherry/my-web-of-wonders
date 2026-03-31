@@ -15,7 +15,8 @@
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
-        "VCPKG_TARGET_TRIPLET": "x64-windows"
+        "VCPKG_TARGET_TRIPLET": "x64-windows",
+        "DEBUG": "ON"
       }
     },
     {
@@ -39,7 +40,8 @@
         "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
         "VCPKG_TARGET_TRIPLET": "x64-windows",
-        "SESSION": "ON"
+        "SESSION": "ON",
+        "DEBUG": "ON"
       }
     },
     {
@@ -65,7 +67,8 @@
         "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
         "VCPKG_TARGET_TRIPLET": "x64-windows",
         "FRONTEND": "ON",
-        "FRONTEND_DEV": "ON"
+        "FRONTEND_DEV": "ON",
+        "DEBUG": "ON"
       }
     },
     {
@@ -91,7 +94,8 @@
         "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
         "VCPKG_TARGET_TRIPLET": "x64-windows",
-        "RN_STREAM": "ON"
+        "RN_STREAM": "ON",
+        "DEBUG": "ON"
       }
     },
     {
@@ -115,7 +119,8 @@
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
-        "VCPKG_TARGET_TRIPLET": "arm64-osx"
+        "VCPKG_TARGET_TRIPLET": "arm64-osx",
+        "DEBUG": "ON"
       }
     },
     {
@@ -139,7 +144,8 @@
         "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
         "VCPKG_TARGET_TRIPLET": "arm64-osx",
-        "SESSION": "ON"
+        "SESSION": "ON",
+        "DEBUG": "ON"
       }
     },
     {
@@ -165,7 +171,8 @@
         "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
         "VCPKG_TARGET_TRIPLET": "arm64-osx",
         "FRONTEND": "ON",
-        "FRONTEND_DEV": "ON"
+        "FRONTEND_DEV": "ON",
+        "DEBUG": "ON"
       }
     },
     {
@@ -191,7 +198,8 @@
         "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
         "VCPKG_TARGET_TRIPLET": "arm64-osx",
-        "RN_STREAM": "ON"
+        "RN_STREAM": "ON",
+        "DEBUG": "ON"
       }
     },
     {
