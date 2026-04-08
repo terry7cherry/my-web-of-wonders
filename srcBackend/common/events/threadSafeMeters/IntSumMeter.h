@@ -56,7 +56,15 @@ public:
     uint64_t global() const;
 
     /**
-     * @brief Read the local total.
+     * @brief Read the stored value (across all threads).
+     */
+    const uint64_t& getValue() const
+    {
+        return global();
+    }
+
+    /**
+     * @brief Read the total on this thread (cleared after each batch/session)
      */
     uint64_t getLocalValue();
 

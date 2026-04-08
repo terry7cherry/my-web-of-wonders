@@ -32,7 +32,16 @@ public:
     // Same API shape as DistributionMeter: single int key + value
     void add(Symbol symbol, size_t oak, std::uint64_t toAdd = 1);
 
-    LocalArray& getLocalArray();
+    /**
+     *
+     * @return Current grid of stored values across all threads.
+     */
+    const LocalArray& getPayTableValues() const
+    {
+        return global;
+    }
+
+    const LocalArray& getLocalArray();
 
     std::uint64_t* operator[](Symbol symbol);
 
