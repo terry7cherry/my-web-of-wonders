@@ -67,8 +67,7 @@ namespace GameLogic
     void updateMainCollectorPosition(const GameMaths& maths, GameCycle& cycle)
     {
         static auto& collectorPositionWeights = maths.stringWeightTables["mainCollectorPosition"];
-        static auto& mainCollectorPositionNumSpins = maths.intWeightTables["mainCollectorPositionNumSpins"];
-        if (cycle.session.mainCollectorPositionSpinRemaining == 0 || cycle.session.deadSpins >= 2)
+        if (cycle.session.deadSpins >= 2)
         {
             const auto& positionsWithCoins = cycle.session.positionsWithCoinsOrBonuses;
             if (positionsWithCoins.size() == 1)
@@ -84,7 +83,6 @@ namespace GameLogic
                     newPosition = collectorPositionMap.at(collectorPositionWeights.pick());
                 cycle.session.mainCollectorPosition = newPosition;
             }
-            cycle.session.mainCollectorPositionSpinRemaining = mainCollectorPositionNumSpins.pick();
             cycle.mainCollectorMoved = true;
             cycle.session.deadSpins = 0;
         }
@@ -477,6 +475,7 @@ namespace GameLogic
         if (!cycle.bonusSymbolCollected && !cycle.baseCoinsRecorded && !cycle.fsTrigger)
             cycle.session.deadSpins++;
         else cycle.session.deadSpins = 0;
+        if (cycle.session.deadSpins < 2) return;
         cycle.session.positionsWithCoinsOrBonuses.clear();
         for (CollectorPosition position : collectorPositionMap | std::views::values)
         {

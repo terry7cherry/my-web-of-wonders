@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.21)
-project(cpp-game LANGUAGES CXX)
+project(cpp-web-of-wonders LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -73,11 +73,11 @@ file(GLOB_RECURSE CPP_GAME_SOURCES
 
 list(FILTER CPP_GAME_SOURCES EXCLUDE REGEX "srcBackend/common/defunct/.*")
 
-add_executable(cpp-game ${CPP_GAME_SOURCES})
+add_executable(cpp-web-of-wonders ${CPP_GAME_SOURCES})
 add_compile_definitions(NOMINMAX)
 
 # Enable precompiled headers for faster builds
-target_precompile_headers(cpp-game PRIVATE
+target_precompile_headers(cpp-web-of-wonders PRIVATE
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/srcBackend/common/headers/pch.h>"
 )
 
@@ -85,14 +85,14 @@ target_precompile_headers(cpp-game PRIVATE
 # Excel files
 # --------------------------------------------------------------------
 
-target_compile_definitions(cpp-game PRIVATE
+target_compile_definitions(cpp-web-of-wonders PRIVATE
         GAME_SOURCE_DIR="${CMAKE_SOURCE_DIR}"
 )
 
 # --------------------------------------------------------------------
 # Link libraries (inherits warnings from project_warnings)
 # --------------------------------------------------------------------
-target_link_libraries(cpp-game
+target_link_libraries(cpp-web-of-wonders
         PRIVATE
         Drogon::Drogon
         xlnt::xlnt
@@ -103,21 +103,21 @@ target_link_libraries(cpp-game
 )
 
 # --------------------------------------------------------------------
-# Per-compiler optimisation flags for cpp-game
+# Per-compiler optimisation flags for cpp-web-of-wonders
 # --------------------------------------------------------------------
 if (MSVC)
-    target_compile_options(cpp-game PRIVATE
+    target_compile_options(cpp-web-of-wonders PRIVATE
             $<$<CONFIG:Release,RelWithDebInfo>:/O2>
             $<$<CONFIG:Release,RelWithDebInfo>:/Oi>
             $<$<CONFIG:Release,RelWithDebInfo>:/Ot>
             $<$<CONFIG:Release,RelWithDebInfo>:/GL>
     )
-    target_link_options(cpp-game PRIVATE
+    target_link_options(cpp-web-of-wonders PRIVATE
             $<$<CONFIG:Release,RelWithDebInfo>:/LTCG>
     )
 
     if (ENABLE_NATIVE_OPT)
-        target_compile_options(cpp-game PRIVATE
+        target_compile_options(cpp-web-of-wonders PRIVATE
                 $<$<CONFIG:Release,RelWithDebInfo>:/arch:AVX2>
         )
     endif ()
@@ -125,14 +125,14 @@ if (MSVC)
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU"
         OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 
-    target_compile_options(cpp-game PRIVATE
+    target_compile_options(cpp-web-of-wonders PRIVATE
             $<$<CONFIG:Release,RelWithDebInfo>:-O3>
             $<$<CONFIG:Release,RelWithDebInfo>:-ffast-math>
             $<$<CONFIG:Release,RelWithDebInfo>:-funroll-loops>
     )
 
     if (ENABLE_NATIVE_OPT)
-        target_compile_options(cpp-game PRIVATE
+        target_compile_options(cpp-web-of-wonders PRIVATE
                 $<$<CONFIG:Release,RelWithDebInfo>:-march=native>
         )
     endif ()
@@ -144,11 +144,11 @@ endif ()
 # --------------------------------------------------------------------
 if (ENABLE_SANITIZERS AND NOT MSVC)
     message(STATUS "Enabling sanitizers (Address + Undefined)")
-    target_compile_options(cpp-game PRIVATE
+    target_compile_options(cpp-web-of-wonders PRIVATE
             $<$<CONFIG:Debug>:-fsanitize=address,undefined>
             $<$<CONFIG:Debug>:-fno-omit-frame-pointer>
     )
-    target_link_options(cpp-game PRIVATE
+    target_link_options(cpp-web-of-wonders PRIVATE
             $<$<CONFIG:Debug>:-fsanitize=address,undefined>
     )
 endif ()
@@ -173,39 +173,39 @@ if (FRONTEND AND NOT FRONTEND_DEV)
             VERBATIM
     )
 
-    add_dependencies(cpp-game frontend_build)
+    add_dependencies(cpp-web-of-wonders frontend_build)
 else ()
     message(STATUS "Frontend release build is disabled (no npm run build).")
 endif ()
 
 if (RN_STREAM)
-    target_compile_definitions(cpp-game PUBLIC
+    target_compile_definitions(cpp-web-of-wonders PUBLIC
             RN_STREAM=1
     )
 endif ()
 
 if (SESSION)
-    target_compile_definitions(cpp-game PUBLIC
+    target_compile_definitions(cpp-web-of-wonders PUBLIC
             SESSION=1
     )
 endif ()
 
 if (DEBUG)
-    target_compile_definitions(cpp-game PUBLIC
+    target_compile_definitions(cpp-web-of-wonders PUBLIC
             DEBUG=1
     )
 endif ()
 
 
 if (FRONTEND_DEV)
-    target_compile_definitions(cpp-game PUBLIC
+    target_compile_definitions(cpp-web-of-wonders PUBLIC
             FRONTEND_DEV=1
             FRONTEND_DIR=\"${CMAKE_SOURCE_DIR}/srcFrontend\"
     )
 endif ()
 
 if (FRONTEND)
-    target_compile_definitions(cpp-game PUBLIC
+    target_compile_definitions(cpp-web-of-wonders PUBLIC
             FRONTEND=1
             FRONTEND_DIST_DIR=\"${CMAKE_SOURCE_DIR}/srcFrontend/dist\"
     )

@@ -22,7 +22,6 @@ struct GameSession : GameSessionBase
     // Add persistent variables here. E.g:
     // int jackpotValue;
     // int consecutiveLosingSpins;
-    unsigned int mainCollectorPositionSpinRemaining;
     unsigned int deadSpins;
     CollectorPosition mainCollectorPosition;
     std::vector<CollectorPosition> positionsWithCoinsOrBonuses;
@@ -41,7 +40,6 @@ struct GameSession : GameSessionBase
                 const Forces::SimForce simForce = Forces::ForceNone
     )
         : GameSessionBase(bet, maths, simForce),
-          mainCollectorPositionSpinRemaining(0),
           deadSpins(0),
           mainCollectorPosition(TOP_LEFT),
           positionsWithCoinsOrBonuses()
@@ -64,7 +62,6 @@ struct GameSession : GameSessionBase
                 const GameSession& oldSession [[maybe_unused]])
         : GameSession(bet, maths, Forces::ForceNone)
     {
-        mainCollectorPositionSpinRemaining = oldSession.mainCollectorPositionSpinRemaining;
         deadSpins = oldSession.deadSpins;
         mainCollectorPosition = oldSession.mainCollectorPosition;
         positionsWithCoinsOrBonuses = oldSession.positionsWithCoinsOrBonuses;
@@ -83,7 +80,6 @@ struct GameSession : GameSessionBase
      */
     GameSession(const Json::Value& jsonSession) // NOLINT(google-explicit-constructor)
         : GameSessionBase(jsonSession),
-          mainCollectorPositionSpinRemaining(jsonSession["mainCollectorPositionSpinsRemaining"].asInt()),
           deadSpins(jsonSession["deadSpins"].asInt()),
           mainCollectorPosition(collectorPositionMap.at(jsonSession["mainCollectorPosition"].asString()))
     // Initialise all persistent values from the json here. E.g.
@@ -102,7 +98,6 @@ struct GameSession : GameSessionBase
     Json::Value toJson() const
     {
         Json::Value jsonSession = GameSessionBase::toJson();
-        jsonSession["mainCollectorPositionSpinsRemaining"] = mainCollectorPositionSpinRemaining;
         jsonSession["deadSpins"] = deadSpins;
         jsonSession["mainCollectorPosition"] = collectorPositionNames.at(mainCollectorPosition);
         jsonSession["positionsWithCoinsOrBonuses"] = Json::Value(Json::arrayValue);

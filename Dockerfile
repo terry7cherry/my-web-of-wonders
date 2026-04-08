@@ -55,7 +55,7 @@ RUN cmake -B build -S . \
     -DCMAKE_TOOLCHAIN_FILE=${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake \
     -DCMAKE_CXX_FLAGS="-w" \
     -DFRONTEND=ON && \
-    cmake --build build --target cpp-game -j"$(nproc)"
+    cmake --build build --target cpp-web-of-wonders -j"$(nproc)"
 
 # ============================
 # Stage 2: Runtime image
@@ -69,7 +69,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 RUN groupadd --system appuser && useradd --system --gid appuser appuser
 
-COPY --from=build /src/build/cpp-game /usr/local/bin/cpp-game
+COPY --from=build /src/build/cpp-web-of-wonders /usr/local/bin/cpp-web-of-wonders
 COPY --from=build /src/srcFrontend/dist /src/srcFrontend/dist
 COPY --from=build /src/srcBackend/thisTitle/parSheets /src/srcBackend/thisTitle/parSheets
 
@@ -81,4 +81,4 @@ USER appuser
 WORKDIR /src
 
 EXPOSE 8080
-CMD ["cpp-game"]
+CMD ["cpp-web-of-wonders"]

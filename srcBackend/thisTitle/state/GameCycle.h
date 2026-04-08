@@ -50,6 +50,7 @@ struct GameCycle : GameCycleBase
     unsigned int fsInitialSecondaryCollectors = 0;
     unsigned int fsFinalSecondaryCollectors = 0;
     unsigned int fsSpinsRemaining = 0;
+    std::string fsCoinWeightTable = "coinValue";
     // Add other game state variables here.
 
     explicit GameCycle(GameSession& session, GameCycleReused& reused, const GameMaths& maths [[maybe_unused]])
