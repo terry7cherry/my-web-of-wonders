@@ -10,8 +10,8 @@ function getApiBase() {
 }
 
 export default class ApiClient {
-    static async getMathsAndForcesForRtpAndBetType(rtp, betType) {
-        const jsonBody = {rtp, betType};
+    static async getMathsAndForcesForRtpAndBetType(rtp, betType, sid) {
+        const jsonBody = {rtp, betType, sid};
 
         const response = await fetch(`${getApiBase()}/maths`, {
             method: "POST",
@@ -33,8 +33,8 @@ export default class ApiClient {
         return responseJson;
     }
 
-    static async getGlobalConfig() {
-        const requestUri = `${getApiBase()}/options`;
+    static async getGlobalConfig(sid) {
+        const requestUri = sid ? `${getApiBase()}/options?sid=${encodeURIComponent(sid)}` : `${getApiBase()}/options`;
 
         const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -108,8 +108,8 @@ export default class ApiClient {
         throw new Error(lastError);
     }
 
-    static async getNewSession(oldSession, bet, betType, rtp) {
-        const jsonBody = {oldSession, bet, betType, rtp};
+    static async getNewSession(oldSession, bet, betType, rtp, sid) {
+        const jsonBody = {oldSession, bet, betType, rtp, sid};
         const response = await fetch(`${getApiBase()}/newSession`, {
             method: "POST",
             headers: {
@@ -127,8 +127,8 @@ export default class ApiClient {
         return responseJson;
     }
 
-    static async getNewGameCycle(session, forceIndex, seed, rnStream) {
-        const jsonBody = {session, forceIndex, seed, rnStream};
+    static async getNewGameCycle(session, forceIndex, seed, rnStream, sid) {
+        const jsonBody = {session, forceIndex, seed, rnStream, sid};
         const response = await fetch(`${getApiBase()}/spin`, {
             method: "POST",
             headers: {
@@ -143,5 +143,20 @@ export default class ApiClient {
                 "Error from server when fetching new spin: " + responseJson.error,
             );
         return responseJson;
+    }
+
+    static async uploadParSheet(sid, fileName, dataBase64) {
+        const response = await fetch(`${getApiBase()}/uploadParSheet`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+            },
+            body: JSON.stringify({sid, fileName, dataBase64}),
+        });
+        const responseJson = await response.json();
+        if (responseJson.error)
+            throw new Error("Error from server when uploading par sheet: " + responseJson.error);
+        return responseJson; // contains updated options and sid
     }
 }
