@@ -156,7 +156,15 @@ public:
                         if (dataPoint.fullName == "minBet")
                         {
                             foundMinBet = true;
-                            minBet = std::stoi(dataPoint.value);
+                            try
+                            {
+                                minBet = std::stoi(dataPoint.value);
+                            }
+                            catch (std::exception e)
+                            {
+                                std::cerr << "minBet must be an integer. " << e.what() << std::endl;
+                                throw;
+                            }
                         }
                     }
                 }

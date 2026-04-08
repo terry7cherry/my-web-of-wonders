@@ -34,7 +34,7 @@ void PayTableMeter::flush()
     }
 }
 
-PayTableMeter::LocalArray& PayTableMeter::getLocalArray()
+const PayTableMeter::LocalArray& PayTableMeter::getLocalArray()
 {
     return tls()[_id];
 }
