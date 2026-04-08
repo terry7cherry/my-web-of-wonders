@@ -12,6 +12,127 @@
 #include "../../thisTitle/forces/frontendForces.h"
 #include "../rng/MathsRng.h"
 
+#include <unordered_map>
+#include <mutex>
+#include <filesystem>
+#include <random>
+#include <fstream>
+
+namespace {
+// Session id -> uploaded ParSheet mapping
+std::unordered_map<std::string, std::shared_ptr<ParSheet>> g_sessionParSheets;
+std::mutex g_sessionParSheetsMutex;
+
+std::string generateSid()
+{
+    static std::mt19937_64 rng{std::random_device{}()};
+    static const char* hex = "0123456789abcdef";
+    uint64_t a = rng();
+    uint64_t b = rng();
+    std::string out;
+    out.reserve(32);
+    for (int i = 0; i < 16; ++i)
+    {
+        uint8_t byte = (i < 8 ? (a >> (i * 8)) : (b >> ((i - 8) * 8)));
+        out.push_back(hex[(byte >> 4) & 0xF]);
+        out.push_back(hex[byte & 0xF]);
+    }
+    return out;
+}
+
+// Extract sid from request (JSON body or query/form parameter)
+std::string getSidFromRequest(const drogon::HttpRequestPtr& request)
+{
+    // Prefer JSON body if present
+    const auto jsonPtr = request->getJsonObject();
+    if (jsonPtr && (*jsonPtr)["sid"].isString())
+        return (*jsonPtr)["sid"].asString();
+
+    // Fallback to form/query parameter
+    const auto sidParam = request->getParameter("sid");
+    if (!sidParam.empty()) return sidParam;
+    return {};
+}
+
+// Resolve which ParSheet to use for this request
+const ParSheet& resolveParSheetForRequest(const drogon::HttpRequestPtr& request,
+                                          const ParSheet& defaultParSheet)
+{
+    const std::string sid = getSidFromRequest(request);
+    if (sid.empty()) return defaultParSheet;
+    std::scoped_lock lock(g_sessionParSheetsMutex);
+    const auto it = g_sessionParSheets.find(sid);
+    if (it != g_sessionParSheets.end() && it->second)
+        return *(it->second);
+    return defaultParSheet;
+}
+
+void setSessionParSheet(const std::string& sid, std::shared_ptr<ParSheet> ps)
+{
+    std::scoped_lock lock(g_sessionParSheetsMutex);
+    g_sessionParSheets[sid] = std::move(ps);
+}
+
+// Handle base64 JSON upload of a par sheet for a session
+void handleUploadParSheet(const drogon::HttpRequestPtr& request,
+                          std::function<void(const drogon::HttpResponsePtr&)>&& callback,
+                          const ParSheet& defaultParSheet)
+{
+    using namespace std;
+    using namespace std::filesystem;
+
+    const auto jsonPtr = request->getJsonObject();
+    if (!jsonPtr) throw std::runtime_error("Request is missing JSON.");
+    const Json::Value& body = *jsonPtr;
+
+    const string sid = body.isMember("sid") ? body["sid"].asString() : string{};
+    if (sid.empty()) throw std::runtime_error("sid is missing from request.");
+
+    const string fileName = body.isMember("fileName") ? body["fileName"].asString() : string{"uploaded.xlsx"};
+    const string dataBase64 = body.isMember("dataBase64") ? body["dataBase64"].asString() : string{};
+    if (dataBase64.empty()) throw std::runtime_error("dataBase64 is missing from request.");
+
+    // Decode base64
+    const auto data = drogon::utils::base64Decode(dataBase64);
+
+    const path destDir = path(GAME_SOURCE_DIR) / "srcBackend" / "thisTitle" / "parSheets";
+    std::error_code ec;
+    create_directories(destDir, ec);
+
+    // Build unique filename: sid + original extension if any
+    string ext;
+    const auto dotPos = fileName.find_last_of('.');
+    if (dotPos != string::npos) ext = fileName.substr(dotPos);
+    if (ext.empty()) ext = ".xlsx";
+    const string uniqueName = sid + ext;
+    const path destPath = destDir / uniqueName;
+
+    // Write file
+    std::ofstream ofs(destPath, std::ios::binary);
+    ofs.write(reinterpret_cast<const char*>(data.data()), static_cast<std::streamsize>(data.size()));
+    ofs.close();
+
+    // Parse into a new ParSheet (by filename only; ParSheet loads from parSheets dir)
+    auto ps = std::make_shared<ParSheet>(uniqueName);
+    setSessionParSheet(sid, ps);
+
+    // Return updated options (for this session's par sheet)
+    const ParSheet& effective = *ps;
+    Json::Value optionsJson;
+    optionsJson["betTypes"] = Json::Value{};
+    for (size_t i = 0; i < effective.betTypes.size(); ++i)
+        optionsJson["betTypes"][effective.betTypes[i]] = std::round(effective.betTypeCosts[i] * 100.0) / 100.0;
+    optionsJson["rtps"] = Json::Value(Json::arrayValue);
+    for (const int rtp : effective.rtps) optionsJson["rtps"].append(rtp);
+    optionsJson["gameTitle"] = effective.gameTitle;
+    optionsJson["minBet"] = effective.minBet;
+    optionsJson["sid"] = sid;
+
+    auto resp = drogon::HttpResponse::newHttpJsonResponse(optionsJson);
+    callback(resp);
+}
+} // namespace
+
 #ifdef FRONTEND
 void API::startAPIServer()
 {
@@ -19,21 +140,24 @@ void API::startAPIServer()
 	const GameMaths& maths = *parSheet.gameMathsVariants["default"][96];
 	GameSession session(maths.minBet, maths);
 	using namespace drogon;
-	app().registerHandler("/api/options",
-	                      [&parSheet](const HttpRequestPtr& request [[maybe_unused]],
-	                                  std::function<void(const HttpResponsePtr&)>&&
-	                                  callback)
-	                      {
-		                      try
-		                      {
-			                      handleOptionsRequest(std::move(callback), parSheet);
-		                      }
-		                      catch (const std::exception& e)
-		                      {
-			                      callback(getBadRequestError(e.what()));
-		                      }
-	                      }
-	);
+	// Allow larger uploads for base64-encoded spreadsheets (default may be too small)
+	// 20 MB should be sufficient for typical Excel files encoded in base64
+	app().setClientMaxBodySize(20 * 1024 * 1024);
+ app().registerHandler("/api/options",
+                       [&parSheet](const HttpRequestPtr& request,
+                                   std::function<void(const HttpResponsePtr&)>&&
+                                   callback)
+                       {
+                           try
+                           {
+                               handleOptionsRequest(request, std::move(callback), parSheet);
+                           }
+                           catch (const std::exception& e)
+                           {
+                               callback(getBadRequestError(e.what()));
+                           }
+                       }
+ );
 	app().registerHandler("/api/maths",
 	                      [&parSheet](const HttpRequestPtr& request,
 	                                  std::function<void(const HttpResponsePtr&)>&&
@@ -86,6 +210,23 @@ void API::startAPIServer()
 	                      {Post}
 
 	);
+
+ // Upload a new maths spreadsheet (session-scoped)
+ app().registerHandler("/api/uploadParSheet",
+                       [&parSheet](const HttpRequestPtr& request,
+                                   std::function<void(const HttpResponsePtr&)>&& callback)
+                       {
+                           try
+                           {
+                               handleUploadParSheet(request, std::move(callback), parSheet);
+                           }
+                           catch (const std::exception& e)
+                           {
+                               callback(getBadRequestError(e.what()));
+                           }
+                       },
+                       {Post}
+ );
 	app().registerHandler("/healthz",
 	                      [](const HttpRequestPtr& request [[maybe_unused]],
 	                         std::function<void(const HttpResponsePtr&)>&& callback)
@@ -194,10 +335,11 @@ void API::handleSpinRequest(const drogon::HttpRequestPtr& request,
                             std::function<void(const drogon::HttpResponsePtr&)>&& callback,
                             const ParSheet& parSheet)
 {
-	const auto requestJson = getJsonFromRequest(request);
-	if (requestJson["session"].isNull()) throw std::runtime_error("session is missing from request.");
-	GameSession session(requestJson["session"]);
-	const GameMaths& maths = *parSheet.gameMathsVariants.at(session.betType).at(session.rtp);
+    const auto requestJson = getJsonFromRequest(request);
+    if (requestJson["session"].isNull()) throw std::runtime_error("session is missing from request.");
+    GameSession session(requestJson["session"]);
+    const ParSheet& effectiveParSheet = resolveParSheetForRequest(request, parSheet);
+    const GameMaths& maths = *effectiveParSheet.gameMathsVariants.at(session.betType).at(session.rtp);
 
 	GameCycleReused reused(maths);
 
@@ -245,15 +387,16 @@ void API::handleNewSessionRequest(const drogon::HttpRequestPtr& request,
                                   std::function<void(const drogon::HttpResponsePtr&)>&& callback,
                                   const ParSheet& parSheet)
 {
-	const auto requestJson = getJsonFromRequest(request);
-	if (requestJson["bet"].isNull()) throw std::runtime_error("bet is missing from request.");
-	if (requestJson["betType"].isNull())
-		throw std::runtime_error("betType is missing from request.");
-	if (requestJson["rtp"].isNull()) throw std::runtime_error("rtp is missing from request.");
+    const auto requestJson = getJsonFromRequest(request);
+    if (requestJson["bet"].isNull()) throw std::runtime_error("bet is missing from request.");
+    if (requestJson["betType"].isNull())
+        throw std::runtime_error("betType is missing from request.");
+    if (requestJson["rtp"].isNull()) throw std::runtime_error("rtp is missing from request.");
 
-	const GameMaths& maths = *parSheet.gameMathsVariants
-	                                  .at(requestJson["betType"].asString())
-	                                  .at(requestJson["rtp"].asInt());
+    const ParSheet& effectiveParSheet = resolveParSheetForRequest(request, parSheet);
+    const GameMaths& maths = *effectiveParSheet.gameMathsVariants
+                                          .at(requestJson["betType"].asString())
+                                          .at(requestJson["rtp"].asInt());
 
 	const int bet = requestJson["bet"].asInt();
 
@@ -261,23 +404,30 @@ void API::handleNewSessionRequest(const drogon::HttpRequestPtr& request,
 		                               ? GameSession(bet, maths)
 		                               : GameSession(bet, maths, requestJson["oldSession"]);
 
-	const Json::Value jsonResponse = newSession.toJson();
-	const auto resp = drogon::HttpResponse::newHttpJsonResponse(jsonResponse);
-	callback(resp);
+    Json::Value jsonResponse = newSession.toJson();
+    // Ensure a sid is present/returned so the client can upload a custom sheet for this session
+    std::string sid = requestJson.isMember("sid") && requestJson["sid"].isString()
+                          ? requestJson["sid"].asString()
+                          : getSidFromRequest(request);
+    if (sid.empty()) sid = generateSid();
+    jsonResponse["sid"] = sid;
+    const auto resp = drogon::HttpResponse::newHttpJsonResponse(jsonResponse);
+    callback(resp);
 }
 
 void API::handleMathsRequest(const drogon::HttpRequestPtr& request,
                              std::function<void(const drogon::HttpResponsePtr&)>&& callback,
                              const ParSheet& parSheet)
 {
-	const auto requestJson = getJsonFromRequest(request);
-	if (requestJson["betType"].isNull())
-		throw std::runtime_error("betType is missing from request.");
-	if (requestJson["rtp"].isNull()) throw std::runtime_error("rtp is missing from request.");
+    const auto requestJson = getJsonFromRequest(request);
+    if (requestJson["betType"].isNull())
+        throw std::runtime_error("betType is missing from request.");
+    if (requestJson["rtp"].isNull()) throw std::runtime_error("rtp is missing from request.");
 
-	const GameMaths& maths = *parSheet.gameMathsVariants
-	                                  .at(requestJson["betType"].asString())
-	                                  .at(requestJson["rtp"].asInt());
+    const ParSheet& effectiveParSheet = resolveParSheetForRequest(request, parSheet);
+    const GameMaths& maths = *effectiveParSheet.gameMathsVariants
+                                          .at(requestJson["betType"].asString())
+                                          .at(requestJson["rtp"].asInt());
 
 	Json::Value jsonResponse;
 	jsonResponse["maths"] = maths.toJson();
@@ -327,21 +477,23 @@ drogon::HttpResponsePtr API::getBadRequestError(const std::string& error)
 	return resp;
 }
 
-void API::handleOptionsRequest(std::function<void(const drogon::HttpResponsePtr&)>&& callback,
+void API::handleOptionsRequest(const drogon::HttpRequestPtr& request,
+                               std::function<void(const drogon::HttpResponsePtr&)>&& callback,
                                const ParSheet& parSheet)
 {
-	Json::Value optionsJson;
-	optionsJson["betTypes"] = Json::Value{};
-	for (size_t i = 0; i < parSheet.betTypes.size(); ++i)
-		optionsJson["betTypes"][parSheet.betTypes[i]] = std::round(parSheet.betTypeCosts[i] * 100.0) /
-			100.0;
-	optionsJson["rtps"] = Json::Value(Json::arrayValue);
-	for (const int rtp : parSheet.rtps) optionsJson["rtps"].append(rtp);
-	optionsJson["gameTitle"] = parSheet.gameTitle;
-	optionsJson["minBet"] = parSheet.minBet;
+    const ParSheet& effective = resolveParSheetForRequest(request, parSheet);
+    Json::Value optionsJson;
+    optionsJson["betTypes"] = Json::Value{};
+    for (size_t i = 0; i < effective.betTypes.size(); ++i)
+        optionsJson["betTypes"][effective.betTypes[i]] = std::round(effective.betTypeCosts[i] * 100.0) /
+            100.0;
+    optionsJson["rtps"] = Json::Value(Json::arrayValue);
+    for (const int rtp : effective.rtps) optionsJson["rtps"].append(rtp);
+    optionsJson["gameTitle"] = effective.gameTitle;
+    optionsJson["minBet"] = effective.minBet;
 
-	// Serialize with a writer configured for decimal precision for this endpoint only.
-	Json::StreamWriterBuilder builder;
+    // Serialize with a writer configured for decimal precision for this endpoint only.
+    Json::StreamWriterBuilder builder;
 	builder["indentation"] = ""; // compact JSON
 	builder["precisionType"] = "decimal"; // digits after decimal point
 	builder["precision"] = 2; // e.g. 1.60 (JSON may still display as 1.6 depending on writer behavior)

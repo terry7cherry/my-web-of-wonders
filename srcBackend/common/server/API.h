@@ -31,7 +31,8 @@ namespace API
                             std::function<void(const drogon::HttpResponsePtr&)>&& callback,
                             const ParSheet& parSheet);
 
-    void handleOptionsRequest(std::function<void(const drogon::HttpResponsePtr&)>&& callback,
+    void handleOptionsRequest(const drogon::HttpRequestPtr& request,
+                              std::function<void(const drogon::HttpResponsePtr&)>&& callback,
                               const ParSheet& parSheet);
 
     std::pair<GameCycle, uint32_t> playFixedSeedGame(const GameMaths& maths,

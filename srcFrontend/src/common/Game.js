@@ -24,7 +24,8 @@ export default class Game {
             this.imageMap = await importImageMap();
             await this.buildShellUI();
             await this.getMathsAndCreateUI();
-            this.session = await ApiClient.getNewSession(this.session, this.state.bet, this.state.betType, this.state.rtp);
+            this.session = await ApiClient.getNewSession(this.session, this.state.bet, this.state.betType, this.state.rtp, this.sid);
+            if (this.session && this.session.sid) this.sid = this.session.sid;
             this.state.autoPlayOn = false;
             this.state.numSpins = 0;
             this.freeSpins = {};
@@ -35,11 +36,12 @@ export default class Game {
     }
 
     async setGlobalConfig() {
-        const jsonResponse = await ApiClient.getGlobalConfig();
+        const jsonResponse = await ApiClient.getGlobalConfig(this.sid);
         this.gameTitle = jsonResponse.gameTitle;
         this.minBet = jsonResponse.minBet;
         this.rtps = jsonResponse.rtps;
         this.state.betTypes = jsonResponse.betTypes;
+        if (jsonResponse.sid) this.sid = jsonResponse.sid;
 
         this.state.balance = 1_000_00;
         this.validBaseBets = 100 % this.minBet === 0 ?
@@ -54,6 +56,7 @@ export default class Game {
         this.setUpBetTypeSelector();
         this.setUpRtpSelector();
         this.setUpRnStreamButton();
+        this.setUpUploadHandler();
     }
 
     async getMathsAndCreateUI() {
@@ -80,7 +83,8 @@ export default class Game {
         this.state.betType = selector.value;
         selector.addEventListener("change", async () => {
             await this.setBetType(selector.value);
-            this.session = await ApiClient.getNewSession(this.session, this.state.bet, this.state.betType, this.state.rtp);
+            this.session = await ApiClient.getNewSession(this.session, this.state.bet, this.state.betType, this.state.rtp, this.sid);
+            if (this.session && this.session.sid) this.sid = this.session.sid;
             await this.ui.updateUiAndStateToMatchSession(this.session, this.state);
         });
     }
@@ -98,7 +102,8 @@ export default class Game {
             this.state.rtp = parseInt(selector.value);
             this.ui.destroy();
             await this.getMathsAndCreateUI();
-            this.session = await ApiClient.getNewSession(this.session, this.state.bet, this.state.betType, this.state.rtp);
+            this.session = await ApiClient.getNewSession(this.session, this.state.bet, this.state.betType, this.state.rtp, this.sid);
+            if (this.session && this.session.sid) this.sid = this.session.sid;
             await this.ui.updateUiAndStateToMatchSession(this.session, this.state);
         })
     }
@@ -145,7 +150,7 @@ export default class Game {
         const {
             maths,
             forceOptions
-        } = await ApiClient.getMathsAndForcesForRtpAndBetType(this.state.rtp, this.state.betType);
+        } = await ApiClient.getMathsAndForcesForRtpAndBetType(this.state.rtp, this.state.betType, this.sid);
         this.maths = maths;
         this.forceOptions = forceOptions;
     }
@@ -202,7 +207,8 @@ export default class Game {
                 && this.session.rtp === this.state.rtp
             )
         )
-            this.session = await ApiClient.getNewSession(this.session, this.state.bet, this.state.betType, this.state.rtp);
+            this.session = await ApiClient.getNewSession(this.session, this.state.bet, this.state.betType, this.state.rtp, this.sid);
+        if (this.session && this.session.sid) this.sid = this.session.sid;
 
         try {
             const {
@@ -211,7 +217,7 @@ export default class Game {
                 winnings,
                 forceName,
                 seed: newSeed
-            } = await ApiClient.getNewGameCycle(this.session, forceIndex, seed, rnStream);
+            } = await ApiClient.getNewGameCycle(this.session, forceIndex, seed, rnStream, this.sid);
             this.session = session;
             await this.ui.updateUiAndStateToMatchSession(session, this.state);
             await this.displayGameRound(events, winnings, newSeed, forceName);
@@ -224,6 +230,67 @@ export default class Game {
         this.state.running = false;
         this.ui.spinButton.changeColour(0x0000ff);
         if (this.state.autoPlayOn) Ticker.wait(() => this.ui.spinButton.click(), 600);
+    }
+
+    setUpUploadHandler() {
+        /** @type {HTMLInputElement} */
+        const input = document.getElementById("par-upload-input");
+        /** @type {HTMLButtonElement} */
+        const button = document.getElementById("par-upload-button");
+        if (!input || !button) return;
+        const toBase64 = (file) => new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+                const result = reader.result || "";
+                const comma = typeof result === "string" ? result.indexOf(",") : -1;
+                // If readAsDataURL was used, take the part after the comma (already base64-encoded)
+                if (comma >= 0) return resolve(result.substring(comma + 1));
+                // Fallback (shouldn't happen with readAsDataURL): return empty string
+                resolve("");
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+        button.addEventListener("click", async () => {
+            if (!input.files || input.files.length === 0) return;
+            const file = input.files[0];
+            try {
+                // Ensure we have a session id first
+                if (!this.sid) {
+                    const s = await ApiClient.getNewSession(this.session, this.state.bet, this.state.betType, this.state.rtp, this.sid);
+                    if (s && s.sid) this.sid = s.sid;
+                    this.session = s;
+                }
+                const dataBase64 = await toBase64(file);
+                const resp = await ApiClient.uploadParSheet(this.sid, file.name, dataBase64);
+                // Update options for this session
+                if (resp.sid) this.sid = resp.sid;
+                if (resp.rtps) this.rtps = resp.rtps;
+                if (resp.betTypes) this.state.betTypes = resp.betTypes;
+                await this.shell.init(this.rtps, this.state.betTypes);
+                // Reset rtp/betType to defaults from new sheet
+                const rtpSelector = document.getElementById("rtp-selector");
+                if (rtpSelector && resp.rtps && resp.rtps.length > 0) {
+                    rtpSelector.selectedIndex = 0;
+                    this.state.rtp = parseInt(rtpSelector.value);
+                }
+                const betTypeSelector = document.getElementById("bet-type-selector");
+                if (betTypeSelector) {
+                    betTypeSelector.selectedIndex = 0;
+                    this.state.betType = betTypeSelector.value;
+                }
+                // Rebuild UI with new maths
+                this.ui.destroy();
+                await this.getMathsAndCreateUI();
+                this.session = await ApiClient.getNewSession(this.session, this.state.bet, this.state.betType, this.state.rtp, this.sid);
+                if (this.session && this.session.sid) this.sid = this.session.sid;
+                await this.ui.updateUiAndStateToMatchSession(this.session, this.state);
+                await this.ui.ticker.updateText("Uploaded maths applied to this session.");
+            } catch (e) {
+                console.error(e);
+                await this.ui.ticker.updateText(e.message || String(e));
+            }
+        });
     }
 
     async displayGameRound(events, winnings, seed, forceName) {
