@@ -75,6 +75,11 @@ public:
     void addReport(ReportBuffer& buffer, const std::string& title, const std::string& keyLabel,
                    bool descending = false) const;
 
+    /**
+     * @return The current recorded distribution across all threads.
+     */
+    const std::unordered_map<int, uint64_t>& getDistribution() const { return globalMap; }
+
 private:
     std::mutex mutex; // guards globalMap during flush
     std::unordered_map<int, uint64_t> globalMap{}; // aggregated distribution across all threads

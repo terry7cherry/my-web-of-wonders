@@ -38,16 +38,32 @@ public:
      */
     void flush();
 
+    /**
+     * @return Current max value across all threads.
+     */
+    const uint64_t& getMax() const
+    {
+        return globalMax;
+    }
+
+    /**
+     * @return Observed count of current max value across all threads.
+     */
+    const uint64_t& getCount() const
+    {
+        return globalCount;
+    }
+
     uint64_t globalMax{0}; // highest value observed across all threads
     uint64_t globalCount{0}; // number of observations equal to globalMax
 
     /**
-     * @brief Read the local max.
+     * @brief Read the local max on this thread. (Cleared after each batch/session.)
      */
     uint64_t getLocalMax();
 
     /**
-     * @brief Read the local count.
+     * @brief Read the local count on this thread. (Cleared after each batch/session.)
      */
     uint64_t getLocalCount();
 
