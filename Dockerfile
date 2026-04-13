@@ -76,6 +76,9 @@ COPY --from=build /src/srcBackend/thisTitle/parSheets /src/srcBackend/thisTitle/
 # Create a dir for drogon to store requests larger than client_max_body_size
 RUN mkdir -p /src/uploads && chown appuser:appuser /src/uploads
 
+# Allow appuser to write to parSheets directory
+RUN chown -R appuser:appuser /src/srcBackend/thisTitle/parSheets
+
 USER appuser
 
 WORKDIR /src
