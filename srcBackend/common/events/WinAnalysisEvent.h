@@ -53,6 +53,10 @@ public:
 	                      int bet,
 	                      const std::vector<std::string>& symbolNames);
 
+	static void reportHits(ReportBuffer& buffer,
+	                       uint64_t simGames,
+	                       const std::vector<std::string>& symbolNames);
+
 	inline static PayTableMeter payTableHits;
 	inline static PayTableMeter payTableWinnings;
 
