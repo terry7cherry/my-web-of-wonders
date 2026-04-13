@@ -1,3 +1,10 @@
+# [1.7.0](https://git.corpcenter.tech/maths/simulators/cpp-web-of-wonders/compare/1.6.0...1.7.0) (2026-04-13)
+
+
+### Features
+
+* fix spreadsheet uploading ([ef08bdd](https://git.corpcenter.tech/maths/simulators/cpp-web-of-wonders/commit/ef08bdd38aeed0720a8b8eabeb363c801eda2ebe))
+
 # [1.6.0](https://git.corpcenter.tech/maths/simulators/cpp-web-of-wonders/compare/1.5.0...1.6.0) (2026-04-13)
 
 
