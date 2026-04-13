@@ -1,3 +1,10 @@
+# [1.6.0](https://git.corpcenter.tech/maths/simulators/cpp-web-of-wonders/compare/1.5.0...1.6.0) (2026-04-13)
+
+
+### Features
+
+* maths v1.6 with math upload ability. ([1419e23](https://git.corpcenter.tech/maths/simulators/cpp-web-of-wonders/commit/1419e23a33da6729995f568d7ae48c409d3f3951))
+
 # [1.5.0](https://git.corpcenter.tech/maths/simulators/cpp-web-of-wonders/compare/1.4.0...1.5.0) (2026-04-08)
 
 
