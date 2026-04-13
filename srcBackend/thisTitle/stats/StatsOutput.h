@@ -69,7 +69,7 @@ namespace Stats
      * @param bet Bet amount per game (in coins, same unit as minBet and paytable payouts).
      * @param symbolNames Vector containing the readable name for each symbol.
      */
-    void addPayTableRTPReport(ReportBuffer& buffer, uint64_t simGames, int bet,
+    void addPayTableReports(ReportBuffer& buffer, uint64_t simGames, int bet,
                               const std::vector<std::string>& symbolNames);
 
     /**

@@ -32,7 +32,7 @@ namespace Stats
         addGeneralStatsReport(buffer, simGames, bet);
         addEndingSecondaryCollectorsReport(buffer);
         addMaxWinReport(buffer, simGames, bet);
-        addPayTableRTPReport(buffer, simGames, bet, symbolNames);
+        addPayTableReports(buffer, simGames, bet, symbolNames);
         addSpinsReport(buffer, simGames, bet);
         addWinCapReport(buffer, simGames, bet, currentWinCap);
 
@@ -83,10 +83,11 @@ namespace Stats
             buffer, "STANDARD FREE SPINS FINAL SECONDARY COLLECTORS", "FinalSecondaryCollectors");
     }
 
-    void addPayTableRTPReport(ReportBuffer& buffer, const uint64_t simGames, const int bet,
-                              const std::vector<std::string>& symbolNames)
+    void addPayTableReports(ReportBuffer& buffer, const uint64_t simGames, const int bet,
+                            const std::vector<std::string>& symbolNames)
     {
         WinAnalysisEvent::reportRTP(buffer, simGames, bet, symbolNames);
+        WinAnalysisEvent::reportHits(buffer, simGames, symbolNames);
     }
 
     void addMaxWinReport(ReportBuffer& buffer, const uint64_t simGames, const int bet)

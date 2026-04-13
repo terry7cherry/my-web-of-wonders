@@ -44,7 +44,7 @@ namespace GameLogic
         else
         {
             cycle.totalWin += doBaseGame(maths, cycle);
-            static unsigned int fsSymbolsToTrigger = maths.ints["freeSpinsSymbolsToTrigger"];
+            unsigned int fsSymbolsToTrigger = maths.ints["freeSpinsSymbolsToTrigger"];
             cycle.fsTrigger = cycle.baseNumScatters == fsSymbolsToTrigger;
             if (!cycle.fsTrigger && cycle.baseNumScatters > 0)
                 collectBonusSymbols(maths, cycle);
@@ -66,7 +66,6 @@ namespace GameLogic
 
     void updateMainCollectorPosition(const GameMaths& maths, GameCycle& cycle)
     {
-        static auto& collectorPositionWeights = maths.stringWeightTables["mainCollectorPosition"];
         if (cycle.session.deadSpins >= 2)
         {
             const auto& positionsWithCoins = cycle.session.positionsWithCoinsOrBonuses;
@@ -80,7 +79,8 @@ namespace GameLogic
             {
                 CollectorPosition newPosition = cycle.session.mainCollectorPosition;
                 while (newPosition == cycle.session.mainCollectorPosition)
-                    newPosition = collectorPositionMap.at(collectorPositionWeights.pick());
+                    newPosition = static_cast<CollectorPosition>(mathsRng.getInt(
+                        4, "Choose main collector position."));
                 cycle.session.mainCollectorPosition = newPosition;
             }
             cycle.mainCollectorMoved = true;
@@ -99,7 +99,7 @@ namespace GameLogic
     {
         spinReelsAndSetCoinValues(maths, cycle, "baseGame");
 
-        static const Symbol fsTriggerSymbol = maths.symbols["freeSpinsTrigger"];
+        const Symbol fsTriggerSymbol = maths.symbols["freeSpinsTrigger"];
         cycle.baseNumScatters = cycle.grid.getSymbolCount(fsTriggerSymbol);
 
         cycle.baseGameWin = analyseAndCascadeIfWin(maths, cycle);
@@ -108,7 +108,7 @@ namespace GameLogic
 
     unsigned int doFreeSpins(const GameMaths& maths, GameCycle& cycle)
     {
-        static const unsigned int fsInitialSpins = maths.ints["freeSpinsInitialSpins"];
+        const unsigned int fsInitialSpins = maths.ints["freeSpinsInitialSpins"];
         cycle.fsInitialSpins = fsInitialSpins;
         cycle.fsSpinsRemaining = cycle.fsInitialSpins;
 
@@ -179,9 +179,9 @@ namespace GameLogic
 
     void collectBonusSymbols(const GameMaths& maths, GameCycle& cycle)
     {
-        static const Symbol freeSpinsTriggerSymbol = maths.symbols["freeSpinsTrigger"];
-        static const auto& collectorTriggerChance = maths.boolWeightTables["collectorTriggeredBonusChance"];
-        static const auto& fsInitialSecondaryCollectorWeights = maths.intWeightTables[
+        const Symbol freeSpinsTriggerSymbol = maths.symbols["freeSpinsTrigger"];
+        const auto& collectorTriggerChance = maths.boolWeightTables["collectorTriggeredBonusChance"];
+        const auto& fsInitialSecondaryCollectorWeights = maths.intWeightTables[
             "fsInitialSecondaryCollectors"];
         for (size_t reel = 0; reel < cycle.grid.maxReels; reel++)
             for (size_t row = 0; row < cycle.grid.maxRows; row++)
@@ -252,8 +252,8 @@ namespace GameLogic
 
     void setCoinValues(const GameMaths& maths, GameCycle& cycle)
     {
-        static const Symbol coinSymbol = maths.symbols["coin"];
-        static const auto& coinValueWeights = maths.intWeightTables["coinValue"];
+        const Symbol coinSymbol = maths.symbols["coin"];
+        const auto& coinValueWeights = maths.intWeightTables["coinValue"];
         for (size_t reel = 0; reel < cycle.grid.maxReels; reel++)
             for (size_t row = 0; row < cycle.grid.maxRows; row++)
                 if (cycle.grid.getSymbol({reel, row}) == coinSymbol)
@@ -340,7 +340,7 @@ namespace GameLogic
 
         cycle.recordEvent<CollectorActivationEvent>(collectorPosition, cycle.grid.collectorMultipliers);
 
-        static const unsigned int numRetriggerSpins = maths.ints["collectorActivationRetriggerSpins"];
+        const unsigned int numRetriggerSpins = maths.ints["collectorActivationRetriggerSpins"];
         cycle.fsRetriggerSpins += numRetriggerSpins;
         cycle.fsSpinsRemaining += numRetriggerSpins;
         cycle.recordEvent<FreeSpinsRetriggerEvent>(numRetriggerSpins);
@@ -365,8 +365,8 @@ namespace GameLogic
     void removeExcessScatters(const GameMaths& maths, GameCycle& cycle,
                               const std::vector<std::pair<size_t, size_t>>& removedSymbols)
     {
-        static const int freeSpinsSymbolsToTrigger = maths.ints["freeSpinsSymbolsToTrigger"];
-        static const Symbol freeSpinsTriggerSymbol = maths.symbols["freeSpinsTrigger"];
+        const int freeSpinsSymbolsToTrigger = maths.ints["freeSpinsSymbolsToTrigger"];
+        const Symbol freeSpinsTriggerSymbol = maths.symbols["freeSpinsTrigger"];
 
         std::vector<std::pair<size_t, size_t>> excessScatterPositions;
 
