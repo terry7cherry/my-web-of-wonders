@@ -312,6 +312,7 @@ export default class Game {
     }
 
     async startNewSpin(seed, forceName) {
+        this.state.balance -= this.state.bet;
         const balancePromise = this.ui.balance.increment(-this.state.bet);
         this.shell.sessionStats.increment("rounds-played", 1);
         this.shell.sessionStats.increment("total-bet", this.state.bet);
@@ -331,14 +332,15 @@ export default class Game {
             await this.ui.ticker.updateText("Server winnings: " + toCurrency(winnings) + ". Frontend winnings: " + toCurrency(this.state.totalGameRoundWinnings) + ".");
             throw new Error("Winnings calculated in frontend do not match winnings from server.");
         }
-        this.updateHistory(seed);
         if (!this.state.totalGameRoundWinnings) return;
         this.shell.sessionStats.increment("total-won", this.state.totalGameRoundWinnings);
         await Promise.all([
             this.ui.ticker.updateText(`Total game round winnings: ${toCurrency(this.state.totalGameRoundWinnings)}!`),
+            this.state.balance += this.state.totalGameRoundWinnings,
             this.ui.balance.increment(this.state.totalGameRoundWinnings),
             this.ui.currentPhase.balance.update(0)
         ]);
+        this.updateHistory(seed);
     }
 
     async warnUnhandledEvent(eventType, eventDetails) {

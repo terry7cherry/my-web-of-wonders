@@ -97,6 +97,55 @@ void WinAnalysisEvent::reportRTP(ReportBuffer& buffer,
     }
 }
 
+void WinAnalysisEvent::reportHits(ReportBuffer& buffer,
+                                  const uint64_t simGames,
+                                  const std::vector<std::string>& symbolNames)
+{
+    // Determine OAK range present
+    std::size_t maxOAK = 0;
+    std::size_t minOAK = PayTableMeter::MAX_OAK;
+    for (int symbolId = 0; symbolId < static_cast<int>(symbolNames.size()); ++symbolId)
+    {
+        for (std::size_t oak = 1; oak <= PayTableMeter::MAX_OAK; ++oak)
+        {
+            if (payTableHits.global[symbolId][oak - 1] > 0)
+            {
+                if (oak > maxOAK) maxOAK = oak;
+                if (oak < minOAK) minOAK = oak;
+            }
+        }
+    }
+    if (maxOAK == 0)
+    {
+        minOAK = 1;
+        maxOAK = 1;
+    }
+
+    std::vector<std::string> headers;
+    headers.emplace_back("Symbol");
+    for (std::size_t oak = minOAK; oak <= maxOAK; ++oak)
+    {
+        headers.emplace_back(std::to_string(static_cast<unsigned long long>(oak)) + " OAK");
+    }
+
+
+    for (std::size_t symbolId = 0; symbolId < symbolNames.size(); ++symbolId)
+    {
+        std::vector<std::string> row;
+        row.push_back(symbolNames[symbolId]);
+        for (std::size_t oak = minOAK; oak <= maxOAK; ++oak)
+        {
+            const auto hits = payTableHits.global[symbolId][oak - 1];
+            long double hitRate = 0.0L;
+            if (simGames > 0)
+                hitRate = static_cast<long double>(simGames) /
+                    (static_cast<long double>(hits));
+            row.push_back(buffer.toFloat(hitRate, 4));
+        }
+        buffer.addRow("PAYTABLE HIT REPORT", headers, row);
+    }
+}
+
 std::string WinAnalysisEvent::prettyPrint(const std::string& baseIndent)
 {
     Json::Value jsonEvent = toJson();
