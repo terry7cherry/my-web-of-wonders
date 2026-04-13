@@ -38,20 +38,12 @@ namespace GameLogic
     {
         updateMainCollectorPosition(maths, cycle);
 
-        if (cycle.session.simForce >= Forces::ForceStandardFreeSpins
-            && cycle.session.simForce <= Forces::ForceEnhancedFreeSpins3)
-            handleFreeSpinsForces(maths, cycle);
-        else
+        if (!handleFreeSpinsForces(maths, cycle))
         {
             cycle.totalWin += doBaseGame(maths, cycle);
-            unsigned int fsSymbolsToTrigger = maths.ints["freeSpinsSymbolsToTrigger"];
-            cycle.fsTrigger = cycle.baseNumScatters == fsSymbolsToTrigger;
-            if (!cycle.fsTrigger && cycle.baseNumScatters > 0)
-                collectBonusSymbols(maths, cycle);
+            handleBonusSymbols(maths, cycle);
         }
-
         cycle.recordEvent<BaseGameCompleteEvent>(cycle.baseGameWin);
-
 
         if (cycle.fsTrigger)
         {
@@ -64,29 +56,13 @@ namespace GameLogic
         return cycle.totalWin;
     }
 
+
     void updateMainCollectorPosition(const GameMaths& maths, GameCycle& cycle)
     {
         if (cycle.session.deadSpins >= 2)
         {
-            const auto& positionsWithCoins = cycle.session.positionsWithCoinsOrBonuses;
-            if (positionsWithCoins.size() == 1)
-                cycle.session.mainCollectorPosition = positionsWithCoins.
-                    at(0);
-            else if (positionsWithCoins.size() > 1)
-                cycle.session.mainCollectorPosition = positionsWithCoins[
-                    mathsRng.getInt(positionsWithCoins.size(), "Choose main collector position.")];
-            else
-            {
-                CollectorPosition newPosition = cycle.session.mainCollectorPosition;
-                while (newPosition == cycle.session.mainCollectorPosition)
-                    newPosition = static_cast<CollectorPosition>(mathsRng.getInt(
-                        4, "Choose main collector position."));
-                cycle.session.mainCollectorPosition = newPosition;
-            }
-            cycle.mainCollectorMoved = true;
-            cycle.session.deadSpins = 0;
+            chooseNewMainCollectorPosition(cycle);
         }
-        //cycle.session.mainCollectorPositionSpinRemaining--;
         cycle.grid.coinMultiplierGrid = maths.intGrids["collectorPositions." + collectorPositionNames[cycle.
                 session.mainCollectorPosition]
         ];
@@ -104,6 +80,14 @@ namespace GameLogic
 
         cycle.baseGameWin = analyseAndCascadeIfWin(maths, cycle);
         return cycle.baseGameWin;
+    }
+
+    void handleBonusSymbols(const GameMaths& maths, GameCycle& cycle)
+    {
+        const unsigned int fsSymbolsToTrigger = maths.ints["freeSpinsSymbolsToTrigger"];
+        cycle.fsTrigger = cycle.baseNumScatters == fsSymbolsToTrigger;
+        if (!cycle.fsTrigger && cycle.baseNumScatters > 0)
+            collectBonusSymbols(maths, cycle);
     }
 
     unsigned int doFreeSpins(const GameMaths& maths, GameCycle& cycle)
@@ -131,6 +115,26 @@ namespace GameLogic
         }
 
         return cycle.freeSpinsWin;
+    }
+
+    void chooseNewMainCollectorPosition(GameCycle& cycle)
+    {
+        const auto& positionsWithCoins = cycle.session.positionsWithCoinsOrBonuses;
+        if (positionsWithCoins.size() == 1)
+            cycle.session.mainCollectorPosition = positionsWithCoins.at(0);
+        else if (positionsWithCoins.size() > 1)
+            cycle.session.mainCollectorPosition = positionsWithCoins[
+                mathsRng.getInt(positionsWithCoins.size(), "Choose main collector position.")];
+        else
+        {
+            CollectorPosition newPosition = cycle.session.mainCollectorPosition;
+            while (newPosition == cycle.session.mainCollectorPosition)
+                newPosition = static_cast<CollectorPosition>(mathsRng.getInt(
+                    4, "Choose main collector position."));
+            cycle.session.mainCollectorPosition = newPosition;
+        }
+        cycle.mainCollectorMoved = true;
+        cycle.session.deadSpins = 0;
     }
 
     void activateInitialCollectors(const GameMaths& maths, GameCycle& cycle)
@@ -177,6 +181,7 @@ namespace GameLogic
         cycle.recordEvent<ReelSpinWithCoinsEvent>(cycle.grid, maths, cycle.session.betMultiplier);
     }
 
+
     void collectBonusSymbols(const GameMaths& maths, GameCycle& cycle)
     {
         const Symbol freeSpinsTriggerSymbol = maths.symbols["freeSpinsTrigger"];
@@ -192,15 +197,19 @@ namespace GameLogic
                     cycle.bonusSymbolCollected = true;
                     if (collectorTriggerChance.pick())
                     {
-                        cycle.fsTrigger = true;
-                        cycle.fsCollectorTrigger = true;
-                        cycle.fsInitialSecondaryCollectors = fsInitialSecondaryCollectorWeights.pick();
-                        cycle.recordEvent<CollectorAwardedBonusEvent>();
+                        triggerEnhancedFreeSpins(cycle, fsInitialSecondaryCollectorWeights);
                         return;
                     }
                 }
     }
 
+    void triggerEnhancedFreeSpins(GameCycle& cycle, const WeightTable& fsInitialSecondaryCollectorWeights)
+    {
+        cycle.fsTrigger = true;
+        cycle.fsCollectorTrigger = true;
+        cycle.fsInitialSecondaryCollectors = fsInitialSecondaryCollectorWeights.pick();
+        cycle.recordEvent<CollectorAwardedBonusEvent>();
+    }
 
     unsigned int analyseAndCascadeIfWin(const GameMaths& maths, GameCycle& cycle)
     {
@@ -421,9 +430,12 @@ namespace GameLogic
                                                               cycle.fsFinalSecondaryCollectors);
     }
 
-    void handleFreeSpinsForces(const GameMaths& maths, GameCycle& cycle)
+    bool handleFreeSpinsForces(const GameMaths& maths, GameCycle& cycle)
     {
         const auto& simForce = cycle.session.simForce;
+        if (!(simForce >= Forces::ForceStandardFreeSpins
+            && simForce <= Forces::ForceEnhancedFreeSpins3))
+            return false;
         switch (simForce)
         {
         case Forces::ForceStandardFreeSpins:
@@ -452,6 +464,8 @@ namespace GameLogic
         default:
             break;
         }
+
+        return true;
     }
 
     void maximizeMultipliersForEnhancedFreeSpins(const GameMaths& maths, GameCycle& cycle)

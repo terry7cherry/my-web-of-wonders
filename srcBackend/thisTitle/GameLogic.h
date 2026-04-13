@@ -12,7 +12,11 @@ namespace GameLogic
 
     unsigned int doBaseGame(const GameMaths& maths, GameCycle& cycle);
 
+    void handleBonusSymbols(const GameMaths& maths, GameCycle& cycle);
+
     unsigned int doFreeSpins(const GameMaths& maths, GameCycle& cycle);
+
+    void chooseNewMainCollectorPosition(GameCycle& cycle);
 
     void activateInitialCollectors(const GameMaths& maths, GameCycle& cycle);
 
@@ -22,6 +26,8 @@ namespace GameLogic
                                    const std::string& weightTableName);
 
     void collectBonusSymbols(const GameMaths& maths, GameCycle& cycle);
+
+    void triggerEnhancedFreeSpins(GameCycle& cycle, const WeightTable& fsInitialSecondaryCollectorWeights);
 
     unsigned int analyseAndCascadeIfWin(const GameMaths& maths, GameCycle& cycle);
 
@@ -43,7 +49,7 @@ namespace GameLogic
 
     void recordFreeSpinsCompleteEvents(const GameMaths& maths, GameCycle& cycle);
 
-    void handleFreeSpinsForces(const GameMaths& maths, GameCycle& cycle);
+    bool handleFreeSpinsForces(const GameMaths& maths, GameCycle& cycle);
 
     void maximizeMultipliersForEnhancedFreeSpins(const GameMaths& maths, GameCycle& cycle);
 
