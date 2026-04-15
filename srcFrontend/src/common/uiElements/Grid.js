@@ -402,8 +402,8 @@ export default class Grid {
         }
         const textObject = this.getSymbolText(text, textStyle);
         textObject.scale.set(
-            (this.reelWidth * textStyle.scale ?? 1) / textObject.width,
-            (this.reelWidth * textStyle.scale ?? 1) / textObject.width,
+            (this.reelWidth * (textStyle.scale ?? 1)) / textObject.width,
+            (this.reelWidth * (textStyle.scale ?? 1)) / textObject.width,
         );
         this.alignText(textStyle, textObject, aperture);
         aperture.overlayContainer.addChild(textObject)
