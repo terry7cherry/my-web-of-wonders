@@ -56,6 +56,7 @@ export default class Game {
         this.setUpBetTypeSelector();
         this.setUpRtpSelector();
         this.setUpRnStreamButton();
+        this.setUpSeedButton();
         this.setUpUploadHandler();
     }
 
@@ -126,6 +127,27 @@ export default class Game {
             await this.ui.updateUiAndStateToMatchSession(this.session, this.state);
             rnStream = rnStream.split("|").slice(1).join("|");
             await this.play({rnStream});
+        }).bind(this));
+    }
+
+    setUpSeedButton() {
+        /** @type {HTMLFormElement} */
+        const seedForm = document.getElementById("seed-form");
+        if (!seedForm) return;
+        seedForm.addEventListener("submit", (async (e) => {
+            e.preventDefault();
+            if (this.state.running) return;
+            /** @type {HTMLInputElement} */
+            const seedBox = document.getElementById("seed-entry");
+            if (!seedBox) return;
+            const raw = (seedBox.value || "").trim();
+            if (!raw.length) return;
+            // Support hex (0x...), decimal, and numeric strings
+            let seed;
+            if (/^0x[0-9a-f]+$/i.test(raw)) seed = parseInt(raw, 16);
+            else seed = parseInt(raw, 10);
+            if (!Number.isFinite(seed) || seed < 0) return;
+            await this.play({seed});
         }).bind(this));
     }
 

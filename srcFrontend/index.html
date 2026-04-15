@@ -156,11 +156,18 @@
                 <button id="par-upload-button">Upload spreadsheet</button>
             </div>
         </div>
-        <h3>RN Stream</h3>
+        <h3>RN Stream / Seed</h3>
         <div class="rn-stream-row">
             <form id="rn-stream-form" onsubmit="event.preventDefault();">
                 <input id="rn-stream" type="text" placeholder="Enter RN stream..."/>
                 <button id="rn-stream-spin" type="submit">Spin</button>
+            </form>
+        </div>
+        <!-- Seed entry row: allows playing a spin with a specific seed -->
+        <div class="rn-stream-row">
+            <form id="seed-form" onsubmit="event.preventDefault();">
+                <input id="seed-entry" type="text" inputmode="numeric" placeholder="Enter seed..."/>
+                <button id="seed-spin" type="submit">Spin</button>
             </form>
         </div>
     </div>
