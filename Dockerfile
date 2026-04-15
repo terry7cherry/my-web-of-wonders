@@ -33,7 +33,7 @@ ENV VCPKG_FEATURE_FLAGS=manifests,versions
 # Copy just manifest first for caching
 WORKDIR /src
 COPY vcpkg.json vcpkg.json
-RUN ${VCPKG_ROOT}/vcpkg install --triplet arm64-linux --x-manifest-root=/src
+RUN ${VCPKG_ROOT}/vcpkg install --triplet x64-linux --x-manifest-root=/src
 
 # Copy source
 COPY CMakeLists.txt ./
