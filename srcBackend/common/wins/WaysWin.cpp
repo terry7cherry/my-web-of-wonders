@@ -23,13 +23,13 @@ WaysWin::WaysWin() : WaysWin(SYMBOL_NONE, 0, 0)
 
 void WaysWin::resizeVectors(void)
 {
-    reelCountVect.resize(maxReels, 0);
-    wildCountVect.resize(maxReels, 0);
+    reelCountVect.assign(maxReels, 0);
+    wildCountVect.assign(maxReels, 0);
     winPosVect.resize(maxReels);
     positions.reserve(maxReels * maxRows);
-    multiplierForReel.resize(maxReels, 1);
+    multiplierForReel.assign(maxReels, 1);
     for (int i = 0; i < maxReels; i++)
-        winPosVect[i].resize(maxRows, 0);
+        winPosVect[i].assign(maxRows, 0);
 }
 
 // Identifies a win as all wilds 

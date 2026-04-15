@@ -58,7 +58,7 @@ void Grid::reset()
 	}
 	clearSpinLock();
 	resetMultipliers();
-	cascadedSymbolsPerReel.resize(maxReels, 0);
+	cascadedSymbolsPerReel.assign(maxReels, 0);
 }
 
 // Set all multipliers to 1
@@ -223,7 +223,7 @@ void Grid::setSpinLock(const std::vector<bool>& spinStateVect)
 
 void Grid::clearSpinLock()
 {
-	lockedReelVect.resize(maxReels, false);
+	lockedReelVect.assign(maxReels, false);
 }
 
 /**************************************************/
@@ -232,10 +232,10 @@ void Grid::clearSpinLock()
 
 void Grid::clearSticky()
 {
-	reelHasStickySymbolVect.resize(maxReels, false);
+	reelHasStickySymbolVect.assign(maxReels, false);
 	stickySymbolVect.resize(maxReels);
 	for (size_t reel = 0; reel < maxReels; reel++)
-		stickySymbolVect[reel].resize(maxRows, false);
+		stickySymbolVect[reel].assign(maxRows, false);
 }
 
 void Grid::setSticky(const size_t reel, const size_t row, const bool isSticky)
