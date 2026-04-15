@@ -402,13 +402,54 @@ export default class Grid {
         }
         const textObject = this.getSymbolText(text, textStyle);
         textObject.scale.set(
-            this.reelWidth / textObject.width,
-            this.reelWidth / textObject.width,
-        )
-        textObject.x = textStyle.x ?? (this.reelWidth - textObject.width) / 2;
-        textObject.y = textStyle.y ?? (aperture.height - textObject.height);
+            (this.reelWidth * (textStyle.scale ?? 1)) / textObject.width,
+            (this.reelWidth * (textStyle.scale ?? 1)) / textObject.width,
+        );
+        this.alignText(textStyle, textObject, aperture);
         aperture.overlayContainer.addChild(textObject)
         aperture.overlayText = textObject;
+    }
+
+    alignText(textStyle, textObject, aperture) {
+        switch (textStyle.align) {
+            case "center":
+            case "centre":
+                textObject.x = (this.reelWidth - textObject.width) / 2;
+                textObject.y = (aperture.height - textObject.height) / 2;
+                break;
+            case "bottom":
+                textObject.x = (this.reelWidth - textObject.width) / 2;
+                textObject.y = (aperture.height - textObject.height);
+                break;
+            case "top":
+                textObject.x = (this.reelWidth - textObject.width) / 2;
+                textObject.y = 0;
+                break;
+            case "left":
+                textObject.x = 0;
+                textObject.y = (aperture.height - textObject.height) / 2;
+                break;
+            case "right":
+                textObject.x = (this.reelWidth - textObject.width);
+                textObject.y = (aperture.height - textObject.height) / 2;
+                break;
+            case "topLeft":
+                textObject.x = 0;
+                textObject.y = 0;
+                break;
+            case "topRight":
+                textObject.x = (this.reelWidth - textObject.width);
+                textObject.y = 0;
+                break;
+            case "bottomLeft":
+                textObject.x = 0;
+                textObject.y = (this.reelWidth - textObject.height);
+                break;
+            case "bottomRight":
+                textObject.x = (this.reelWidth - textObject.width);
+                textObject.y = (this.reelWidth - textObject.height);
+                break;
+        }
     }
 
     removeTextFromSymbol(reelNum, symbolNum) {
