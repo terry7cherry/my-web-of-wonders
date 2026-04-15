@@ -1,3 +1,11 @@
+# [1.9.0](https://git.corpcenter.tech/maths/simulators/cpp-web-of-wonders/compare/1.8.0...1.9.0) (2026-04-15)
+
+
+### Features
+
+* pin appuser to UID 1000 / GID 2000 to match what kubernetes uses. This fixes an issue where spilling large upload files to disk didn't work in k8s ([05fa563](https://git.corpcenter.tech/maths/simulators/cpp-web-of-wonders/commit/05fa563952b31fb920180ef2abb9244acfe194b9))
+* Revert accidental arm64 change ([84c2c78](https://git.corpcenter.tech/maths/simulators/cpp-web-of-wonders/commit/84c2c782050ea95dab4fddf74161b6e5b1a65026))
+
 # [1.8.0](https://git.corpcenter.tech/maths/simulators/cpp-web-of-wonders/compare/1.7.0...1.8.0) (2026-04-13)
 
 
