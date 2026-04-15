@@ -92,7 +92,7 @@ int PayAnywhereGrid::countActiveWinMultipliers() const
 {
     std::vector<std::vector<bool>> activeMultiplierVect(maxReels);
     for (int reel = 0; reel < maxReels; reel++)
-        activeMultiplierVect[reel].resize(maxRows, false);
+        activeMultiplierVect[reel].assign(maxRows, false);
 
     for (const auto& i : winVector)
     {
