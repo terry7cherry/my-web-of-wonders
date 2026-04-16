@@ -67,7 +67,8 @@ FROM debian:bookworm-slim
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates && rm -rf /var/lib/apt/lists/*
 
-RUN groupadd --system appuser && useradd --system --gid appuser appuser
+RUN groupadd --system --gid 2000 appuser && \
+      useradd --system --uid 1000 --gid appuser appuser
 
 COPY --from=build /src/build/cpp-web-of-wonders /usr/local/bin/cpp-web-of-wonders
 COPY --from=build /src/srcFrontend/dist /src/srcFrontend/dist
