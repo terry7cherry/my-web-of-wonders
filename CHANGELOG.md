@@ -1,3 +1,10 @@
+# [1.10.0](https://git.corpcenter.tech/maths/simulators/cpp-web-of-wonders/compare/1.9.0...1.10.0) (2026-04-16)
+
+
+### Features
+
+* maths v1.8 ([5da2fbb](https://git.corpcenter.tech/maths/simulators/cpp-web-of-wonders/commit/5da2fbbe39b68d4c320230978e2cfd28acac3def))
+
 # [1.9.0](https://git.corpcenter.tech/maths/simulators/cpp-web-of-wonders/compare/1.8.0...1.9.0) (2026-04-15)
 
 
