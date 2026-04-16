@@ -19,13 +19,16 @@ public:
 	inline static std::string phaseName = "Standard Free Spins";
 
 	inline static DistributionMeter finalSecondaryCollectorsMeter{};
+	inline static DistributionMeter mainCollectorPositionMeter{};
+	inline static DistributionMeter mainCollectorPositionWinningsMeter{};
 
 	/**
 	 * @param cycle Game cycle event including totalWin, fsInitialSpins, and fsSpinsPlayed properties.
 	 */
 	explicit StandardFreeSpinsCompleteEvent(const GameCycle& cycle)
 		: StandardFreeSpinsCompleteEvent(cycle.freeSpinsWin, cycle.fsInitialSpins, cycle.fsSpinsPlayed,
-		                                 cycle.fsFinalSecondaryCollectors)
+		                                 cycle.fsFinalSecondaryCollectors,
+		                                 cycle.session.mainCollectorPosition)
 	{
 	}
 
@@ -39,22 +42,28 @@ public:
 		const unsigned int totalWin,
 		const unsigned int initialSpins,
 		const unsigned int finalSpins,
-		const unsigned int finalSecondaryCollectors
+		const unsigned int finalSecondaryCollectors,
+		const CollectorPosition mainCollectorPosition
 	) : SpinsCompleteTemplate(totalWin, initialSpins, finalSpins)
 	{
 	}
 
 	static void updateMeters(const GameCycle& cycle)
 	{
-		SpinsCompleteTemplate::updateMeters(
-			cycle.freeSpinsWin, cycle.fsInitialSpins, cycle.fsSpinsPlayed, cycle.fsFinalSecondaryCollectors);
+		SpinsCompleteTemplate::updateMeters(cycle.freeSpinsWin, cycle.fsInitialSpins, cycle.fsSpinsPlayed);
+		finalSecondaryCollectorsMeter.add(cycle.fsFinalSecondaryCollectors);
+		mainCollectorPositionMeter.add(cycle.session.mainCollectorPosition);
+		mainCollectorPositionWinningsMeter.add(cycle.session.mainCollectorPosition, cycle.freeSpinsWin);
 	}
 
 	static void updateMeters(const unsigned int win, const unsigned int initialSpins,
-	                         const unsigned int finalSpins, const unsigned int finalSecondaryCollectors)
+	                         const unsigned int finalSpins, const unsigned int finalSecondaryCollectors,
+	                         const CollectorPosition mainCollectorPosition)
 	{
 		SpinsCompleteTemplate::updateMeters(win, initialSpins, finalSpins);
 		finalSecondaryCollectorsMeter.add(finalSecondaryCollectors);
+		mainCollectorPositionMeter.add(mainCollectorPosition);
+		mainCollectorPositionWinningsMeter.add(mainCollectorPosition, win);
 	}
 
 protected :

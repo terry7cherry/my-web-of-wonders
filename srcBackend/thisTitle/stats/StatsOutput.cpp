@@ -81,6 +81,11 @@ namespace Stats
     {
         StandardFreeSpinsCompleteEvent::finalSecondaryCollectorsMeter.addReport(
             buffer, "STANDARD FREE SPINS FINAL SECONDARY COLLECTORS", "FinalSecondaryCollectors");
+        StandardFreeSpinsCompleteEvent::mainCollectorPositionMeter.addReport(
+            buffer, "STANDARD FREE SPINS MAIN COLLECTOR POSITION", "MainCollectorPosition");
+        StandardFreeSpinsCompleteEvent::mainCollectorPositionWinningsMeter.addReport(
+            buffer, "STANDARD FREE SPINS MAIN COLLECTOR POSITION PAY ANYWHERE WINNINGS",
+            "MainCollectorPositionWinnings");
     }
 
     void addPayTableReports(ReportBuffer& buffer, const uint64_t simGames, const int bet,

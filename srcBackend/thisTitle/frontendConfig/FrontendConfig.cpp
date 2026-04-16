@@ -17,5 +17,5 @@ Json::Value GameMaths::toJson() const
 
 std::string GameMaths::getFrontendMathsSheetName()
 {
-    return "WebOfWonders_V1_7.xlsx";
+    return "WebOfWonders_V1_8.xlsx";
 }

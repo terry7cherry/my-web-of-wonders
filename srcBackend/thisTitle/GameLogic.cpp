@@ -36,16 +36,15 @@ namespace GameLogic
 {
     unsigned int playGame(const GameMaths& maths, GameCycle& cycle)
     {
-        updateMainCollectorPosition(maths, cycle);
-
         if (!handleFreeSpinsForces(maths, cycle))
         {
+            updateMainCollectorPosition(maths, cycle);
             cycle.totalWin += doBaseGame(maths, cycle);
             handleBonusSymbols(maths, cycle);
         }
         cycle.recordEvent<BaseGameCompleteEvent>(cycle.baseGameWin);
 
-        if (cycle.fsTrigger)
+        if (cycle.fsTrigger && cycle.session.simForce < Forces::ForceBaseGameA)
         {
             cycle.totalWin += doFreeSpins(maths, cycle);
             recordFreeSpinsCompleteEvents(maths, cycle);
@@ -425,9 +424,18 @@ namespace GameLogic
             }
         }
         else
-            cycle.recordEvent<StandardFreeSpinsCompleteEvent>(cycle.freeSpinsWin, cycle.fsInitialSpins,
-                                                              cycle.fsSpinsPlayed,
-                                                              cycle.fsFinalSecondaryCollectors);
+            cycle.recordEvent<StandardFreeSpinsCompleteEvent>(cycle);
+    }
+
+    void randomiseCollectorPosition(const GameMaths& maths, GameCycle& cycle)
+    {
+        cycle.session.mainCollectorPosition = static_cast<CollectorPosition>(mathsRng.getInt(
+            4, "Choose main collector position."));
+        cycle.grid.coinMultiplierGrid = maths.intGrids["collectorPositions." + collectorPositionNames[
+                cycle.session.mainCollectorPosition]
+        ];
+        cycle.grid.mainCollectorPosition = cycle.session.mainCollectorPosition;
+        cycle.grid.collectorMultipliers[cycle.session.mainCollectorPosition] = 1;
     }
 
     bool handleFreeSpinsForces(const GameMaths& maths, GameCycle& cycle)
@@ -439,28 +447,34 @@ namespace GameLogic
         switch (simForce)
         {
         case Forces::ForceStandardFreeSpins:
+            randomiseCollectorPosition(maths, cycle);
             cycle.baseNumScatters = 3;
             cycle.fsTrigger = true;
             break;
         case Forces::ForceEnhancedFreeSpins1:
+            randomiseCollectorPosition(maths, cycle);
             cycle.fsCollectorTrigger = true;
             cycle.fsInitialSecondaryCollectors = 1;
             cycle.fsTrigger = true;
             break;
         case Forces::ForceEnhancedFreeSpins2:
+            randomiseCollectorPosition(maths, cycle);
             cycle.fsCollectorTrigger = true;
             cycle.fsInitialSecondaryCollectors = 2;
             cycle.fsTrigger = true;
             break;
         case Forces::ForceEnhancedFreeSpins3:
+            randomiseCollectorPosition(maths, cycle);
             cycle.fsCollectorTrigger = true;
             cycle.fsInitialSecondaryCollectors = 3;
             cycle.fsTrigger = true;
             break;
         case Forces::ForceEnhancedFreeSpinsRandom:
+            randomiseCollectorPosition(maths, cycle);
             cycle.fsCollectorTrigger = true;
             cycle.fsInitialSecondaryCollectors = maths.intWeightTables["fsInitialSecondaryCollectors"].pick();
             cycle.fsTrigger = true;
+            break;
         default:
             break;
         }
