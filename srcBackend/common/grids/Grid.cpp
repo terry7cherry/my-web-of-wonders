@@ -170,6 +170,7 @@ void Grid::copySymbol(const Grid& sourceGrid, const Symbol symbol)
 
 void Grid::applySpin(const SpinResult& spinResult, const bool getLockedReels)
 {
+	cascadedSymbolsPerReel.assign(maxReels, 0);
 	for (size_t reelNum = 0; reelNum < maxReels; reelNum++)
 	{
 		if (!lockedReelVect[reelNum] || getLockedReels)
