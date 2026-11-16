@@ -1,0 +1,524 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="README">
+      <UniqueIdentifier>{6848ABF8-29E1-5343-9B5C-3DB899E2B7C2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="srcBackend">
+      <UniqueIdentifier>{EEE2F94A-7DC7-5050-AE78-DC927A859C7C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="srcBackend\common">
+      <UniqueIdentifier>{F4635016-F148-5781-9D33-7574DC3EB6F4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="srcBackend\common\config">
+      <UniqueIdentifier>{AD17EC5E-F261-52ED-8709-D9D5CB1E6E29}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="srcBackend\common\console">
+      <UniqueIdentifier>{E2D58A30-E8A0-5761-8C22-D2639E35F3C9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="srcBackend\common\events">
+      <UniqueIdentifier>{544ED2C6-2582-55F4-BE00-83C127A68EE4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="srcBackend\common\events\eventTemplates">
+      <UniqueIdentifier>{FC0A1E74-E41F-5A0C-BB9F-435F8EAF24F3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="srcBackend\common\events\threadSafeMeters">
+      <UniqueIdentifier>{E7382313-7F49-5D40-B355-5CC3E2DEBFCA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="srcBackend\common\gameMaths">
+      <UniqueIdentifier>{3A4E5922-EB06-5BE7-B2BB-7CEE4685E6B7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="srcBackend\common\gameMaths\mathElements">
+      <UniqueIdentifier>{CBE1F2B2-70C7-55B1-95BC-F789CF8BDDE5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="srcBackend\common\gameMaths\parser">
+      <UniqueIdentifier>{5A7BA8FA-47CF-59D6-97C7-5DC3A873408E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="srcBackend\common\grids">
+      <UniqueIdentifier>{0CA51660-C1EB-52D6-BD2C-42AFBA60A905}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="srcBackend\common\headers">
+      <UniqueIdentifier>{069AD47D-3576-5130-95A9-94A5D455DEF7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="srcBackend\common\rng">
+      <UniqueIdentifier>{FE9BAF62-E985-552C-9BCE-917B58D57B69}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="srcBackend\common\server">
+      <UniqueIdentifier>{DAEBEAE0-8D9B-5D22-B6E4-572F8762F046}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="srcBackend\common\spin">
+      <UniqueIdentifier>{6A341687-E750-5997-98CF-28FEB7D818B4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="srcBackend\common\state">
+      <UniqueIdentifier>{D2C943AC-8221-5253-99C1-5EC096993D25}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="srcBackend\common\stats">
+      <UniqueIdentifier>{2AB154CF-E582-5A9D-B66A-D1C496DDC08B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="srcBackend\common\utils">
+      <UniqueIdentifier>{ADE58A17-5273-539B-9465-EE0D61679544}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="srcBackend\common\wins">
+      <UniqueIdentifier>{BDA22254-A26F-5EF4-BE29-69508A4995B4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="srcBackend\thisTitle">
+      <UniqueIdentifier>{AE2D6D0B-F1A2-567A-8C01-C288435517A7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="srcBackend\thisTitle\events">
+      <UniqueIdentifier>{A4401947-F6A7-5CA8-A737-608D11FD04E3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="srcBackend\thisTitle\forces">
+      <UniqueIdentifier>{05787232-C90F-5B41-BFBE-ED6FF5266B0F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="srcBackend\thisTitle\frontendConfig">
+      <UniqueIdentifier>{647312C9-8121-50FE-AD96-0EF3DC422656}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="srcBackend\thisTitle\parSheets">
+      <UniqueIdentifier>{CA2404A7-FB2E-53D5-89CE-56BA886DCFE8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="srcBackend\thisTitle\state">
+      <UniqueIdentifier>{0F9BFF00-F30B-54F2-BDC6-22E4E98003F5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="srcBackend\thisTitle\stats">
+      <UniqueIdentifier>{FA965691-3523-5E7A-9FB5-2CF4F1A86EAD}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="srcBackend\thisTitle\wins">
+      <UniqueIdentifier>{3DF43587-8AA1-5825-8402-090956B417C0}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="srcBackend\common\config\UserConfig.h">
+      <Filter>srcBackend\common\config</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\common\console\Console.h">
+      <Filter>srcBackend\common\console</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\common\events\BaseGameCompleteEvent.h">
+      <Filter>srcBackend\common\events</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\common\events\CascadeEvent.h">
+      <Filter>srcBackend\common\events</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\common\events\FreeSpinsCompleteEvent.h">
+      <Filter>srcBackend\common\events</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\common\events\FreeSpinsRetriggerEvent.h">
+      <Filter>srcBackend\common\events</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\common\events\FreeSpinsTriggerEvent.h">
+      <Filter>srcBackend\common\events</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\common\events\GameCycleCompleteEvent.h">
+      <Filter>srcBackend\common\events</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\common\events\GridUpdateEvent.h">
+      <Filter>srcBackend\common\events</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\common\events\NewFreeSpinEvent.h">
+      <Filter>srcBackend\common\events</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\common\events\RNStreamProblemEvent.h">
+      <Filter>srcBackend\common\events</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\common\events\ReelSpinEvent.h">
+      <Filter>srcBackend\common\events</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\common\events\ReelSpinWithStickySymbolsEvent.h">
+      <Filter>srcBackend\common\events</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\common\events\SpinCompleteEvent.h">
+      <Filter>srcBackend\common\events</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\common\events\WinAnalysisEvent.h">
+      <Filter>srcBackend\common\events</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\common\events\eventTemplates\BasicEvent.h">
+      <Filter>srcBackend\common\events\eventTemplates</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\common\events\eventTemplates\GridEventTemplate.h">
+      <Filter>srcBackend\common\events\eventTemplates</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\common\events\eventTemplates\PhaseCompleteTemplate.h">
+      <Filter>srcBackend\common\events\eventTemplates</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\common\events\eventTemplates\SpinsCompleteTemplate.h">
+      <Filter>srcBackend\common\events\eventTemplates</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\common\events\threadSafeMeters\DistributionMeter.h">
+      <Filter>srcBackend\common\events\threadSafeMeters</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\common\events\threadSafeMeters\IntMaxMeter.h">
+      <Filter>srcBackend\common\events\threadSafeMeters</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\common\events\threadSafeMeters\IntSumMeter.h">
+      <Filter>srcBackend\common\events\threadSafeMeters</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\common\events\threadSafeMeters\MeterUpdate.h">
+      <Filter>srcBackend\common\events\threadSafeMeters</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\common\events\threadSafeMeters\PayTableMeter.h">
+      <Filter>srcBackend\common\events\threadSafeMeters</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\common\gameMaths\GameMaths.h">
+      <Filter>srcBackend\common\gameMaths</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\common\gameMaths\TypeConfig.h">
+      <Filter>srcBackend\common\gameMaths</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\common\gameMaths\mathElements\PayLines.h">
+      <Filter>srcBackend\common\gameMaths\mathElements</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\common\gameMaths\mathElements\PayTable.h">
+      <Filter>srcBackend\common\gameMaths\mathElements</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\common\gameMaths\mathElements\ReelSet.h">
+      <Filter>srcBackend\common\gameMaths\mathElements</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\common\gameMaths\mathElements\ThresholdTable.h">
+      <Filter>srcBackend\common\gameMaths\mathElements</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\common\gameMaths\mathElements\WeightTables.h">
+      <Filter>srcBackend\common\gameMaths\mathElements</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\common\gameMaths\parser\ParSheet.h">
+      <Filter>srcBackend\common\gameMaths\parser</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\common\gameMaths\parser\TaggedDataTypes.h">
+      <Filter>srcBackend\common\gameMaths\parser</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\common\gameMaths\parser\TaggedRange.h">
+      <Filter>srcBackend\common\gameMaths\parser</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\common\grids\BothWaysLineGrid.h">
+      <Filter>srcBackend\common\grids</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\common\grids\Grid.h">
+      <Filter>srcBackend\common\grids</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\common\grids\LineGrid.h">
+      <Filter>srcBackend\common\grids</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\common\grids\PayAnywhereGrid.h">
+      <Filter>srcBackend\common\grids</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\common\grids\PayGrid.h">
+      <Filter>srcBackend\common\grids</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\common\grids\WaysGrid.h">
+      <Filter>srcBackend\common\grids</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\common\headers\pch.h">
+      <Filter>srcBackend\common\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\common\headers\types.h">
+      <Filter>srcBackend\common\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\common\rng\CSVIterator.h">
+      <Filter>srcBackend\common\rng</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\common\rng\MathsRng.h">
+      <Filter>srcBackend\common\rng</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\common\rng\Rng.h">
+      <Filter>srcBackend\common\rng</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\common\rng\RngData.h">
+      <Filter>srcBackend\common\rng</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\common\rng\RngKiss.h">
+      <Filter>srcBackend\common\rng</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\common\server\API.h">
+      <Filter>srcBackend\common\server</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\common\server\FrontendForce.h">
+      <Filter>srcBackend\common\server</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\common\server\NodeDevServer.h">
+      <Filter>srcBackend\common\server</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\common\spin\SpinResult.h">
+      <Filter>srcBackend\common\spin</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\common\state\GameCycleBase.h">
+      <Filter>srcBackend\common\state</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\common\state\GameSessionBase.h">
+      <Filter>srcBackend\common\state</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\common\stats\ReportBuffer.h">
+      <Filter>srcBackend\common\stats</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\common\stats\SessionStrategy.h">
+      <Filter>srcBackend\common\stats</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\common\utils\Timer.h">
+      <Filter>srcBackend\common\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\common\utils\utils.h">
+      <Filter>srcBackend\common\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\common\wins\LineWin.h">
+      <Filter>srcBackend\common\wins</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\common\wins\ScatterWin.h">
+      <Filter>srcBackend\common\wins</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\common\wins\WaysWin.h">
+      <Filter>srcBackend\common\wins</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\common\wins\Win.h">
+      <Filter>srcBackend\common\wins</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\thisTitle\CollectorPositions.h">
+      <Filter>srcBackend\thisTitle</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\thisTitle\CustomGrid.h">
+      <Filter>srcBackend\thisTitle</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\thisTitle\GameLogic.h">
+      <Filter>srcBackend\thisTitle</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\thisTitle\events\BaseCoinsPayoutEvent.h">
+      <Filter>srcBackend\thisTitle\events</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\thisTitle\events\BaseCoinsPhaseCompleteEvent.h">
+      <Filter>srcBackend\thisTitle\events</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\thisTitle\events\BasePayAnywherePhaseCompleteEvent.h">
+      <Filter>srcBackend\thisTitle\events</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\thisTitle\events\BonusSymbolCollectionEvent.h">
+      <Filter>srcBackend\thisTitle\events</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\thisTitle\events\CascadeWithCoinsEvent.h">
+      <Filter>srcBackend\thisTitle\events</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\thisTitle\events\CoinCollectionEvent.h">
+      <Filter>srcBackend\thisTitle\events</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\thisTitle\events\CollectorActivationEvent.h">
+      <Filter>srcBackend\thisTitle\events</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\thisTitle\events\CollectorAwardedBonusEvent.h">
+      <Filter>srcBackend\thisTitle\events</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\thisTitle\events\EnhancedFreeSpins1CompleteEvent.h">
+      <Filter>srcBackend\thisTitle\events</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\thisTitle\events\EnhancedFreeSpins2CompleteEvent.h">
+      <Filter>srcBackend\thisTitle\events</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\thisTitle\events\EnhancedFreeSpins3CompleteEvent.h">
+      <Filter>srcBackend\thisTitle\events</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\thisTitle\events\EnhancedFreeSpinsCompleteEvent.h">
+      <Filter>srcBackend\thisTitle\events</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\thisTitle\events\FreeSpinsCoinsPayoutEvent.h">
+      <Filter>srcBackend\thisTitle\events</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\thisTitle\events\FreeSpinsCollectionTriggerEvent.h">
+      <Filter>srcBackend\thisTitle\events</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\thisTitle\events\FreeSpinsPayAnywherePhaseCompleteEvent.h">
+      <Filter>srcBackend\thisTitle\events</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\thisTitle\events\MaxedOutMultipliersEvent.h">
+      <Filter>srcBackend\thisTitle\events</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\thisTitle\events\ReelSpinWithCoinsEvent.h">
+      <Filter>srcBackend\thisTitle\events</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\thisTitle\events\StandardFreeSpinsCompleteEvent.h">
+      <Filter>srcBackend\thisTitle\events</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\thisTitle\forces\frontendForces.h">
+      <Filter>srcBackend\thisTitle\forces</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\thisTitle\forces\simForces.h">
+      <Filter>srcBackend\thisTitle\forces</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\thisTitle\state\GameCycle.h">
+      <Filter>srcBackend\thisTitle\state</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\thisTitle\state\GameSession.h">
+      <Filter>srcBackend\thisTitle\state</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\thisTitle\stats\SessionStats.h">
+      <Filter>srcBackend\thisTitle\stats</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\thisTitle\stats\SessionStrategies.h">
+      <Filter>srcBackend\thisTitle\stats</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\thisTitle\stats\StatsOutput.h">
+      <Filter>srcBackend\thisTitle\stats</Filter>
+    </ClInclude>
+    <ClInclude Include="srcBackend\thisTitle\wins\CoinWin.h">
+      <Filter>srcBackend\thisTitle\wins</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="srcBackend\common\Main.cpp">
+      <Filter>srcBackend\common</Filter>
+    </ClCompile>
+    <ClCompile Include="srcBackend\common\config\UserConfig.cpp">
+      <Filter>srcBackend\common\config</Filter>
+    </ClCompile>
+    <ClCompile Include="srcBackend\common\console\Console.cpp">
+      <Filter>srcBackend\common\console</Filter>
+    </ClCompile>
+    <ClCompile Include="srcBackend\common\events\WinAnalysisEvent.cpp">
+      <Filter>srcBackend\common\events</Filter>
+    </ClCompile>
+    <ClCompile Include="srcBackend\common\events\threadSafeMeters\DistributionMeter.cpp">
+      <Filter>srcBackend\common\events\threadSafeMeters</Filter>
+    </ClCompile>
+    <ClCompile Include="srcBackend\common\events\threadSafeMeters\IntMaxMeter.cpp">
+      <Filter>srcBackend\common\events\threadSafeMeters</Filter>
+    </ClCompile>
+    <ClCompile Include="srcBackend\common\events\threadSafeMeters\IntSumMeter.cpp">
+      <Filter>srcBackend\common\events\threadSafeMeters</Filter>
+    </ClCompile>
+    <ClCompile Include="srcBackend\common\events\threadSafeMeters\PayTableMeter.cpp">
+      <Filter>srcBackend\common\events\threadSafeMeters</Filter>
+    </ClCompile>
+    <ClCompile Include="srcBackend\common\gameMaths\mathElements\PayLines.cpp">
+      <Filter>srcBackend\common\gameMaths\mathElements</Filter>
+    </ClCompile>
+    <ClCompile Include="srcBackend\common\gameMaths\mathElements\PayTable.cpp">
+      <Filter>srcBackend\common\gameMaths\mathElements</Filter>
+    </ClCompile>
+    <ClCompile Include="srcBackend\common\gameMaths\mathElements\ReelSet.cpp">
+      <Filter>srcBackend\common\gameMaths\mathElements</Filter>
+    </ClCompile>
+    <ClCompile Include="srcBackend\common\gameMaths\mathElements\WeightTables.cpp">
+      <Filter>srcBackend\common\gameMaths\mathElements</Filter>
+    </ClCompile>
+    <ClCompile Include="srcBackend\common\gameMaths\parser\TaggedDataTypes.cpp">
+      <Filter>srcBackend\common\gameMaths\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="srcBackend\common\grids\BothWaysLineGrid.cpp">
+      <Filter>srcBackend\common\grids</Filter>
+    </ClCompile>
+    <ClCompile Include="srcBackend\common\grids\Grid.cpp">
+      <Filter>srcBackend\common\grids</Filter>
+    </ClCompile>
+    <ClCompile Include="srcBackend\common\grids\LineGrid.cpp">
+      <Filter>srcBackend\common\grids</Filter>
+    </ClCompile>
+    <ClCompile Include="srcBackend\common\grids\PayAnywhereGrid.cpp">
+      <Filter>srcBackend\common\grids</Filter>
+    </ClCompile>
+    <ClCompile Include="srcBackend\common\grids\PayGrid.cpp">
+      <Filter>srcBackend\common\grids</Filter>
+    </ClCompile>
+    <ClCompile Include="srcBackend\common\grids\WaysGrid.cpp">
+      <Filter>srcBackend\common\grids</Filter>
+    </ClCompile>
+    <ClCompile Include="srcBackend\common\headers\pch.cpp">
+      <Filter>srcBackend\common\headers</Filter>
+    </ClCompile>
+    <ClCompile Include="srcBackend\common\rng\RngData.cpp">
+      <Filter>srcBackend\common\rng</Filter>
+    </ClCompile>
+    <ClCompile Include="srcBackend\common\rng\RngKiss.cpp">
+      <Filter>srcBackend\common\rng</Filter>
+    </ClCompile>
+    <ClCompile Include="srcBackend\common\server\API.cpp">
+      <Filter>srcBackend\common\server</Filter>
+    </ClCompile>
+    <ClCompile Include="srcBackend\common\server\NodeDevServer.cpp">
+      <Filter>srcBackend\common\server</Filter>
+    </ClCompile>
+    <ClCompile Include="srcBackend\common\spin\SpinResult.cpp">
+      <Filter>srcBackend\common\spin</Filter>
+    </ClCompile>
+    <ClCompile Include="srcBackend\common\state\GameSessionBase.cpp">
+      <Filter>srcBackend\common\state</Filter>
+    </ClCompile>
+    <ClCompile Include="srcBackend\common\stats\ReportBuffer.cpp">
+      <Filter>srcBackend\common\stats</Filter>
+    </ClCompile>
+    <ClCompile Include="srcBackend\common\utils\Timer.cpp">
+      <Filter>srcBackend\common\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="srcBackend\common\utils\utils.cpp">
+      <Filter>srcBackend\common\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="srcBackend\common\wins\WaysWin.cpp">
+      <Filter>srcBackend\common\wins</Filter>
+    </ClCompile>
+    <ClCompile Include="srcBackend\common\wins\Win.cpp">
+      <Filter>srcBackend\common\wins</Filter>
+    </ClCompile>
+    <ClCompile Include="srcBackend\thisTitle\GameLogic.cpp">
+      <Filter>srcBackend\thisTitle</Filter>
+    </ClCompile>
+    <ClCompile Include="srcBackend\thisTitle\frontendConfig\FrontendConfig.cpp">
+      <Filter>srcBackend\thisTitle\frontendConfig</Filter>
+    </ClCompile>
+    <ClCompile Include="srcBackend\thisTitle\stats\SessionStats.cpp">
+      <Filter>srcBackend\thisTitle\stats</Filter>
+    </ClCompile>
+    <ClCompile Include="srcBackend\thisTitle\stats\StatsOutput.cpp">
+      <Filter>srcBackend\thisTitle\stats</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include=".dockerignore" />
+    <None Include=".gitignore" />
+    <None Include=".gitlab-ci.yml" />
+    <None Include="CHANGELOG.md" />
+    <None Include="CLAUDE.md" />
+    <None Include="CMakeLists.txt" />
+    <None Include="CMakePresets.json" />
+    <None Include="Dockerfile" />
+    <None Include="README\1a - Windows setup.md">
+      <Filter>README</Filter>
+    </None>
+    <None Include="README\1b - macOS setup.md">
+      <Filter>README</Filter>
+    </None>
+    <None Include="README\2 - spreadsheet parser.xlsx">
+      <Filter>README</Filter>
+    </None>
+    <None Include="README\3 - Quick start.md">
+      <Filter>README</Filter>
+    </None>
+    <None Include="README\4 - Frontend.md">
+      <Filter>README</Filter>
+    </None>
+    <None Include="README\5 - Dockerising.md">
+      <Filter>README</Filter>
+    </None>
+    <None Include="README\6 - RN Stream.md">
+      <Filter>README</Filter>
+    </None>
+    <None Include="vcpkg.json" />
+    <None Include="srcBackend\thisTitle\parSheets\HerrSpider_V0_0_1 ParSheet.xlsx">
+      <Filter>srcBackend\thisTitle\parSheets</Filter>
+    </None>
+    <None Include="srcBackend\thisTitle\parSheets\HerrSpider_V0_0_2 ParSheet.xlsx">
+      <Filter>srcBackend\thisTitle\parSheets</Filter>
+    </None>
+    <None Include="srcBackend\thisTitle\parSheets\WebOfWonders_V1_5.xlsx">
+      <Filter>srcBackend\thisTitle\parSheets</Filter>
+    </None>
+    <None Include="srcBackend\thisTitle\parSheets\WebOfWonders_V1_6 configurable.xlsx">
+      <Filter>srcBackend\thisTitle\parSheets</Filter>
+    </None>
+    <None Include="srcBackend\thisTitle\parSheets\WebOfWonders_V1_6.xlsx">
+      <Filter>srcBackend\thisTitle\parSheets</Filter>
+    </None>
+    <None Include="srcBackend\thisTitle\parSheets\WebOfWonders_V1_7 ParSheet.xlsx">
+      <Filter>srcBackend\thisTitle\parSheets</Filter>
+    </None>
+    <None Include="srcBackend\thisTitle\parSheets\WebOfWonders_V1_7.xlsx">
+      <Filter>srcBackend\thisTitle\parSheets</Filter>
+    </None>
+    <None Include="srcBackend\thisTitle\parSheets\WebOfWonders_V1_8.xlsx">
+      <Filter>srcBackend\thisTitle\parSheets</Filter>
+    </None>
+  </ItemGroup>
+</Project>

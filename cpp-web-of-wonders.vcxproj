@@ -1,0 +1,477 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Sim-Debug|x64">
+      <Configuration>Sim-Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Sim-Release|x64">
+      <Configuration>Sim-Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Session-Debug|x64">
+      <Configuration>Session-Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Session-Release|x64">
+      <Configuration>Session-Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Frontend-Debug|x64">
+      <Configuration>Frontend-Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Frontend-Release|x64">
+      <Configuration>Frontend-Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="RNStream-Debug|x64">
+      <Configuration>RNStream-Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="RNStream-Release|x64">
+      <Configuration>RNStream-Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>17.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{8F3A5C1E-2B7D-4E64-9A0B-5D1C7E2F4A10}</ProjectGuid>
+    <RootNamespace>cpp_web_of_wonders</RootNamespace>
+    <ProjectName>cpp-web-of-wonders</ProjectName>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <!-- vcpkg manifest mode: dependencies come from vcpkg.json (needs VCPKG_ROOT + "vcpkg integrate install") -->
+    <VcpkgEnableManifest>true</VcpkgEnableManifest>
+    <VcpkgTriplet>x64-windows</VcpkgTriplet>
+    <VcpkgUseStatic>false</VcpkgUseStatic>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Sim-Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Sim-Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Session-Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Session-Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Frontend-Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Frontend-Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RNStream-Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RNStream-Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <PropertyGroup>
+    <!-- Repo root with forward slashes, no trailing slash (equivalent of CMAKE_SOURCE_DIR) -->
+    <RepoRootFwd>$([System.String]::Copy('$(MSBuildProjectDirectory)').Replace('\','/'))</RepoRootFwd>
+    <OutDir>$(SolutionDir)build\vs\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)build\vs\$(Configuration)\obj\</IntDir>
+    <TargetName>cpp-web-of-wonders</TargetName>
+    <LocalDebuggerWorkingDirectory>$(ProjectDir)</LocalDebuggerWorkingDirectory>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Sim-Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <SDLCheck>false</SDLCheck>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <AdditionalOptions>/Zc:preprocessor /Zc:__cplusplus /bigobj %(AdditionalOptions)</AdditionalOptions>
+      <PreprocessorDefinitions>NOMINMAX;GAME_SOURCE_DIR=\"$(RepoRootFwd)\";DEBUG=1;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)srcBackend\common\headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>$(ProjectDir)srcBackend\common\headers\pch.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <Optimization>Disabled</Optimization>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <!-- Win32 libs Drogon/trantor need (CMake got these transitively from Drogon::Drogon) -->
+      <AdditionalDependencies>ws2_32.lib;rpcrt4.lib;crypt32.lib;advapi32.lib;iphlpapi.lib;bcrypt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Sim-Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <SDLCheck>false</SDLCheck>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <AdditionalOptions>/Zc:preprocessor /Zc:__cplusplus /bigobj %(AdditionalOptions)</AdditionalOptions>
+      <PreprocessorDefinitions>NOMINMAX;GAME_SOURCE_DIR=\"$(RepoRootFwd)\";NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)srcBackend\common\headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>$(ProjectDir)srcBackend\common\headers\pch.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <Optimization>MaxSpeed</Optimization>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <!-- Win32 libs Drogon/trantor need (CMake got these transitively from Drogon::Drogon) -->
+      <AdditionalDependencies>ws2_32.lib;rpcrt4.lib;crypt32.lib;advapi32.lib;iphlpapi.lib;bcrypt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Session-Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <SDLCheck>false</SDLCheck>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <AdditionalOptions>/Zc:preprocessor /Zc:__cplusplus /bigobj %(AdditionalOptions)</AdditionalOptions>
+      <PreprocessorDefinitions>NOMINMAX;GAME_SOURCE_DIR=\"$(RepoRootFwd)\";DEBUG=1;_DEBUG;SESSION=1;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)srcBackend\common\headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>$(ProjectDir)srcBackend\common\headers\pch.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <Optimization>Disabled</Optimization>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <!-- Win32 libs Drogon/trantor need (CMake got these transitively from Drogon::Drogon) -->
+      <AdditionalDependencies>ws2_32.lib;rpcrt4.lib;crypt32.lib;advapi32.lib;iphlpapi.lib;bcrypt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Session-Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <SDLCheck>false</SDLCheck>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <AdditionalOptions>/Zc:preprocessor /Zc:__cplusplus /bigobj %(AdditionalOptions)</AdditionalOptions>
+      <PreprocessorDefinitions>NOMINMAX;GAME_SOURCE_DIR=\"$(RepoRootFwd)\";NDEBUG;SESSION=1;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)srcBackend\common\headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>$(ProjectDir)srcBackend\common\headers\pch.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <Optimization>MaxSpeed</Optimization>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <!-- Win32 libs Drogon/trantor need (CMake got these transitively from Drogon::Drogon) -->
+      <AdditionalDependencies>ws2_32.lib;rpcrt4.lib;crypt32.lib;advapi32.lib;iphlpapi.lib;bcrypt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Frontend-Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <SDLCheck>false</SDLCheck>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <AdditionalOptions>/Zc:preprocessor /Zc:__cplusplus /bigobj %(AdditionalOptions)</AdditionalOptions>
+      <PreprocessorDefinitions>NOMINMAX;GAME_SOURCE_DIR=\"$(RepoRootFwd)\";DEBUG=1;_DEBUG;FRONTEND=1;FRONTEND_DEV=1;FRONTEND_DIR=\"$(RepoRootFwd)/srcFrontend\";FRONTEND_DIST_DIR=\"$(RepoRootFwd)/srcFrontend/dist\";_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)srcBackend\common\headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>$(ProjectDir)srcBackend\common\headers\pch.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <Optimization>Disabled</Optimization>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <!-- Win32 libs Drogon/trantor need (CMake got these transitively from Drogon::Drogon) -->
+      <AdditionalDependencies>ws2_32.lib;rpcrt4.lib;crypt32.lib;advapi32.lib;iphlpapi.lib;bcrypt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Frontend-Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <SDLCheck>false</SDLCheck>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <AdditionalOptions>/Zc:preprocessor /Zc:__cplusplus /bigobj %(AdditionalOptions)</AdditionalOptions>
+      <PreprocessorDefinitions>NOMINMAX;GAME_SOURCE_DIR=\"$(RepoRootFwd)\";NDEBUG;FRONTEND=1;FRONTEND_DEV=1;FRONTEND_DIR=\"$(RepoRootFwd)/srcFrontend\";FRONTEND_DIST_DIR=\"$(RepoRootFwd)/srcFrontend/dist\";_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)srcBackend\common\headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>$(ProjectDir)srcBackend\common\headers\pch.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <Optimization>MaxSpeed</Optimization>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <!-- Win32 libs Drogon/trantor need (CMake got these transitively from Drogon::Drogon) -->
+      <AdditionalDependencies>ws2_32.lib;rpcrt4.lib;crypt32.lib;advapi32.lib;iphlpapi.lib;bcrypt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='RNStream-Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <SDLCheck>false</SDLCheck>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <AdditionalOptions>/Zc:preprocessor /Zc:__cplusplus /bigobj %(AdditionalOptions)</AdditionalOptions>
+      <PreprocessorDefinitions>NOMINMAX;GAME_SOURCE_DIR=\"$(RepoRootFwd)\";DEBUG=1;_DEBUG;RN_STREAM=1;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)srcBackend\common\headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>$(ProjectDir)srcBackend\common\headers\pch.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <Optimization>Disabled</Optimization>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <!-- Win32 libs Drogon/trantor need (CMake got these transitively from Drogon::Drogon) -->
+      <AdditionalDependencies>ws2_32.lib;rpcrt4.lib;crypt32.lib;advapi32.lib;iphlpapi.lib;bcrypt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='RNStream-Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <SDLCheck>false</SDLCheck>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <AdditionalOptions>/Zc:preprocessor /Zc:__cplusplus /bigobj %(AdditionalOptions)</AdditionalOptions>
+      <PreprocessorDefinitions>NOMINMAX;GAME_SOURCE_DIR=\"$(RepoRootFwd)\";NDEBUG;RN_STREAM=1;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)srcBackend\common\headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>$(ProjectDir)srcBackend\common\headers\pch.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <Optimization>MaxSpeed</Optimization>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <!-- Win32 libs Drogon/trantor need (CMake got these transitively from Drogon::Drogon) -->
+      <AdditionalDependencies>ws2_32.lib;rpcrt4.lib;crypt32.lib;advapi32.lib;iphlpapi.lib;bcrypt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="srcBackend\common\config\UserConfig.h" />
+    <ClInclude Include="srcBackend\common\console\Console.h" />
+    <ClInclude Include="srcBackend\common\events\BaseGameCompleteEvent.h" />
+    <ClInclude Include="srcBackend\common\events\CascadeEvent.h" />
+    <ClInclude Include="srcBackend\common\events\FreeSpinsCompleteEvent.h" />
+    <ClInclude Include="srcBackend\common\events\FreeSpinsRetriggerEvent.h" />
+    <ClInclude Include="srcBackend\common\events\FreeSpinsTriggerEvent.h" />
+    <ClInclude Include="srcBackend\common\events\GameCycleCompleteEvent.h" />
+    <ClInclude Include="srcBackend\common\events\GridUpdateEvent.h" />
+    <ClInclude Include="srcBackend\common\events\NewFreeSpinEvent.h" />
+    <ClInclude Include="srcBackend\common\events\RNStreamProblemEvent.h" />
+    <ClInclude Include="srcBackend\common\events\ReelSpinEvent.h" />
+    <ClInclude Include="srcBackend\common\events\ReelSpinWithStickySymbolsEvent.h" />
+    <ClInclude Include="srcBackend\common\events\SpinCompleteEvent.h" />
+    <ClInclude Include="srcBackend\common\events\WinAnalysisEvent.h" />
+    <ClInclude Include="srcBackend\common\events\eventTemplates\BasicEvent.h" />
+    <ClInclude Include="srcBackend\common\events\eventTemplates\GridEventTemplate.h" />
+    <ClInclude Include="srcBackend\common\events\eventTemplates\PhaseCompleteTemplate.h" />
+    <ClInclude Include="srcBackend\common\events\eventTemplates\SpinsCompleteTemplate.h" />
+    <ClInclude Include="srcBackend\common\events\threadSafeMeters\DistributionMeter.h" />
+    <ClInclude Include="srcBackend\common\events\threadSafeMeters\IntMaxMeter.h" />
+    <ClInclude Include="srcBackend\common\events\threadSafeMeters\IntSumMeter.h" />
+    <ClInclude Include="srcBackend\common\events\threadSafeMeters\MeterUpdate.h" />
+    <ClInclude Include="srcBackend\common\events\threadSafeMeters\PayTableMeter.h" />
+    <ClInclude Include="srcBackend\common\gameMaths\GameMaths.h" />
+    <ClInclude Include="srcBackend\common\gameMaths\TypeConfig.h" />
+    <ClInclude Include="srcBackend\common\gameMaths\mathElements\PayLines.h" />
+    <ClInclude Include="srcBackend\common\gameMaths\mathElements\PayTable.h" />
+    <ClInclude Include="srcBackend\common\gameMaths\mathElements\ReelSet.h" />
+    <ClInclude Include="srcBackend\common\gameMaths\mathElements\ThresholdTable.h" />
+    <ClInclude Include="srcBackend\common\gameMaths\mathElements\WeightTables.h" />
+    <ClInclude Include="srcBackend\common\gameMaths\parser\ParSheet.h" />
+    <ClInclude Include="srcBackend\common\gameMaths\parser\TaggedDataTypes.h" />
+    <ClInclude Include="srcBackend\common\gameMaths\parser\TaggedRange.h" />
+    <ClInclude Include="srcBackend\common\grids\BothWaysLineGrid.h" />
+    <ClInclude Include="srcBackend\common\grids\Grid.h" />
+    <ClInclude Include="srcBackend\common\grids\LineGrid.h" />
+    <ClInclude Include="srcBackend\common\grids\PayAnywhereGrid.h" />
+    <ClInclude Include="srcBackend\common\grids\PayGrid.h" />
+    <ClInclude Include="srcBackend\common\grids\WaysGrid.h" />
+    <ClInclude Include="srcBackend\common\headers\pch.h" />
+    <ClInclude Include="srcBackend\common\headers\types.h" />
+    <ClInclude Include="srcBackend\common\rng\CSVIterator.h" />
+    <ClInclude Include="srcBackend\common\rng\MathsRng.h" />
+    <ClInclude Include="srcBackend\common\rng\Rng.h" />
+    <ClInclude Include="srcBackend\common\rng\RngData.h" />
+    <ClInclude Include="srcBackend\common\rng\RngKiss.h" />
+    <ClInclude Include="srcBackend\common\server\API.h" />
+    <ClInclude Include="srcBackend\common\server\FrontendForce.h" />
+    <ClInclude Include="srcBackend\common\server\NodeDevServer.h" />
+    <ClInclude Include="srcBackend\common\spin\SpinResult.h" />
+    <ClInclude Include="srcBackend\common\state\GameCycleBase.h" />
+    <ClInclude Include="srcBackend\common\state\GameSessionBase.h" />
+    <ClInclude Include="srcBackend\common\stats\ReportBuffer.h" />
+    <ClInclude Include="srcBackend\common\stats\SessionStrategy.h" />
+    <ClInclude Include="srcBackend\common\utils\Timer.h" />
+    <ClInclude Include="srcBackend\common\utils\utils.h" />
+    <ClInclude Include="srcBackend\common\wins\LineWin.h" />
+    <ClInclude Include="srcBackend\common\wins\ScatterWin.h" />
+    <ClInclude Include="srcBackend\common\wins\WaysWin.h" />
+    <ClInclude Include="srcBackend\common\wins\Win.h" />
+    <ClInclude Include="srcBackend\thisTitle\CollectorPositions.h" />
+    <ClInclude Include="srcBackend\thisTitle\CustomGrid.h" />
+    <ClInclude Include="srcBackend\thisTitle\GameLogic.h" />
+    <ClInclude Include="srcBackend\thisTitle\events\BaseCoinsPayoutEvent.h" />
+    <ClInclude Include="srcBackend\thisTitle\events\BaseCoinsPhaseCompleteEvent.h" />
+    <ClInclude Include="srcBackend\thisTitle\events\BasePayAnywherePhaseCompleteEvent.h" />
+    <ClInclude Include="srcBackend\thisTitle\events\BonusSymbolCollectionEvent.h" />
+    <ClInclude Include="srcBackend\thisTitle\events\CascadeWithCoinsEvent.h" />
+    <ClInclude Include="srcBackend\thisTitle\events\CoinCollectionEvent.h" />
+    <ClInclude Include="srcBackend\thisTitle\events\CollectorActivationEvent.h" />
+    <ClInclude Include="srcBackend\thisTitle\events\CollectorAwardedBonusEvent.h" />
+    <ClInclude Include="srcBackend\thisTitle\events\EnhancedFreeSpins1CompleteEvent.h" />
+    <ClInclude Include="srcBackend\thisTitle\events\EnhancedFreeSpins2CompleteEvent.h" />
+    <ClInclude Include="srcBackend\thisTitle\events\EnhancedFreeSpins3CompleteEvent.h" />
+    <ClInclude Include="srcBackend\thisTitle\events\EnhancedFreeSpinsCompleteEvent.h" />
+    <ClInclude Include="srcBackend\thisTitle\events\FreeSpinsCoinsPayoutEvent.h" />
+    <ClInclude Include="srcBackend\thisTitle\events\FreeSpinsCollectionTriggerEvent.h" />
+    <ClInclude Include="srcBackend\thisTitle\events\FreeSpinsPayAnywherePhaseCompleteEvent.h" />
+    <ClInclude Include="srcBackend\thisTitle\events\MaxedOutMultipliersEvent.h" />
+    <ClInclude Include="srcBackend\thisTitle\events\ReelSpinWithCoinsEvent.h" />
+    <ClInclude Include="srcBackend\thisTitle\events\StandardFreeSpinsCompleteEvent.h" />
+    <ClInclude Include="srcBackend\thisTitle\forces\frontendForces.h" />
+    <ClInclude Include="srcBackend\thisTitle\forces\simForces.h" />
+    <ClInclude Include="srcBackend\thisTitle\state\GameCycle.h" />
+    <ClInclude Include="srcBackend\thisTitle\state\GameSession.h" />
+    <ClInclude Include="srcBackend\thisTitle\stats\SessionStats.h" />
+    <ClInclude Include="srcBackend\thisTitle\stats\SessionStrategies.h" />
+    <ClInclude Include="srcBackend\thisTitle\stats\StatsOutput.h" />
+    <ClInclude Include="srcBackend\thisTitle\wins\CoinWin.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="srcBackend\common\Main.cpp" />
+    <ClCompile Include="srcBackend\common\config\UserConfig.cpp" />
+    <ClCompile Include="srcBackend\common\console\Console.cpp" />
+    <ClCompile Include="srcBackend\common\events\WinAnalysisEvent.cpp" />
+    <ClCompile Include="srcBackend\common\events\threadSafeMeters\DistributionMeter.cpp" />
+    <ClCompile Include="srcBackend\common\events\threadSafeMeters\IntMaxMeter.cpp" />
+    <ClCompile Include="srcBackend\common\events\threadSafeMeters\IntSumMeter.cpp" />
+    <ClCompile Include="srcBackend\common\events\threadSafeMeters\PayTableMeter.cpp" />
+    <ClCompile Include="srcBackend\common\gameMaths\mathElements\PayLines.cpp" />
+    <ClCompile Include="srcBackend\common\gameMaths\mathElements\PayTable.cpp" />
+    <ClCompile Include="srcBackend\common\gameMaths\mathElements\ReelSet.cpp" />
+    <ClCompile Include="srcBackend\common\gameMaths\mathElements\WeightTables.cpp" />
+    <ClCompile Include="srcBackend\common\gameMaths\parser\TaggedDataTypes.cpp" />
+    <ClCompile Include="srcBackend\common\grids\BothWaysLineGrid.cpp" />
+    <ClCompile Include="srcBackend\common\grids\Grid.cpp" />
+    <ClCompile Include="srcBackend\common\grids\LineGrid.cpp" />
+    <ClCompile Include="srcBackend\common\grids\PayAnywhereGrid.cpp" />
+    <ClCompile Include="srcBackend\common\grids\PayGrid.cpp" />
+    <ClCompile Include="srcBackend\common\grids\WaysGrid.cpp" />
+    <ClCompile Include="srcBackend\common\headers\pch.cpp">
+      <PrecompiledHeader>Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="srcBackend\common\rng\RngData.cpp" />
+    <ClCompile Include="srcBackend\common\rng\RngKiss.cpp" />
+    <ClCompile Include="srcBackend\common\server\API.cpp" />
+    <ClCompile Include="srcBackend\common\server\NodeDevServer.cpp" />
+    <ClCompile Include="srcBackend\common\spin\SpinResult.cpp" />
+    <ClCompile Include="srcBackend\common\state\GameSessionBase.cpp" />
+    <ClCompile Include="srcBackend\common\stats\ReportBuffer.cpp" />
+    <ClCompile Include="srcBackend\common\utils\Timer.cpp" />
+    <ClCompile Include="srcBackend\common\utils\utils.cpp" />
+    <ClCompile Include="srcBackend\common\wins\WaysWin.cpp" />
+    <ClCompile Include="srcBackend\common\wins\Win.cpp" />
+    <ClCompile Include="srcBackend\thisTitle\GameLogic.cpp" />
+    <ClCompile Include="srcBackend\thisTitle\frontendConfig\FrontendConfig.cpp" />
+    <ClCompile Include="srcBackend\thisTitle\stats\SessionStats.cpp" />
+    <ClCompile Include="srcBackend\thisTitle\stats\StatsOutput.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include=".dockerignore" />
+    <None Include=".gitignore" />
+    <None Include=".gitlab-ci.yml" />
+    <None Include="CHANGELOG.md" />
+    <None Include="CLAUDE.md" />
+    <None Include="CMakeLists.txt" />
+    <None Include="CMakePresets.json" />
+    <None Include="Dockerfile" />
+    <None Include="README\1a - Windows setup.md" />
+    <None Include="README\1b - macOS setup.md" />
+    <None Include="README\2 - spreadsheet parser.xlsx" />
+    <None Include="README\3 - Quick start.md" />
+    <None Include="README\4 - Frontend.md" />
+    <None Include="README\5 - Dockerising.md" />
+    <None Include="README\6 - RN Stream.md" />
+    <None Include="vcpkg.json" />
+    <None Include="srcBackend\thisTitle\parSheets\HerrSpider_V0_0_1 ParSheet.xlsx" />
+    <None Include="srcBackend\thisTitle\parSheets\HerrSpider_V0_0_2 ParSheet.xlsx" />
+    <None Include="srcBackend\thisTitle\parSheets\WebOfWonders_V1_5.xlsx" />
+    <None Include="srcBackend\thisTitle\parSheets\WebOfWonders_V1_6 configurable.xlsx" />
+    <None Include="srcBackend\thisTitle\parSheets\WebOfWonders_V1_6.xlsx" />
+    <None Include="srcBackend\thisTitle\parSheets\WebOfWonders_V1_7 ParSheet.xlsx" />
+    <None Include="srcBackend\thisTitle\parSheets\WebOfWonders_V1_7.xlsx" />
+    <None Include="srcBackend\thisTitle\parSheets\WebOfWonders_V1_8.xlsx" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>

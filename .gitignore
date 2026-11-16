@@ -39,10 +39,7 @@ compile_commands.json
 ~$*
 # Visual Studio
 .vs/
-*.vcxproj*
-*.sln
 *.user
-*.filters
 # VS Code
 .vscode/
 # JetBrains (CLion etc)

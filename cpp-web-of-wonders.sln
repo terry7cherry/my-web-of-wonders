@@ -1,0 +1,40 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cpp-web-of-wonders", "cpp-web-of-wonders.vcxproj", "{8F3A5C1E-2B7D-4E64-9A0B-5D1C7E2F4A10}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Sim-Debug|x64 = Sim-Debug|x64
+		Sim-Release|x64 = Sim-Release|x64
+		Session-Debug|x64 = Session-Debug|x64
+		Session-Release|x64 = Session-Release|x64
+		Frontend-Debug|x64 = Frontend-Debug|x64
+		Frontend-Release|x64 = Frontend-Release|x64
+		RNStream-Debug|x64 = RNStream-Debug|x64
+		RNStream-Release|x64 = RNStream-Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8F3A5C1E-2B7D-4E64-9A0B-5D1C7E2F4A10}.Sim-Debug|x64.ActiveCfg = Sim-Debug|x64
+		{8F3A5C1E-2B7D-4E64-9A0B-5D1C7E2F4A10}.Sim-Debug|x64.Build.0 = Sim-Debug|x64
+		{8F3A5C1E-2B7D-4E64-9A0B-5D1C7E2F4A10}.Sim-Release|x64.ActiveCfg = Sim-Release|x64
+		{8F3A5C1E-2B7D-4E64-9A0B-5D1C7E2F4A10}.Sim-Release|x64.Build.0 = Sim-Release|x64
+		{8F3A5C1E-2B7D-4E64-9A0B-5D1C7E2F4A10}.Session-Debug|x64.ActiveCfg = Session-Debug|x64
+		{8F3A5C1E-2B7D-4E64-9A0B-5D1C7E2F4A10}.Session-Debug|x64.Build.0 = Session-Debug|x64
+		{8F3A5C1E-2B7D-4E64-9A0B-5D1C7E2F4A10}.Session-Release|x64.ActiveCfg = Session-Release|x64
+		{8F3A5C1E-2B7D-4E64-9A0B-5D1C7E2F4A10}.Session-Release|x64.Build.0 = Session-Release|x64
+		{8F3A5C1E-2B7D-4E64-9A0B-5D1C7E2F4A10}.Frontend-Debug|x64.ActiveCfg = Frontend-Debug|x64
+		{8F3A5C1E-2B7D-4E64-9A0B-5D1C7E2F4A10}.Frontend-Debug|x64.Build.0 = Frontend-Debug|x64
+		{8F3A5C1E-2B7D-4E64-9A0B-5D1C7E2F4A10}.Frontend-Release|x64.ActiveCfg = Frontend-Release|x64
+		{8F3A5C1E-2B7D-4E64-9A0B-5D1C7E2F4A10}.Frontend-Release|x64.Build.0 = Frontend-Release|x64
+		{8F3A5C1E-2B7D-4E64-9A0B-5D1C7E2F4A10}.RNStream-Debug|x64.ActiveCfg = RNStream-Debug|x64
+		{8F3A5C1E-2B7D-4E64-9A0B-5D1C7E2F4A10}.RNStream-Debug|x64.Build.0 = RNStream-Debug|x64
+		{8F3A5C1E-2B7D-4E64-9A0B-5D1C7E2F4A10}.RNStream-Release|x64.ActiveCfg = RNStream-Release|x64
+		{8F3A5C1E-2B7D-4E64-9A0B-5D1C7E2F4A10}.RNStream-Release|x64.Build.0 = RNStream-Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

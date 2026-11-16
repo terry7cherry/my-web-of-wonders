@@ -54,6 +54,14 @@
       C:\Users\<You>\vcpkg
       ```
 
+#### Opening in Visual Studio (alternative to CLion)
+
+- Run `vcpkg integrate install` once.
+- Open `cpp-web-of-wonders.sln` in Visual Studio 2022 (with "Desktop development with C++").
+- Pick a configuration matching the CMake presets: `Sim`, `Session`, `Frontend` or `RNStream`, each with `-Debug` / `-Release`.
+- vcpkg manifest mode installs the packages from `vcpkg.json` on first build.
+- New source files must be added to the project (right-click > Add) as the VS project lists files explicitly.
+
 #### Project setup (for each new game)
 
 1) Use terraform (or ask Terry/Gabriel) to create a new repo from the cpp-template-game template.
